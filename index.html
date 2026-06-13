@@ -3113,38 +3113,51 @@ function filterToPantryIngredients(raw, items) {
 }
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const WEEKEND = ["Saturday", "Sunday"];
-const SK = {
-  items: "pantryos-items",
-  stock: "pantryos-stock",
-  dishes: "pantryos-dishes",
-  menu: "pantryos-menu",
-  nextMenu: "pantryos-nextmenu",
-  aiDishIng: "pantryos-aidishing",
-  mealCats: "pantryos-mealcats",
-  sqSize: "pantryos-sqsize",
-  aiCount: "pantryos-aicount",
-  recipes: "pantryos-recipes",
-  lockedDays: "pantryos-lockeddays",
-  onboarded: "pantryos-onboarded",
-  autoBackup: "pantryos-autobackup",
-  autoNutrition: "pantryos-autonut",
-  haptics: "pantryos-haptics",
-  cuisines: "pantryos-cuisines",
-  dietary: "pantryos-dietary",
-  macros: "pantryos-macros",
-  theme: "pantryos-theme",
-  colorMode: "pantryos-colormode",
-  screensaverOn: "pantryos-screensaver-on",
-  screensaverMins: "pantryos-screensaver-mins",
-  cookTime: "pantryos-cooktime",
+// Keys written to cloud storage (Firestore) when user is logged in
+const SK_SYNC = {
+  items:           "pantryos-items",
+  stock:           "pantryos-stock",
+  dishes:          "pantryos-dishes",
+  menu:            "pantryos-menu",
+  nextMenu:        "pantryos-nextmenu",
+  aiDishIng:       "pantryos-aidishing",
+  mealCats:        "pantryos-mealcats",
+  recipes:         "pantryos-recipes",
+  lockedDays:      "pantryos-lockeddays",
+  onboarded:       "pantryos-onboarded",
+  autoBackup:      "pantryos-autobackup",
+  autoNutrition:   "pantryos-autonut",
+  cuisines:        "pantryos-cuisines",
+  dietary:         "pantryos-dietary",
+  macros:          "pantryos-macros",
+  theme:           "pantryos-theme",
+  colorMode:       "pantryos-colormode",
+  cookTime:        "pantryos-cooktime",
   michelinWeekend: "pantryos-michelin",
-  showCookNow: "pantryos-cooknow",
-  modelName: "pantryos-model",
-  apiCost: "pantryos-apicost",
-  defaultAiSlots: "pantryos-defaultaislots",
-  confirmedDays: "pantryos-confirmeddays",
-  lastAutoGen: "pantryos-lastautogen",
-  satGenPromptWeek: "pantryos-satgenpromptweek"
+  showCookNow:     "pantryos-cooknow",
+  defaultAiSlots:  "pantryos-defaultaislots",
+  confirmedDays:   "pantryos-confirmeddays",
+  lastAutoGen:     "pantryos-lastautogen",
+};
+// Keys that stay device-local forever (hardware prefs, credentials, transient state)
+const SK_LOCAL = {
+  sqSize:           "pantryos-sqsize",
+  aiCount:          "pantryos-aicount",
+  haptics:          "pantryos-haptics",
+  screensaverOn:    "pantryos-screensaver-on",
+  screensaverMins:  "pantryos-screensaver-mins",
+  modelName:        "pantryos-model",
+  apiCost:          "pantryos-apicost",
+  satGenPromptWeek: "pantryos-satgenpromptweek",
+  apiKey:           "pantryos-apikey",
+  lastBackup:       "pantryos-lastbackup",
+};
+const SK = { ...SK_SYNC, ...SK_LOCAL };
+// Storage adapter — single seam for swapping localStorage ↔ Firestore later
+const storage = {
+  get:    localStorage.getItem.bind(localStorage),
+  set:    localStorage.setItem.bind(localStorage),
+  remove: localStorage.removeItem.bind(localStorage),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3154,11 +3167,11 @@ const CURRENT_VERSION = 8;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
-    items: tryParse(localStorage.getItem(SK.items)),
-    stock: tryParse(localStorage.getItem(SK.stock)),
-    dishes: tryParse(localStorage.getItem(SK.dishes)),
-    menu: tryParse(localStorage.getItem(SK.menu)),
-    recipes: tryParse(localStorage.getItem(SK.recipes))
+    items: tryParse(storage.get(SK.items)),
+    stock: tryParse(storage.get(SK.stock)),
+    dishes: tryParse(storage.get(SK.dishes)),
+    menu: tryParse(storage.get(SK.menu)),
+    recipes: tryParse(storage.get(SK.recipes))
   };
 
   // Run each migration in sequence
@@ -3167,12 +3180,12 @@ function runMigrations(storedVersion) {
   }
 
   // Save migrated data back
-  if (data.items) localStorage.setItem(SK.items, JSON.stringify(data.items));
-  if (data.stock) localStorage.setItem(SK.stock, JSON.stringify(data.stock));
-  if (data.dishes) localStorage.setItem(SK.dishes, JSON.stringify(data.dishes));
-  if (data.menu) localStorage.setItem(SK.menu, JSON.stringify(data.menu));
-  if (data.recipes) localStorage.setItem(SK.recipes, JSON.stringify(data.recipes));
-  localStorage.setItem(VERSION_KEY, String(CURRENT_VERSION));
+  if (data.items) storage.set(SK.items, JSON.stringify(data.items));
+  if (data.stock) storage.set(SK.stock, JSON.stringify(data.stock));
+  if (data.dishes) storage.set(SK.dishes, JSON.stringify(data.dishes));
+  if (data.menu) storage.set(SK.menu, JSON.stringify(data.menu));
+  if (data.recipes) storage.set(SK.recipes, JSON.stringify(data.recipes));
+  storage.set(VERSION_KEY, String(CURRENT_VERSION));
 }
 function tryParse(str) {
   try {
@@ -3331,7 +3344,7 @@ const MIGRATIONS = {
     return data;
   },
   5: function(data) {
-    try{var oD=localStorage.getItem("pantryos-dietary");if(oD){var od=JSON.parse(oD);if(od&&od["Vegan"])localStorage.setItem("pantryos-cuisines",JSON.stringify(["vegan"]));}localStorage.removeItem("pantryos-dietary");}catch(e){}
+    try{var oD=storage.get("pantryos-dietary");if(oD){var od=JSON.parse(oD);if(od&&od["Vegan"])storage.set("pantryos-cuisines",JSON.stringify(["vegan"]));}storage.remove("pantryos-dietary");}catch(e){}
     if(data.items&&Array.isArray(data.items)){var uN=new Set(data.items.map(function(i){return i.name.toLowerCase().trim();}));var now=Date.now();DEFAULT_ITEMS.forEach(function(di,idx){if(di.id>=2001&&!uN.has(di.name.toLowerCase().trim()))data.items.push(Object.assign({},di,{id:now+idx}));});}
     return data;
   },
@@ -4873,7 +4886,7 @@ class ErrorBoundary extends React.Component {
         }
       }, "Try Again"), /*#__PURE__*/React.createElement("button", {
         onClick: () => {
-          localStorage.removeItem("pantryos-menu");
+          storage.remove("pantryos-menu");
           this.setState({
             hasError: false,
             error: null
@@ -5195,21 +5208,21 @@ function App() {
   useEffect(() => {
     try {
       // Run migrations if version has changed
-      const storedVersion = parseInt(localStorage.getItem(VERSION_KEY) || "0", 10);
+      const storedVersion = parseInt(storage.get(VERSION_KEY) || "0", 10);
       if (storedVersion < CURRENT_VERSION) {
         runMigrations(storedVersion);
       }
-      const si = localStorage.getItem(SK.items);
+      const si = storage.get(SK.items);
       if (si) setItems(JSON.parse(si));
-      const ss = localStorage.getItem(SK.stock);
+      const ss = storage.get(SK.stock);
       if (ss) setStock(JSON.parse(ss));
-      const sd = localStorage.getItem(SK.dishes);
+      const sd = storage.get(SK.dishes);
       if (sd) setDishes(JSON.parse(sd).map(normaliseDish));
-      const sm = localStorage.getItem(SK.menu);
+      const sm = storage.get(SK.menu);
       if (sm) setMenu(JSON.parse(sm));
-      const sadi = localStorage.getItem(SK.aiDishIng);
+      const sadi = storage.get(SK.aiDishIng);
       if (sadi) setAiDishIngredients(JSON.parse(sadi));
-      const snm = localStorage.getItem(SK.nextMenu);
+      const snm = storage.get(SK.nextMenu);
       if (snm) {
         var parsedNm = JSON.parse(snm);
         var todayIsNotSaturday = new Date().getDay() !== 6;
@@ -5217,62 +5230,62 @@ function App() {
           // Week has turned over — promote nextMenu to current menu
           setMenu(parsedNm);
           setNextMenu(null);
-          localStorage.setItem(SK.menu, snm);
-          localStorage.removeItem(SK.nextMenu);
+          storage.set(SK.menu, snm);
+          storage.remove(SK.nextMenu);
         } else {
           setNextMenu(parsedNm);
         }
       }
-      const sc = localStorage.getItem(SK.mealCats);
+      const sc = storage.get(SK.mealCats);
       if (sc) setMealCats(JSON.parse(sc));
-      const sq = localStorage.getItem(SK.sqSize);
+      const sq = storage.get(SK.sqSize);
       if (sq) setSqSize(Number(sq));else setSqSize(88);
-      const sa = localStorage.getItem(SK.aiCount);
+      const sa = storage.get(SK.aiCount);
       if (sa) setAiCount(Number(sa));
-      const sr = localStorage.getItem(SK.recipes);
+      const sr = storage.get(SK.recipes);
       if (sr) setRecipes(JSON.parse(sr));
-      const sk = localStorage.getItem("pantryos-apikey");
+      const sk = storage.get(SK_LOCAL.apiKey);
       if (sk) setApiKey(sk);
-      const sld = localStorage.getItem(SK.lockedDays);
+      const sld = storage.get(SK.lockedDays);
       if (sld) setLockedDays(JSON.parse(sld));
-      const sab = localStorage.getItem(SK.autoBackup);
+      const sab = storage.get(SK.autoBackup);
       if (sab) setAutoBackup(JSON.parse(sab));
-      const san = localStorage.getItem(SK.autoNutrition);
+      const san = storage.get(SK.autoNutrition);
       if (san) setAutoNutrition(JSON.parse(san));
-      const shp = localStorage.getItem(SK.haptics);
+      const shp = storage.get(SK.haptics);
       if (shp) setHaptics(JSON.parse(shp));
-      const sth = localStorage.getItem(SK.theme);
+      const sth = storage.get(SK.theme);
       if (sth) setTheme(JSON.parse(sth));
-      const scm = localStorage.getItem(SK.colorMode);
+      const scm = storage.get(SK.colorMode);
       if (scm) setColorMode(JSON.parse(scm));
-      const sso = localStorage.getItem(SK.screensaverOn);
+      const sso = storage.get(SK.screensaverOn);
       if (sso !== null) setScreensaverOn(JSON.parse(sso));
-      const ssm = localStorage.getItem(SK.screensaverMins);
+      const ssm = storage.get(SK.screensaverMins);
       if (ssm) setScreensaverMins(JSON.parse(ssm));
-      const sct = localStorage.getItem(SK.cookTime);
+      const sct = storage.get(SK.cookTime);
       if (sct) setCookTime(JSON.parse(sct));
-      const smn = localStorage.getItem(SK.modelName);
+      const smn = storage.get(SK.modelName);
       if (smn && smn !== "claude-sonnet-4-20250514") setModelName(smn);
       // else: use new default haiku-4-5 (old sonnet default gets reset)
-      const sac = localStorage.getItem(SK.apiCost);
+      const sac = storage.get(SK.apiCost);
       if (sac) setApiCost(parseFloat(sac) || 0);
-      const sdas = localStorage.getItem(SK.defaultAiSlots);
+      const sdas = storage.get(SK.defaultAiSlots);
       if (sdas) try { setDefaultAiSlots(JSON.parse(sdas)); } catch(_) {}
-      const smw = localStorage.getItem(SK.michelinWeekend);
+      const smw = storage.get(SK.michelinWeekend);
       if (smw != null) setMichelinWeekend(JSON.parse(smw));
-      const scn = localStorage.getItem(SK.showCookNow);
+      const scn = storage.get(SK.showCookNow);
       if (scn != null) setShowCookNow(JSON.parse(scn));
-      const scui = localStorage.getItem(SK.cuisines);
+      const scui = storage.get(SK.cuisines);
       if (scui) setCuisines(JSON.parse(scui));
-      const slag = localStorage.getItem(SK.lastAutoGen);
+      const slag = storage.get(SK.lastAutoGen);
       if (slag) setLastAutoGen(slag);
-      const sdt = localStorage.getItem(SK.dietary);
+      const sdt = storage.get(SK.dietary);
       if (sdt) setDietary(JSON.parse(sdt));
-      const smc = localStorage.getItem(SK.macros);
+      const smc = storage.get(SK.macros);
       if (smc) setMacros(JSON.parse(smc));
-      const sob = localStorage.getItem(SK.onboarded);
+      const sob = storage.get(SK.onboarded);
       if (sob) setOnboarded(JSON.parse(sob));else setOnboarded(false);
-      const scd = localStorage.getItem(SK.confirmedDays);
+      const scd = storage.get(SK.confirmedDays);
       if (scd) setConfirmedDays(JSON.parse(scd));
     } catch (e) {
       console.warn("Storage load error", e);
@@ -5320,20 +5333,20 @@ function App() {
     // nextMenu would always "match" and get promoted over the still-current Saturday menu.
     if (new Date().getDay() === 6) return;
     try {
-      var snm = localStorage.getItem(SK.nextMenu);
+      var snm = storage.get(SK.nextMenu);
       if (!snm) return;
       var storedNextMenu = JSON.parse(snm);
       if (!storedNextMenu) return;
       if (storedNextMenu.weekKey !== getWeekKey()) return; // not this week's plan — leave alone
       // Promote nextMenu → menu
       setMenu(storedNextMenu);
-      localStorage.setItem(SK.menu, JSON.stringify(storedNextMenu));
+      storage.set(SK.menu, JSON.stringify(storedNextMenu));
       setNextMenu(null);
-      localStorage.removeItem(SK.nextMenu);
+      storage.remove(SK.nextMenu);
       setLockedDays({});
-      localStorage.removeItem(SK.lockedDays);
+      storage.remove(SK.lockedDays);
       setConfirmedDays({});
-      localStorage.removeItem(SK.confirmedDays);
+      storage.remove(SK.confirmedDays);
       showToast("New week's menu loaded", "success");
     } catch(e) {}
   }, [loaded]);
@@ -5352,104 +5365,104 @@ function App() {
     if (!menu) return; // nothing to base/replace yet
     var wk = getWeekKey();
     if (lastAutoGen === wk) return; // Saturday's auto-gen for this week already succeeded
-    if (localStorage.getItem(SK.satGenPromptWeek) === wk) return; // already asked this week
+    if (storage.get(SK.satGenPromptWeek) === wk) return; // already asked this week
     setSatGenPrompt(true);
   }, [loaded, nextMenu, menu, apiKey, dishes, lastAutoGen]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.items, JSON.stringify(items));
+    if (loaded) storage.set(SK.items, JSON.stringify(items));
   }, [items, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.stock, JSON.stringify(stock));
+    if (loaded) storage.set(SK.stock, JSON.stringify(stock));
   }, [stock, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.dishes, JSON.stringify(dishes));
+    if (loaded) storage.set(SK.dishes, JSON.stringify(dishes));
   }, [dishes, loaded]);
   useEffect(() => {
-    if (loaded && menu) localStorage.setItem(SK.menu, JSON.stringify(menu));
+    if (loaded && menu) storage.set(SK.menu, JSON.stringify(menu));
   }, [menu, loaded]);
   useEffect(() => {
     if (loaded) {
-      if (nextMenu) localStorage.setItem(SK.nextMenu, JSON.stringify(nextMenu));
-      else localStorage.removeItem(SK.nextMenu);
+      if (nextMenu) storage.set(SK.nextMenu, JSON.stringify(nextMenu));
+      else storage.remove(SK.nextMenu);
     }
   }, [nextMenu, loaded]);
   useEffect(() => {
     if (loaded && Object.keys(aiDishIngredients).length > 0)
-      localStorage.setItem(SK.aiDishIng, JSON.stringify(aiDishIngredients));
+      storage.set(SK.aiDishIng, JSON.stringify(aiDishIngredients));
   }, [aiDishIngredients, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.mealCats, JSON.stringify(mealCats));
+    if (loaded) storage.set(SK.mealCats, JSON.stringify(mealCats));
   }, [mealCats, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.sqSize, String(sqSize));
+    if (loaded) storage.set(SK.sqSize, String(sqSize));
   }, [sqSize, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.aiCount, String(aiCount));
+    if (loaded) storage.set(SK.aiCount, String(aiCount));
   }, [aiCount, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.recipes, JSON.stringify(recipes));
+    if (loaded) storage.set(SK.recipes, JSON.stringify(recipes));
   }, [recipes, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem("pantryos-apikey", apiKey);
+    if (loaded) storage.set(SK_LOCAL.apiKey, apiKey);
   }, [apiKey, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.lockedDays, JSON.stringify(lockedDays));
+    if (loaded) storage.set(SK.lockedDays, JSON.stringify(lockedDays));
   }, [lockedDays, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.confirmedDays, JSON.stringify(confirmedDays));
+    if (loaded) storage.set(SK.confirmedDays, JSON.stringify(confirmedDays));
   }, [confirmedDays, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.autoBackup, JSON.stringify(autoBackup));
+    if (loaded) storage.set(SK.autoBackup, JSON.stringify(autoBackup));
   }, [autoBackup, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.autoNutrition, JSON.stringify(autoNutrition));
+    if (loaded) storage.set(SK.autoNutrition, JSON.stringify(autoNutrition));
   }, [autoNutrition, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.haptics, JSON.stringify(haptics));
+    if (loaded) storage.set(SK.haptics, JSON.stringify(haptics));
   }, [haptics, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.theme, JSON.stringify(theme));
+    if (loaded) storage.set(SK.theme, JSON.stringify(theme));
   }, [theme, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.colorMode, JSON.stringify(colorMode));
+    if (loaded) storage.set(SK.colorMode, JSON.stringify(colorMode));
   }, [colorMode, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.screensaverOn, JSON.stringify(screensaverOn));
+    if (loaded) storage.set(SK.screensaverOn, JSON.stringify(screensaverOn));
     window.__ssEnabled = screensaverOn;
     if (!screensaverOn && window.__ssHide) window.__ssHide();
     if (window.__ssResetTimer) window.__ssResetTimer();
   }, [screensaverOn, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.screensaverMins, JSON.stringify(screensaverMins));
+    if (loaded) storage.set(SK.screensaverMins, JSON.stringify(screensaverMins));
     window.__ssIdleMs = (screensaverMins || 15) * 60 * 1000;
     if (window.__ssResetTimer) window.__ssResetTimer();
   }, [screensaverMins, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.cookTime, JSON.stringify(cookTime));
+    if (loaded) storage.set(SK.cookTime, JSON.stringify(cookTime));
   }, [cookTime, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.modelName, modelName);
+    if (loaded) storage.set(SK.modelName, modelName);
   }, [modelName, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.apiCost, String(apiCost));
+    if (loaded) storage.set(SK.apiCost, String(apiCost));
   }, [apiCost, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.defaultAiSlots, JSON.stringify(defaultAiSlots));
+    if (loaded) storage.set(SK.defaultAiSlots, JSON.stringify(defaultAiSlots));
   }, [defaultAiSlots, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.michelinWeekend, JSON.stringify(michelinWeekend));
+    if (loaded) storage.set(SK.michelinWeekend, JSON.stringify(michelinWeekend));
   }, [michelinWeekend, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.showCookNow, JSON.stringify(showCookNow));
+    if (loaded) storage.set(SK.showCookNow, JSON.stringify(showCookNow));
   }, [showCookNow, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.cuisines, JSON.stringify(cuisines));
+    if (loaded) storage.set(SK.cuisines, JSON.stringify(cuisines));
   }, [cuisines, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.lastAutoGen, lastAutoGen);
+    if (loaded) storage.set(SK.lastAutoGen, lastAutoGen);
   }, [lastAutoGen, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.dietary, JSON.stringify(dietary));
+    if (loaded) storage.set(SK.dietary, JSON.stringify(dietary));
   }, [dietary, loaded]);
   // Expose today's menu plan to screensaver via window
   useEffect(() => {
@@ -5458,10 +5471,10 @@ function App() {
     window.__pantryOSMenu = menu.plan[todayName] || {};
   }, [menu]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.macros, JSON.stringify(macros));
+    if (loaded) storage.set(SK.macros, JSON.stringify(macros));
   }, [macros, loaded]);
   useEffect(() => {
-    if (loaded) localStorage.setItem(SK.onboarded, JSON.stringify(onboarded));
+    if (loaded) storage.set(SK.onboarded, JSON.stringify(onboarded));
   }, [onboarded, loaded]);
 
   // ── Stock helpers (binary only now, for summary stocked/needed) ──
@@ -6503,7 +6516,7 @@ Only output the JSON. No markdown.`;
           setLastAutoGen(nextWeekKey);
           // Clear current week locks before generating next week
           setLockedDays({});
-          localStorage.removeItem(SK.lockedDays);
+          storage.remove(SK.lockedDays);
           // Show contextual toast based on time
           const isNightWindow = hour === 0 && minute >= 1 && minute <= 10;
           showToast(isNightWindow
@@ -6536,27 +6549,27 @@ Only output the JSON. No markdown.`;
         // Keep lockedDays and confirmedDays — they belong to the new week
         var storedNextMenu = null;
         try {
-          var snm = localStorage.getItem(SK.nextMenu);
+          var snm = storage.get(SK.nextMenu);
           if (snm) storedNextMenu = JSON.parse(snm);
         } catch(e) {}
         if (storedNextMenu) {
           // Promote next week's plan to current
           setMenu(storedNextMenu);
-          localStorage.setItem(SK.menu, JSON.stringify(storedNextMenu));
+          storage.set(SK.menu, JSON.stringify(storedNextMenu));
           setNextMenu(null);
-          localStorage.removeItem(SK.nextMenu);
+          storage.remove(SK.nextMenu);
           // Clear lockedDays and confirmedDays — they belong to the old week
           setLockedDays({});
-          localStorage.removeItem(SK.lockedDays);
+          storage.remove(SK.lockedDays);
           setConfirmedDays({});
-          localStorage.removeItem(SK.confirmedDays);
+          storage.remove(SK.confirmedDays);
           // Keep nutrition — belongs to the promoted plan
         } else {
           // No pre-generated plan — blank slate
           setMenu(null);
-          localStorage.removeItem(SK.menu);
+          storage.remove(SK.menu);
           setLockedDays({});
-          localStorage.removeItem(SK.lockedDays);
+          storage.remove(SK.lockedDays);
           setNutrition({}); // only clear nutrition when no plan carried over
         }
       }, msUntil);
@@ -6581,7 +6594,7 @@ Only output the JSON. No markdown.`;
       const msUntil = target - now;
       return setTimeout(() => {
         const today = new Date().toISOString().slice(0, 10);
-        const lastBackup = localStorage.getItem("pantryos-lastbackup");
+        const lastBackup = storage.get(SK_LOCAL.lastBackup);
         if (lastBackup !== today && items.length > 0) {
           const data = JSON.stringify({
             items,
@@ -6601,7 +6614,7 @@ Only output the JSON. No markdown.`;
           a.download = "pantry-os-autobackup-" + today + ".json";
           a.click();
           URL.revokeObjectURL(url);
-          localStorage.setItem("pantryos-lastbackup", today);
+          storage.set(SK_LOCAL.lastBackup, today);
         }
       }, msUntil);
     }
@@ -7578,7 +7591,7 @@ Only output the JSON. No markdown.`;
     try {
       for (var lsK in localStorage) {
         if (Object.prototype.hasOwnProperty.call(localStorage, lsK)) {
-          lsTotal += (localStorage.getItem(lsK) || "").length + lsK.length;
+          lsTotal += (storage.get(lsK) || "").length + lsK.length;
         }
       }
     } catch (_e) {}
@@ -8784,7 +8797,7 @@ Only output the JSON. No markdown.`;
   }, "Add"))), /*#__PURE__*/React.createElement(Modal, {
     open: satGenPrompt,
     onClose: () => {
-      localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
+      storage.set(SK.satGenPromptWeek, getWeekKey());
       setSatGenPrompt(false);
     },
     title: (menu && menu.weekKey !== getWeekKey()) ? "Your menu is out of date" : "Generate next week?"
@@ -8797,17 +8810,17 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
         onClick: () => {
-          localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
+          storage.set(SK.satGenPromptWeek, getWeekKey());
           setSatGenPrompt(false);
         },
         style: { ...pill(false), flex: 1, padding: "9px 0" }
       }, "Not now"),
       /*#__PURE__*/React.createElement("button", {
         onClick: () => {
-          localStorage.setItem(SK.satGenPromptWeek, getWeekKey());
+          storage.set(SK.satGenPromptWeek, getWeekKey());
           setSatGenPrompt(false);
           setLockedDays({});
-          localStorage.removeItem(SK.lockedDays);
+          storage.remove(SK.lockedDays);
           showToast("Generating next week's menu\u2026", "success");
           generateMenu({genMode:"mixed", ignoreStock:true});
         },
@@ -10492,8 +10505,8 @@ Only output the JSON. No markdown.`;
             setRecipes({}); setLockedDays({}); setNutrition({}); setConfirmedDays({}); setCuisines([]);
             setOnboarded(false); setOnboardStep(0);
             [SK.items,SK.stock,SK.dishes,SK.confirmedDays,SK.menu,SK.nextMenu,
-             SK.aiDishIng,SK.recipes,SK.lockedDays,SK.cuisines,SK.onboarded].forEach(function(k){localStorage.removeItem(k);});
-            localStorage.setItem(VERSION_KEY,String(CURRENT_VERSION));
+             SK.aiDishIng,SK.recipes,SK.lockedDays,SK.cuisines,SK.onboarded].forEach(function(k){storage.remove(k);});
+            storage.set(VERSION_KEY,String(CURRENT_VERSION));
             setResetModal(0);
           },
           style:{background:"#ff4444",border:"none",color:"#ffffff",borderRadius:6,
@@ -10763,9 +10776,9 @@ Only output the JSON. No markdown.`;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
   try {
-    var _sso = localStorage.getItem("pantryos-screensaver-on");
+    var _sso = storage.get("pantryos-screensaver-on");
     window.__ssEnabled = _sso === null ? true : JSON.parse(_sso);
-    var _ssm = localStorage.getItem("pantryos-screensaver-mins");
+    var _ssm = storage.get("pantryos-screensaver-mins");
     window.__ssIdleMs = (_ssm ? JSON.parse(_ssm) : 15) * 60 * 1000;
   } catch(e) { window.__ssEnabled = true; window.__ssIdleMs = 15*60*1000; }
   initScreensaver();
