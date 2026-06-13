@@ -5090,12 +5090,24 @@ function DayCardCarousel({
   );
 }
 
+// Auth stub — swap body for Firebase Auth in the next PR.
+// Returns { user, signIn, signOut } so callAI and storage can branch on
+// user !== null without changes to every call site.
+function useAuth() {
+  return {
+    user: null,       // GoogleUser | AppleUser once Firebase is wired
+    signIn:  function() {},
+    signOut: function() {},
+  };
+}
+
 function App() {
   // Tab order: summary, menu, pantry, dishes
   const [tab, setTab] = useState("summary");
   const [showSettings, setShowSettings] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
+  const { user, signIn, signOut } = useAuth();
   const [items, setItems] = useState([]);
   const [stock, setStock] = useState({});
   const [dishes, setDishes] = useState([]);
