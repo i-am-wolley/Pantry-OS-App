@@ -5999,7 +5999,7 @@ function App() {
 
         try{
           // Stream and parse day___mc format
-          var aiResult=await runStreamRaw(sysMix,msgMix);
+          var aiResult=(await callAI({system:sysMix,prompt:msgMix,maxTokens:4000,stream:true})).json;
           aiSlotsNeeded.forEach(function(s){
             var k=s.day+"___"+s.mc;
             if(aiResult&&aiResult[k]&&typeof aiResult[k]==="string"&&aiResult[k]){
@@ -6045,10 +6045,9 @@ function App() {
             "Return ONLY valid JSON, no markdown: {\"dish name\": [id1, id2, ...]}\n"+
             "Use ONLY the numeric IDs from the list above. Omit staples.\n"+
             "Dishes: "+aiDishNames.join(", ");
-          var ingResult=await runStreamRaw(
-            "You are a culinary assistant. Output ONLY valid JSON with numeric IDs. No markdown, no preamble.",
-            ingPrompt
-          );
+          var ingResult=(await callAI({
+            system:"You are a culinary assistant. Output ONLY valid JSON with numeric IDs. No markdown, no preamble.",
+            prompt:ingPrompt,maxTokens:4000,stream:true})).json;
           if(ingResult && typeof ingResult==="object"){
             // Store as {dishName: [itemId, ...]} — IDs guaranteed to match pantry
             var mapped={};
@@ -6105,7 +6104,7 @@ function App() {
 
   // ── Shared: stream API call, merge into plan by day key ──
   async function runStream(systemPrompt,userMsg,plan,remainingDays){
-    var raw=await runStreamRaw(systemPrompt,userMsg);
+    var raw=(await callAI({system:systemPrompt,prompt:userMsg,maxTokens:4000,stream:true})).json;
     var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     if(!raw||!Object.keys(raw).some(function(k){return DAY_NAMES.includes(k);})){
       throw new Error("AI returned unexpected format");
@@ -6142,49 +6141,61 @@ function App() {
     return null;
   }
 
-  async function runStreamRaw(systemPrompt,userMsg){
-    var res=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json","x-api-key":apiKey,
-        "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true",
+  // Single dispatch point for all AI calls — provider routing (Gemini/Claude) goes here later
+  async function callAI({ system, prompt, maxTokens, stream = false }) {
+    var body = {
+      model: modelName, max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }]
+    };
+    if (system) body.system = system;
+    if (stream) body.stream = true;
+    var res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true"
       },
-      body:JSON.stringify({model:modelName,max_tokens:4000,stream:true,
-        system:systemPrompt,messages:[{role:"user",content:userMsg}]}),
+      body: JSON.stringify(body)
     });
-    if(!res.ok){
-      var err=await res.json().catch(function(){return {};});
-      throw new Error("API "+(res.status)+": "+((err.error&&err.error.message)||res.statusText));
+    if (!res.ok) {
+      var err = await res.json().catch(function() { return {}; });
+      throw new Error("API " + (res.status) + ": " + ((err.error && err.error.message) || res.statusText));
     }
-    var reader=res.body.getReader(); var decoder=new TextDecoder();
-    var accumulated=""; var inputTokens=0; var outputTokens=0; var streamDone=false;
-    while(true){
-      var rr; try{rr=await reader.read();}catch(_){break;}
-      if(rr.done) break;
-      var chunk=decoder.decode(rr.value,{stream:true});
-      var lines=chunk.split("\n");
-      for(var li=0;li<lines.length;li++){
-        var line=lines[li];
-        if(!line.startsWith("data: ")) continue;
-        var data=line.slice(6).trim();
-        if(!data) continue;
-        if(data==="[DONE]"){streamDone=true;continue;}
-        try{
-          var evt=JSON.parse(data);
-          if(evt.type==="content_block_delta"&&evt.delta&&evt.delta.text) accumulated+=evt.delta.text;
-          if(evt.type==="message_delta"&&evt.usage) outputTokens=evt.usage.output_tokens||0;
-          if(evt.type==="message_start"&&evt.message&&evt.message.usage) inputTokens=evt.message.usage.input_tokens||0;
-          if(evt.type==="message_stop") streamDone=true;
-        }catch(_){}
+    var text = "", inputTok = 0, outputTok = 0;
+    if (stream) {
+      var reader = res.body.getReader(); var decoder = new TextDecoder();
+      var streamDone = false;
+      while (true) {
+        var rr; try { rr = await reader.read(); } catch(_) { break; }
+        if (rr.done) break;
+        var lines = decoder.decode(rr.value, { stream: true }).split("\n");
+        for (var li = 0; li < lines.length; li++) {
+          var line = lines[li];
+          if (!line.startsWith("data: ")) continue;
+          var sseData = line.slice(6).trim();
+          if (!sseData) continue;
+          if (sseData === "[DONE]") { streamDone = true; continue; }
+          try {
+            var evt = JSON.parse(sseData);
+            if (evt.type === "content_block_delta" && evt.delta && evt.delta.text) text += evt.delta.text;
+            if (evt.type === "message_delta" && evt.usage) outputTok = evt.usage.output_tokens || 0;
+            if (evt.type === "message_start" && evt.message && evt.message.usage) inputTok = evt.message.usage.input_tokens || 0;
+            if (evt.type === "message_stop") streamDone = true;
+          } catch(_) {}
+        }
+        if (streamDone) break;
       }
-      if(streamDone) break;
+      try { reader.cancel(); } catch(_) {}
+    } else {
+      var respData = await res.json();
+      text = (respData.content || []).map(function(b) { return b.text || ""; }).join("").trim();
+      inputTok = (respData.usage && respData.usage.input_tokens) || 0;
+      outputTok = (respData.usage && respData.usage.output_tokens) || 0;
     }
-    try{reader.cancel();}catch(_){}
-    // Per-token cost: claude-haiku-4-5 = $0.80/M input, $4.00/M output
-    var callCost=(inputTokens*0.8+outputTokens*4)/1000000;
-    setApiCost(function(prev){return Math.round((prev+callCost)*1000000)/1000000;});
-    var parsed=repairAndParse(accumulated);
-    return parsed;
+    // $0.80/M input, $4.00/M output (claude-haiku-4-5 rates)
+    var callCost = (inputTok * 0.8 + outputTok * 4) / 1000000;
+    setApiCost(function(prev) { return Math.round((prev + callCost) * 1000000) / 1000000; });
+    return { text: text, json: repairAndParse(text) };
   }
 
 
@@ -6278,25 +6289,8 @@ Rest of week already planned: ${weekContext}
 ${isWeekend ? "This is a weekend — suggest something Gourmet-worthy." : ""}${cookTimeStr}
 Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else.`;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: modelName,
-          max_tokens: 50,
-          messages: [{
-            role: "user",
-            content: prompt
-          }]
-        })
-      });
-      const data = await res.json();
-      const newDish = (data.content?.map(b => b.text || "").join("") || "").trim().replace(/['"]/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim();
+      const { text: _swapText } = await callAI({ prompt, maxTokens: 50 });
+      const newDish = _swapText.replace(/['"]/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim();
       if (newDish) {
         (nextMenu ? setNextMenu : setMenu)(prev => {
           const updated = {
@@ -6321,10 +6315,9 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
               });
               var pantryList2=nonStapleItems2.map(function(it){return it.id+":"+it.name;}).join(", ");
               var swapIngPrompt="Pantry items (id:name):\n"+pantryList2+"\n\nFor the dish \""+newDish+"\", return the IDs of pantry items needed. Return ONLY valid JSON: {\""+newDish+"\": [id1, id2, ...]}. Use ONLY the numeric IDs.";
-              var swapIngResult=await runStreamRaw(
-                "You are a culinary assistant. Output ONLY valid JSON with numeric IDs.",
-                swapIngPrompt
-              );
+              var swapIngResult=(await callAI({
+                system:"You are a culinary assistant. Output ONLY valid JSON with numeric IDs.",
+                prompt:swapIngPrompt,maxTokens:4000,stream:true})).json;
               if(swapIngResult && typeof swapIngResult==="object"){
                 setAiDishIngredients(function(prev){return Object.assign({},prev,swapIngResult);});
               }
@@ -6373,24 +6366,9 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     setRecipeFetching(dishName);
     setRecipeError("");
         try{
-      var res=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","x-api-key":apiKey,
-          "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-        body:JSON.stringify({model:modelName,max_tokens:1200,
-          messages:[{role:"user",content:prompt}]})
-      });
-      var data=await res.json();
-      var text=(data.content||[]).map(function(b){return b.text||"";}).join("").trim();
-      if(text){
-        setRecipes(function(prev){return Object.assign({},prev,{[dishName]:text});});
-      }
-      // Track API cost for recipe fetch
-      if(data.usage){
-        var recipeInputTok=data.usage.input_tokens||0;
-        var recipeOutputTok=data.usage.output_tokens||0;
-        var recipeCost=(recipeInputTok*0.8+recipeOutputTok*4)/1000000;
-        setApiCost(function(prev){return Math.round((prev+recipeCost)*1000000)/1000000;});
+      var _recipeText = (await callAI({ prompt, maxTokens: 1200 })).text;
+      if (_recipeText) {
+        setRecipes(function(prev){return Object.assign({},prev,{[dishName]:_recipeText});});
       }
     }catch(e){
       setRecipeError("Error fetching recipe. Try again.");
@@ -6429,31 +6407,8 @@ Reply ONLY as JSON. Keys = day names (Monday-Sunday). Each value = object with: 
 {"Monday":{"cal":1800,"C":220,"F":65,"P":85,"missing":["Fruit"]},"Tuesday":{"cal":1600,"C":190,"F":55,"P":90,"missing":[]}}
 Only output the JSON. No markdown.`;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: modelName,
-          max_tokens: 800,
-          messages: [{
-            role: "user",
-            content: prompt
-          }]
-        })
-      });
-      const data = await res.json();
-      const raw = (data.content?.map(b => b.text || "").join("") || "").replace(/```json|```/g, "").trim();
-      const result = JSON.parse(raw);
-      setNutrition(result);
-      if(data.usage){
-        var nutCost=(((data.usage.input_tokens||0)*0.8)+((data.usage.output_tokens||0)*4))/1000000;
-        setApiCost(function(prev){return Math.round((prev+nutCost)*1000000)/1000000;});
-      }
+      const _nutResult = (await callAI({ prompt, maxTokens: 800 })).json;
+      if (_nutResult) setNutrition(_nutResult);
     } catch (e) {
       console.warn("Nutrition check failed", e);
     }
@@ -6709,29 +6664,8 @@ Only output the JSON. No markdown.`;
       var pantryListCN = nonStapleItemsCN.map(function(it){ return it.id + ":" + it.name; }).join(", ");
       var prompt = "You are a creative chef. Suggest exactly " + aiSlotsNeeded + " " + currentMealCat + " dish" + (aiSlotsNeeded > 1 ? "es" : "") + " that can be cooked using ONLY these stocked pantry items (no shopping needed).\n\n" + "STOCKED PANTRY ITEMS (id:name):\n" + pantryListCN + "\n\n" + (alreadyShown ? "Already suggested from saved dishes (do NOT repeat): " + alreadyShown + "\n\n" : "") + dietStr + "STRICT RULES:\n" + "1. Every ingredient in each dish MUST be one of the pantry item IDs listed above.\n" + "2. EXCEPTION: Basic staples (cooking oil, salt, water, sugar, black pepper) are always assumed available and do NOT need an ID.\n" + "3. No other ingredients are allowed — not even common ones.\n" + "4. If a complete dish truly cannot be made, say so in the \"why\" field but still return the closest possible option.\n" + "5. Each dish must be meaningfully different from the others.\n\n" + "Reply ONLY as a JSON array of " + aiSlotsNeeded + " objects. No markdown. \"ingredients\" must be numeric pantry IDs from the list above:\n" + '[{"name":"dish name","why":"brief reason","ingredients":[id1, id2, ...]}]';
       try {
-        var res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey,
-            "anthropic-version": "2023-06-01",
-            "anthropic-dangerous-direct-browser-access": "true"
-          },
-          body: JSON.stringify({
-            model: modelName,
-            max_tokens: 500,
-            messages: [{
-              role: "user",
-              content: prompt
-            }]
-          })
-        });
-        var data = await res.json();
-        var raw = (data.content || []).map(function (b) {
-          return b.text || "";
-        }).join("").replace(/```json|```/g, "").trim();
-        aiResults = JSON.parse(raw);
-        if (!Array.isArray(aiResults)) aiResults = [];
+        var _cnJson = (await callAI({ prompt, maxTokens: 500 })).json;
+        aiResults = Array.isArray(_cnJson) ? _cnJson : [];
         // Validate IDs against pantry, convert to names for display, and cache
         // for resolveAiIngredients() in case the user bookmarks this dish.
         var aiCache = {};
@@ -6746,10 +6680,6 @@ Only output the JSON. No markdown.`;
         });
         if (Object.keys(aiCache).length > 0) {
           setAiDishIngredients(function(prev){ return Object.assign({}, prev, aiCache); });
-        }
-        if(data.usage){
-          var cnCost=((data.usage.input_tokens||0)*0.8+(data.usage.output_tokens||0)*4)/1000000;
-          setApiCost(function(prev){return Math.round((prev+cnCost)*1000000)/1000000;});
         }
       } catch (e) {
         setCookNowError("Could not get AI suggestions. Try again.");
