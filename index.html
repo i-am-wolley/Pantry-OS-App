@@ -5648,8 +5648,9 @@ function App() {
   }, [loaded, nextMenu, menu, apiKey, dishes, lastAutoGen]);
   useEffect(() => {
     if (!loaded || !onboarded || !user) return;
+    if (firstStockCheckModal) return; // first-run modal already handles this week's check
     if (storage.get(SK.pantryCheckWeek) !== getPantryCheckKey()) setPantryCheckReminder(true);
-  }, [loaded, onboarded, user]);
+  }, [loaded, onboarded, user, firstStockCheckModal]);
   // After sign-in during onboarding: route new vs returning accounts.
   // isNewAccount is true ONLY when _setupHousehold just CREATED a household (never found one).
   // A returning user always has isNewAccount=false, even if localStorage was wiped by deleteAccount.
@@ -10739,6 +10740,9 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("button", {
           onClick: function() {
             if (cuisines.length > 0) cuisines.forEach(function(key) { applyCuisinePreset(key); });
+            // Stamp pantryCheckWeek BEFORE setOnboarded so the weekly reminder effect
+            // never fires for the same week as the first-run firstStockCheckModal.
+            storage.set(SK.pantryCheckWeek, getPantryCheckKey());
             setOnboarded(true);
             setFirstStockCheckModal(true);
           },
