@@ -5217,7 +5217,15 @@ function useAuth() {
       if (u) {
         _fbDb.collection("users").doc(u.uid).set({ displayName: u.displayName || null, email: u.email || null }, { merge: true }).catch(function(){});
         var code = await _setupHousehold(u.uid);
-        if (code) setHouseholdCode(code);
+        if (code) {
+          setHouseholdCode(code);
+          // Write display name into the household doc so ALL members can read each other's
+          // names without needing cross-user reads (Firestore rules only allow own-profile reads).
+          var displayName = u.displayName || u.email || u.uid;
+          var nameUpdate = {};
+          nameUpdate["memberNames." + u.uid] = displayName;
+          _fbDb.collection("households").doc(code).update(nameUpdate).catch(function(){});
+        }
         if (!sessionStorage.getItem("_fbSynced") && code) {
           setSyncing(true);
           sessionStorage.setItem("_fbSynced", "1");
@@ -5308,9 +5316,10 @@ function useAuth() {
   }
   async function removeHouseholdMember(targetUid) {
     if (!_householdCode) return;
-    await _fbDb.collection("households").doc(_householdCode).update({
-      members: firebase.firestore.FieldValue.arrayRemove(targetUid)
-    });
+    var nameKey = "memberNames." + targetUid;
+    var updatePayload = { members: firebase.firestore.FieldValue.arrayRemove(targetUid) };
+    updatePayload[nameKey] = firebase.firestore.FieldValue.delete();
+    await _fbDb.collection("households").doc(_householdCode).update(updatePayload);
     await _fbDb.collection("users").doc(targetUid).set({ householdCode: null }, { merge: true });
   }
   return { user, authReady, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember };
@@ -5619,11 +5628,13 @@ function App() {
   // or a brand-new one, and route accordingly. Fires once authReady+user+loaded settle.
   useEffect(() => {
     if (!authReady || !user || !loaded || onboarded) return;
+    // householdCode being set means _setupHousehold found (or created) a household for this
+    // account — the user is NOT new even if localStorage was just cleared by deleteAccount.
     var hasData = items.length > 0 || dishes.length > 0;
-    if (hasData) {
+    if (hasData || householdCode) {
       setOnboarded(true); // Returning user — skip all setup steps
     } else if (onboardStep <= 1) {
-      setOnboardStep(2); // New account — go to household step
+      setOnboardStep(2); // Truly new account with no household — go to setup
     }
   }, [authReady, user, loaded]);
   useEffect(() => {
@@ -5631,12 +5642,13 @@ function App() {
     _fbDb.collection("households").doc(householdCode).get().then(function(doc) {
       if (!doc.exists) return;
       var uids = doc.data().members || [];
+      // memberNames is a map {uid: displayName} stored in the household doc itself.
+      // This avoids cross-user reads of users/{uid} which Firestore rules deny.
+      var names = doc.data().memberNames || {};
       setHouseholdOwner(doc.data().createdBy || null);
-      Promise.all(uids.map(function(uid){ return _fbDb.collection("users").doc(uid).get(); })).then(function(docs) {
-        setHouseholdMembers(docs.map(function(d, i) {
-          return { uid: uids[i], name: d.exists ? (d.data().displayName || d.data().email || uids[i].slice(0,8)+"…") : uids[i].slice(0,8)+"…" };
-        }));
-      });
+      setHouseholdMembers(uids.map(function(uid) {
+        return { uid: uid, name: names[uid] || uid.slice(0, 8) + "…" };
+      }));
     }).catch(function(){});
   }, [householdCode]);
   useEffect(() => {
