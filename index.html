@@ -475,6 +475,9 @@ var _householdCode = localStorage.getItem("_pantryos_hh") || null;
 // Gated to false until after _syncFromFirestore completes, so early storage effects
 // (fired before _setupHousehold resolves) never clobber Firestore with stale/empty data.
 var _fsWriteEnabled = false;
+// True only when _setupHousehold just CREATED a new household (not found an existing one).
+// Cleared at the top of each _setupHousehold call.
+var _isNewHousehold = false;
 
 function _generateHouseholdCode() {
   var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O or 1/I
@@ -486,6 +489,7 @@ function _generateHouseholdCode() {
 var _LS_HH_KEY = "_pantryos_hh";
 
 async function _setupHousehold(uid) {
+  _isNewHousehold = false; // reset each call
   var cached = localStorage.getItem(_LS_HH_KEY);
   try {
     // Always validate against Firestore — it's the source of truth.
@@ -495,6 +499,7 @@ async function _setupHousehold(uid) {
       var code = userDoc.data().householdCode;
       _householdCode = code;
       localStorage.setItem(_LS_HH_KEY, code);
+      // _isNewHousehold stays false — this is an EXISTING household
       return code;
     }
     // Firestore has no household for this user yet.
@@ -505,11 +510,13 @@ async function _setupHousehold(uid) {
       if (hhDoc && hhDoc.exists && (hhDoc.data().members || []).indexOf(uid) !== -1) {
         _householdCode = cached;
         await _fbDb.collection("users").doc(uid).set({ householdCode: cached }, { merge: true }).catch(function(){});
+        // _isNewHousehold stays false — re-registering an existing household
         return cached;
       }
       // Cached household doesn't include this user — fall through to create a new one.
     }
     // Brand-new user (or inherited-cache mismatch) — create a household.
+    _isNewHousehold = true;
     var newCode = _generateHouseholdCode();
     await _fbDb.collection("households").doc(newCode).set({ members: [uid], createdBy: uid });
     await _fbDb.collection("users").doc(uid).set({ householdCode: newCode }, { merge: true });
@@ -529,6 +536,13 @@ async function _joinHousehold(uid, code) {
   if (code.length !== 6) throw new Error("Enter the full 6-character code.");
   var doc = await _fbDb.collection("households").doc(code).get();
   if (!doc.exists) throw new Error("Code not found. Double-check and try again.");
+  // Remove from previous household first — one account can only be in one household.
+  var oldCode = _householdCode;
+  if (oldCode && oldCode !== code) {
+    var oldUpdate = { members: firebase.firestore.FieldValue.arrayRemove(uid) };
+    oldUpdate["memberNames." + uid] = firebase.firestore.FieldValue.delete();
+    await _fbDb.collection("households").doc(oldCode).update(oldUpdate).catch(function(){});
+  }
   await _fbDb.collection("households").doc(code).update({
     members: firebase.firestore.FieldValue.arrayUnion(uid)
   });
@@ -5210,6 +5224,8 @@ function useAuth() {
   // authReady becomes true once onAuthStateChanged has fully resolved (including sync).
   // Used to gate the onboarding overlay so it never flickers for logged-in returning users.
   const [authReady, setAuthReady] = React.useState(false);
+  // True only when this sign-in created a brand-new household (not an existing one).
+  const [isNewAccount, setIsNewAccount] = React.useState(false);
   const [syncing, setSyncing] = React.useState(false);
   const [householdCode, setHouseholdCode] = React.useState(null);
   React.useEffect(function() {
@@ -5219,6 +5235,7 @@ function useAuth() {
         var code = await _setupHousehold(u.uid);
         if (code) {
           setHouseholdCode(code);
+          setIsNewAccount(_isNewHousehold);
           // Write display name into the household doc so ALL members can read each other's
           // names without needing cross-user reads (Firestore rules only allow own-profile reads).
           var displayName = u.displayName || u.email || u.uid;
@@ -5285,10 +5302,10 @@ function useAuth() {
         if (deleteHouseholdData) {
           await Promise.all(Object.values(SK_SYNC).map(function(k){ return _fsDoc(k).delete().catch(function(){}); }));
         }
-        // Always remove this user from the household member list
-        await _fbDb.collection("households").doc(code).update({
-          members: firebase.firestore.FieldValue.arrayRemove(uid)
-        }).catch(function(){});
+        // Always remove this user from the household member list and name map
+        var hhUpdate = { members: firebase.firestore.FieldValue.arrayRemove(uid) };
+        hhUpdate["memberNames." + uid] = firebase.firestore.FieldValue.delete();
+        await _fbDb.collection("households").doc(code).update(hhUpdate).catch(function(){});
       }
       // Delete the user's Firestore profile so the household code isn't orphaned on server
       await _fbDb.collection("users").doc(uid).delete().catch(function(){});
@@ -5322,7 +5339,7 @@ function useAuth() {
     await _fbDb.collection("households").doc(_householdCode).update(updatePayload);
     await _fbDb.collection("users").doc(targetUid).set({ householdCode: null }, { merge: true });
   }
-  return { user, authReady, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember };
+  return { user, authReady, isNewAccount, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember };
 }
 
 function App() {
@@ -5335,7 +5352,7 @@ function App() {
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [aiProviderTab, setAiProviderTab] = useState("gemini");
   const [apiHelpModal, setApiHelpModal] = useState(null);
-  const { user, authReady, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember } = useAuth();
+  const { user, authReady, isNewAccount, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember } = useAuth();
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
@@ -5624,17 +5641,15 @@ function App() {
     if (!loaded || !onboarded || !user) return;
     if (storage.get(SK.pantryCheckWeek) !== getPantryCheckKey()) setPantryCheckReminder(true);
   }, [loaded, onboarded, user]);
-  // After sign-in during onboarding: detect whether this is an existing account (has data)
-  // or a brand-new one, and route accordingly. Fires once authReady+user+loaded settle.
+  // After sign-in during onboarding: route new vs returning accounts.
+  // isNewAccount is true ONLY when _setupHousehold just CREATED a household (never found one).
+  // A returning user always has isNewAccount=false, even if localStorage was wiped by deleteAccount.
   useEffect(() => {
     if (!authReady || !user || !loaded || onboarded) return;
-    // householdCode being set means _setupHousehold found (or created) a household for this
-    // account — the user is NOT new even if localStorage was just cleared by deleteAccount.
-    var hasData = items.length > 0 || dishes.length > 0;
-    if (hasData || householdCode) {
-      setOnboarded(true); // Returning user — skip all setup steps
+    if (!isNewAccount) {
+      setOnboarded(true); // Returning user (or offline fallback) — go straight to app
     } else if (onboardStep <= 1) {
-      setOnboardStep(2); // Truly new account with no household — go to setup
+      setOnboardStep(2); // Brand-new account — walk through household + cuisine setup
     }
   }, [authReady, user, loaded]);
   useEffect(() => {
