@@ -1251,11 +1251,9 @@ function Icon({
     strokeWidth: p.strokeWidth,
     strokeLinecap: p.strokeLinecap,
     strokeLinejoin: p.strokeLinejoin
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-  }), /*#__PURE__*/React.createElement("polyline", {
-    points: "9 22 9 12 15 12 15 22"
-  })));
+  }, /*#__PURE__*/React.createElement("rect", { x: 4, y: 3, width: 16, height: 18, rx: 1.5 }),
+  /*#__PURE__*/React.createElement("line", { x1: 4, y1: 9, x2: 20, y2: 9 }),
+  /*#__PURE__*/React.createElement("line", { x1: 4, y1: 15, x2: 20, y2: 15 })));
   if (name === "dishesTab") return /*#__PURE__*/React.createElement("span", {
     style: wrap
   }, /*#__PURE__*/React.createElement("svg", {
@@ -5900,6 +5898,7 @@ function App() {
   // ── Edit item ──
   function doEditItem() {
     if (!editItemModal) return;
+    haptic("medium");
     setItems(p => p.map(i => i.id === editItemModal.id ? {
       ...i,
       ...editItemModal
@@ -5910,6 +5909,7 @@ function App() {
   // ── Edit dish ──
   function doEditDish() {
     if (!editDishModal) return;
+    haptic("medium");
     setDishes(function(p) { return p.map(function(d) {
       return d.id === editDishModal.id ? Object.assign({}, d, editDishModal) : d;
     }); });
@@ -9690,6 +9690,7 @@ Only output the JSON. No markdown.`;
     }
   }, "Edit recipe"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
+      haptic("light");
       setEditDishModal(null);
       setEditDishAdvanced(false);
     },
@@ -9744,7 +9745,7 @@ Only output the JSON. No markdown.`;
     const sel = editDishModal.mealCats.includes(c);
     return /*#__PURE__*/React.createElement("button", {
       key: c,
-      onClick: () => setEditDishModal(d => ({...d, mealCats: d.mealCats.includes(c) ? d.mealCats.filter(x => x !== c) : [...d.mealCats, c]})),
+      onClick: () => { haptic("light"); setEditDishModal(d => ({...d, mealCats: d.mealCats.includes(c) ? d.mealCats.filter(x => x !== c) : [...d.mealCats, c]})); },
       style: {
         ...pill(sel),
         padding: "6px 12px",
@@ -9784,7 +9785,7 @@ Only output the JSON. No markdown.`;
     }
   }, editDishModal.ingredients.map(i => /*#__PURE__*/React.createElement("span", {
     key: i,
-    onClick: () => setEditDishModal(d => ({...d, ingredients: (d.ingredients||[]).filter(x => x !== i)})),
+    onClick: () => { haptic("light"); setEditDishModal(d => ({...d, ingredients: (d.ingredients||[]).filter(x => x !== i)})); },
     style: {
       background: C.white,
       color: C.bg,
@@ -9842,7 +9843,7 @@ Only output the JSON. No markdown.`;
       const sel = editDishModal.ingredients.includes(i.name);
       return /*#__PURE__*/React.createElement("span", {
         key: i.id,
-        onClick: () => setEditDishModal(d => ({...d, ingredients: (d.ingredients||[]).includes(i.name) ? (d.ingredients||[]).filter(x => x !== i.name) : [...(d.ingredients||[]), i.name]})),
+        onClick: () => { haptic("light"); setEditDishModal(d => ({...d, ingredients: (d.ingredients||[]).includes(i.name) ? (d.ingredients||[]).filter(x => x !== i.name) : [...(d.ingredients||[]), i.name]})); },
         style: {
           background: sel ? C.white : C.card,
           color: sel ? C.bg : C.dim,
@@ -9855,7 +9856,7 @@ Only output the JSON. No markdown.`;
       }, i.name);
     })));
   }))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setEditDishAdvanced(v => !v),
+    onClick: () => { haptic("light"); setEditDishAdvanced(v => !v); },
     style: {
       width: "100%",
       display: "flex",
@@ -9932,11 +9933,11 @@ Only output the JSON. No markdown.`;
       color: C.dim
     }
   }, "Force into week when a key ingredient is stocked")), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setEditDishModal(d => ({
+    onClick: () => { haptic("light"); setEditDishModal(d => ({
       ...d,
       mustInclude: !d.mustInclude,
       mustIncludeIngredient: ""
-    })),
+    })); },
     style: {
       ...pill(editDishModal.mustInclude),
       padding: "5px 10px",
@@ -10046,6 +10047,7 @@ Only output the JSON. No markdown.`;
         ),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){
+            haptic("light");
             var cur=editDishModal.weekendOnly;
             var next=cur===false?true:(cur===true?"weekday":false);
             setEditDishModal(function(p){return Object.assign({},p,{weekendOnly:next});});
@@ -10067,7 +10069,7 @@ Only output the JSON. No markdown.`;
           /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:1}},"Only in Gourmet slots")
         ),
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setEditDishModal(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
+          onClick:function(){ haptic("light"); setEditDishModal(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
           style:{...pill(!!(editDishModal.michelinLevel)),fontSize:12,padding:"4px 12px"}
         },editDishModal.michelinLevel?"ON":"OFF")
       )]
@@ -10085,7 +10087,7 @@ Only output the JSON. No markdown.`;
         (editDishModal.suggestedCount||0)
       ),
       /*#__PURE__*/React.createElement("button", {
-        onClick: function(){setEditDishModal(function(p){return Object.assign({},p,{suggestedCount:0});});},
+        onClick: function(){ haptic("light"); setEditDishModal(function(p){return Object.assign({},p,{suggestedCount:0});});},
         style: {...pill(false),fontSize:12,padding:"4px 10px"}
       }, "RESET")
     )
@@ -10100,10 +10102,11 @@ Only output the JSON. No markdown.`;
       background: C.card
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => { var id = editDishModal.id; setEditDishModal(null); setEditDishAdvanced(false); removeDish(id); },
+    onClick: () => { haptic("heavy"); var id = editDishModal.id; setEditDishModal(null); setEditDishAdvanced(false); removeDish(id); },
     style: { ...pill(true, "#c0392b"), color: "#ffffff", padding: "9px 14px", fontSize: 13, flexShrink: 0 }
   }, "Delete"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
+      haptic("light");
       setEditDishModal(null);
       setEditDishAdvanced(false);
     },
@@ -10495,10 +10498,10 @@ Only output the JSON. No markdown.`;
     }
   }, ["binary", "quantity"].map(t => /*#__PURE__*/React.createElement("button", {
     key: t,
-    onClick: () => setEditItemModal(p => ({
+    onClick: () => { haptic("light"); setEditItemModal(p => ({
       ...p,
       type: t
-    })),
+    })); },
     style: {
       ...pill(editItemModal.type === t),
       flex: 1,
@@ -10513,7 +10516,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, lineHeight: 1.4, maxWidth: 220 } }, "Shows this item under Staples too, in addition to its category.")
     ),
     /*#__PURE__*/React.createElement("button", {
-      onClick: () => setEditItemModal(p => ({ ...p, isStaple: !p.isStaple })),
+      onClick: () => { haptic("light"); setEditItemModal(p => ({ ...p, isStaple: !p.isStaple })); },
       style: { ...pill(!!editItemModal.isStaple), padding: "5px 14px", fontSize: 13, flexShrink: 0 }
     }, editItemModal.isStaple ? "Yes" : "No")
   ), /*#__PURE__*/React.createElement("div", {
@@ -10535,10 +10538,10 @@ Only output the JSON. No markdown.`;
     }
   }, PANTRY_CATEGORIES.map(pc => /*#__PURE__*/React.createElement("button", {
     key: pc.id,
-    onClick: () => setEditItemModal(p => ({
+    onClick: () => { haptic("light"); setEditItemModal(p => ({
       ...p,
       cat: pc.id
-    })),
+    })); },
     style: {
       background: editItemModal.cat === pc.id ? catCol(pc.color) + "22" : "transparent",
       color: editItemModal.cat === pc.id ? catCol(pc.color) : C.dim,
@@ -10564,10 +10567,10 @@ Only output the JSON. No markdown.`;
       gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => { var item = editItemModal; setEditItemModal(null); confirmRemoveItem(item); },
+    onClick: () => { haptic("heavy"); var item = editItemModal; setEditItemModal(null); confirmRemoveItem(item); },
     style: { ...pill(true, "#c0392b"), color: "#ffffff", padding: "9px 14px", fontSize: 13, flexShrink: 0 }
   }, "Delete"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setEditItemModal(null),
+    onClick: () => { haptic("light"); setEditItemModal(null); },
     style: {
       ...pill(false),
       flex: 1,
