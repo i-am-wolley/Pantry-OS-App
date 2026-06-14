@@ -7185,8 +7185,24 @@ Only output the JSON. No markdown.`;
   // ── Haptic feedback ──
   function haptic(style) {
     if (!haptics) return;
+    try {
+      var H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics;
+      if (H) {
+        if (style === "heavy") {
+          H.impact({ style: "HEAVY" });
+        } else if (style === "medium") {
+          H.impact({ style: "MEDIUM" });
+        } else {
+          H.impact({ style: "LIGHT" });
+        }
+        return;
+      }
+    } catch(e) {}
     if (window.navigator && window.navigator.vibrate) {
-      if (style === "light") window.navigator.vibrate(10);else if (style === "medium") window.navigator.vibrate(20);else if (style === "heavy") window.navigator.vibrate([30, 10, 30]);else window.navigator.vibrate(10);
+      if (style === "light") window.navigator.vibrate(10);
+      else if (style === "medium") window.navigator.vibrate(20);
+      else if (style === "heavy") window.navigator.vibrate([30, 10, 30]);
+      else window.navigator.vibrate(10);
     }
   }
 
