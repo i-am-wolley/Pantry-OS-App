@@ -10713,15 +10713,9 @@ Only output the JSON. No markdown.`;
             )
           )
         : /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, background: C.bg, borderRadius: 12, padding: 16, marginBottom: 16 } }, "Setting up your household…"),
-      /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
-        /*#__PURE__*/React.createElement("button", {
-          onClick: function(){ setOnboardStep(3); },
-          style: Object.assign({}, pill(true), { padding: "13px 0", fontSize: 16 })
-        }, "Continue"),
-        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
-          /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(1); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
-          /*#__PURE__*/React.createElement("button", { onClick: function(){ localStorage.setItem('_pantryos_onboarded','1'); setOnboarded(true); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
-        )
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(1); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(3); }, style: Object.assign({}, pill(true), { flex: 1, padding: "13px 0", fontSize: 16 }) }, "Continue")
       )
     ),
     onboardStep === 3 && /*#__PURE__*/React.createElement("div", null,
