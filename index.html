@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Pantry OS"/>
+<meta name="apple-mobile-web-app-title" content="Miso"/>
 <meta name="theme-color" content="#0a0a0a"/>
-<title>Pantry OS</title>
+<title>Miso</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body,#root{width:100%;height:100%;background:#f5f0ea;overflow:hidden;}
@@ -531,7 +531,7 @@ async function _setupHousehold(uid) {
     localStorage.setItem(_LS_HH_KEY, newCode);
     return newCode;
   } catch(e) {
-    console.error("[PantryOS] _setupHousehold failed:", e.message, "— check Firestore rules.");
+    console.error("[Miso] _setupHousehold failed:", e.message, "— check Firestore rules.");
     // On any error: treat as returning user — never create a new household on network glitches.
     _isNewHousehold = false;
     if (cached) { _householdCode = cached; return cached; }
@@ -585,7 +585,7 @@ async function _pushLocalToFirestore(code) {
       }
     });
     if (hasData) await batch.commit();
-  } catch(e) { console.warn("[PantryOS] push to Firestore failed:", e.message); }
+  } catch(e) { console.warn("[Miso] push to Firestore failed:", e.message); }
 }
 
 // ── Screensaver ──────────────────────────────────────────────────────────────
@@ -4524,11 +4524,26 @@ function DishTile({
   const count = dish.suggestedCount || 0;
   const isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
   const accent = mealCatMeta(cats[0], colorMode, C).color;
+  const pressTimer = React.useRef(null);
+  const longPressed = React.useRef(false);
+  const startPress = function() {
+    longPressed.current = false;
+    pressTimer.current = setTimeout(function() {
+      longPressed.current = true;
+      if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(20);
+      onEdit && onEdit();
+    }, 550);
+  };
+  const endPress = function() { clearTimeout(pressTimer.current); };
   return /*#__PURE__*/React.createElement("div", {
     style: {position:"relative",width:size,height:size,flexShrink:0}
   },
   /*#__PURE__*/React.createElement("button", {
-    onClick: onEdit ? function(e){ e.stopPropagation(); onEdit(); } : undefined,
+    onPointerDown: startPress,
+    onPointerUp: endPress,
+    onPointerLeave: endPress,
+    onPointerCancel: endPress,
+    onClick: function(e) { if (longPressed.current) e.stopPropagation(); },
     style: {
       width:"100%", height:"100%",
       background: missingIngredients ? (isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.025)") : C.card,
@@ -4540,7 +4555,7 @@ function DishTile({
       boxShadow: missingIngredients ? "none" : "0 1px 6px rgba(0,0,0,0.06)",
       display:"flex", flexDirection:"column",
       alignItems:"center", justifyContent:"center",
-      cursor: onEdit ? "pointer" : "default",
+      cursor: "pointer",
       overflow:"hidden", position:"relative",
       padding:0, fontFamily:C.font,
       WebkitAppearance:"none", appearance:"none",
@@ -4863,7 +4878,7 @@ function BackupPanel({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pantry-os-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `miso-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -4881,7 +4896,7 @@ function BackupPanel({
         setRestoreOk(true);
         setTimeout(() => setRestoreOk(false), 3000);
       } catch (err) {
-        setRestoreErr("Invalid file. Choose a valid Pantry OS backup .json");
+        setRestoreErr("Invalid file. Choose a valid Miso backup .json");
       }
     };
     reader.readAsText(file);
@@ -5318,7 +5333,7 @@ function useAuth() {
       // Delete the user's Firestore profile so the household code isn't orphaned on server
       await _fbDb.collection("users").doc(uid).delete().catch(function(){});
     } catch(e) {
-      console.warn("[PantryOS] deleteAccount Firestore cleanup failed:", e.message);
+      console.warn("[Miso] deleteAccount Firestore cleanup failed:", e.message);
     }
     Object.values(SK).forEach(function(k){ localStorage.removeItem(k); });
     // Keep _LS_HH_KEY so other accounts on this device can fall back to the cached code
@@ -6913,7 +6928,7 @@ Only output the JSON. No markdown.`;
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = "pantry-os-autobackup-" + today + ".json";
+          a.download = "miso-autobackup-" + today + ".json";
           a.click();
           URL.revokeObjectURL(url);
           storage.set(SK_LOCAL.lastBackup, today);
@@ -7217,16 +7232,11 @@ Only output the JSON. No markdown.`;
       gap: 8
     }
   }, /*#__PURE__*/React.createElement("svg", { width: 28, height: 28, viewBox: "0 0 1024 1024", fill: "none", style: { borderRadius: 6, display: "block", flexShrink: 0 } },
-    /*#__PURE__*/React.createElement("rect", { width: 1024, height: 1024, rx: 220, fill: "#E8A938" }),
-    /*#__PURE__*/React.createElement("rect", { x: 190, y: 170, width: 116, height: 684, rx: 28, fill: "#1A1A1A" }),
-    /*#__PURE__*/React.createElement("rect", { x: 190, y: 170, width: 470, height: 116, rx: 28, fill: "#1A1A1A" }),
-    /*#__PURE__*/React.createElement("rect", { x: 190, y: 478, width: 420, height: 116, rx: 28, fill: "#1A1A1A" }),
-    /*#__PURE__*/React.createElement("rect", { x: 544, y: 170, width: 116, height: 424, rx: 28, fill: "#1A1A1A" }),
-    /*#__PURE__*/React.createElement("rect", { x: 306, y: 286, width: 238, height: 192, rx: 14, fill: "#E8A938" }),
-    /*#__PURE__*/React.createElement("circle", { cx: 386, cy: 343, r: 30, fill: "#1A1A1A" }),
-    /*#__PURE__*/React.createElement("circle", { cx: 464, cy: 343, r: 30, fill: "#1A1A1A", opacity: 0.42 }),
-    /*#__PURE__*/React.createElement("circle", { cx: 386, cy: 421, r: 30, fill: "#1A1A1A", opacity: 0.42 }),
-    /*#__PURE__*/React.createElement("circle", { cx: 464, cy: 421, r: 30, fill: "#1A1A1A", opacity: 0.16 })
+    /*#__PURE__*/React.createElement("rect", { width: 1024, height: 1024, rx: 220, fill: C.bg === "#f5f0ea" ? "#141414" : "#F0EDE8" }),
+    /*#__PURE__*/React.createElement("circle", { cx: 317, cy: 317, r: 144, fill: "#E8A938" }),
+    /*#__PURE__*/React.createElement("circle", { cx: 707, cy: 317, r: 144, fill: "#E8A938", opacity: 0.5 }),
+    /*#__PURE__*/React.createElement("circle", { cx: 317, cy: 707, r: 144, fill: "#E8A938", opacity: 0.5 }),
+    /*#__PURE__*/React.createElement("circle", { cx: 707, cy: 707, r: 144, fill: "#E8A938", opacity: 0.2 })
   ), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 16,
@@ -7235,7 +7245,7 @@ Only output the JSON. No markdown.`;
       lineHeight: 1,
       color: C.bg==="#f5f0ea"?"#18140f":(C.accent||C.gold)
     }
-  }, "Pantry ", /*#__PURE__*/React.createElement("span", { style: { color: "#E8A938" } }, "OS")), /*#__PURE__*/React.createElement("div", {
+  }, "Mi", /*#__PURE__*/React.createElement("span", { style: { color: "#E8A938", opacity: 0.5 } }, "so")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: C.dim,
@@ -10627,36 +10637,51 @@ Only output the JSON. No markdown.`;
     }
   },
     onboardStep === 0 && /*#__PURE__*/React.createElement("div", null,
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 36, fontWeight: 800, color: C.white, marginBottom: 6, letterSpacing: -1.5 } }, "Pantry OS"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.dim, marginBottom: 28, lineHeight: 1.6 } }, "Your kitchen, calm and organised."),
+      /*#__PURE__*/React.createElement("div", { style: { height: 4, background: "#E8A938", borderRadius: 2, marginBottom: 24, marginLeft: -24, marginRight: -24, marginTop: -24, borderTopLeftRadius: 20, borderTopRightRadius: 20 } }),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 20 } },
+        /*#__PURE__*/React.createElement("svg", { width: 52, height: 52, viewBox: "0 0 1024 1024", fill: "none", style: { borderRadius: 12, flexShrink: 0 } },
+          /*#__PURE__*/React.createElement("rect", { width: 1024, height: 1024, rx: 220, fill: C.bg === "#f5f0ea" ? "#141414" : "#F0EDE8" }),
+          /*#__PURE__*/React.createElement("circle", { cx: 317, cy: 317, r: 144, fill: "#E8A938" }),
+          /*#__PURE__*/React.createElement("circle", { cx: 707, cy: 317, r: 144, fill: "#E8A938", opacity: 0.5 }),
+          /*#__PURE__*/React.createElement("circle", { cx: 317, cy: 707, r: 144, fill: "#E8A938", opacity: 0.5 }),
+          /*#__PURE__*/React.createElement("circle", { cx: 707, cy: 707, r: 144, fill: "#E8A938", opacity: 0.2 })
+        ),
+        /*#__PURE__*/React.createElement("div", null,
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 32, fontWeight: 800, letterSpacing: -1, lineHeight: 1, color: C.white } },
+            "Mi", /*#__PURE__*/React.createElement("span", { style: { color: "#E8A938", opacity: 0.5 } }, "so")),
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 3 } }, "Your kitchen, finally in order")
+        )
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 24, lineHeight: 1.6, paddingBottom: 20, borderBottom: "1px solid " + C.border } },
+        "AI meal planning and pantry tracking — built for real home cooking."),
       [{
-        icon: "summaryTab", color: "#6F9E80", title: "Today",
-        desc: "See today & tomorrow's meals, your shopping list, and what's in stock — all in one calm view."
+        icon: "summaryTab", color: "#6F9E80", title: "Your day, sorted",
+        desc: "Today's meals, tomorrow's plan, shopping needs and stock — all in one view."
       }, {
-        icon: "menuTab", color: "#E3A14E", title: "This week",
-        desc: "AI plans your 7-day menu from what's in your pantry and the dishes you've saved."
+        icon: "menuTab", color: "#E3A14E", title: "Menus on autopilot",
+        desc: "AI builds your weekly menu from what's actually in your pantry right now."
       }, {
-        icon: "pantryTab", color: "#E8876B", title: "Pantry",
-        desc: "Keep track of staples, herbs, spices and more — tap to mark in or out of stock."
+        icon: "pantryTab", color: "#E8876B", title: "Always know what's in",
+        desc: "Track staples, herbs, spices, fresh and frozen — one tap to update stock."
       }, {
-        icon: "dishesTab", color: "#9C8FC2", title: "Recipes",
-        desc: "Save your favourite dishes with ingredients, timing and pairing preferences."
+        icon: "dishesTab", color: "#9C8FC2", title: "Your dish collection",
+        desc: "Save favourites so AI always plans meals your household will actually enjoy."
       }].map((item, i) => /*#__PURE__*/React.createElement("div", {
         key: i,
-        style: { display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 20 }
+        style: { display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 18 }
       },
         /*#__PURE__*/React.createElement("div", {
           style: { width: 40, height: 40, background: tint(item.color, C.bg === "#f5f0ea" ? 0.16 : 0.15), borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }
         }, /*#__PURE__*/React.createElement(Icon, { name: item.icon, size: 18, style: { color: item.color } })),
         /*#__PURE__*/React.createElement("div", null,
-          /*#__PURE__*/React.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 3 } }, item.title),
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: C.white, marginBottom: 2 } }, item.title),
           /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim2, lineHeight: 1.5 } }, item.desc)
         )
       )),
       /*#__PURE__*/React.createElement("button", {
         onClick: () => setOnboardStep(1),
-        style: { ...pill(true), width: "100%", padding: "13px 0", fontSize: 16, marginTop: 8 }
-      }, "Get started")
+        style: { ...pill(true), width: "100%", padding: "14px 0", fontSize: 15, marginTop: 8 }
+      }, "Set up my kitchen")
     ),
     onboardStep === 1 && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Sign in to sync"),
