@@ -493,19 +493,15 @@ async function _setupHousehold(uid) {
   var cached = localStorage.getItem(_LS_HH_KEY);
   try {
     // Priority 1: Firestore user profile — always the authoritative source.
-    // Works correctly on a new device where local cache is empty.
+    // This is the ONLY read needed on a new device. Do NOT add a secondary household
+    // verification here — if that read fails for any reason (network, permissions timing)
+    // it would overwrite householdCode with null and permanently break the link.
     var userDoc = await _fbDb.collection("users").doc(uid).get();
     if (userDoc.exists && userDoc.data().householdCode) {
       var code = userDoc.data().householdCode;
-      // Verify household still exists (guards against orphaned user docs after household deletion).
-      var hhVerify = await _fbDb.collection("households").doc(code).get().catch(function(){ return null; });
-      if (hhVerify && hhVerify.exists) {
-        _householdCode = code;
-        localStorage.setItem(_LS_HH_KEY, code);
-        return code; // _isNewHousehold stays false
-      }
-      // Household doc was deleted — clear the stale pointer and fall through.
-      _fbDb.collection("users").doc(uid).set({ householdCode: null }, { merge: true }).catch(function(){});
+      _householdCode = code;
+      localStorage.setItem(_LS_HH_KEY, code);
+      return code; // _isNewHousehold stays false
     }
     // Priority 2: validated local cache. Only reached when Firestore has no valid code —
     // covers "users/{uid} write failed on first sign-in" (same device rescue).
@@ -7245,7 +7241,7 @@ Only output the JSON. No markdown.`;
       lineHeight: 1,
       color: C.bg==="#f5f0ea"?"#18140f":(C.accent||C.gold)
     }
-  }, "Mi", /*#__PURE__*/React.createElement("span", { style: { color: "#E8A938", opacity: 0.5 } }, "so")), /*#__PURE__*/React.createElement("div", {
+  }, "Mi", /*#__PURE__*/React.createElement("span", { style: { color: C.bg === "#f5f0ea" ? "#E8A938" : "#F0EDE8", opacity: 0.5 } }, "so")), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: C.dim,
@@ -10648,7 +10644,7 @@ Only output the JSON. No markdown.`;
         ),
         /*#__PURE__*/React.createElement("div", null,
           /*#__PURE__*/React.createElement("div", { style: { fontSize: 32, fontWeight: 800, letterSpacing: -1, lineHeight: 1, color: C.white } },
-            "Mi", /*#__PURE__*/React.createElement("span", { style: { color: "#E8A938", opacity: 0.5 } }, "so")),
+            "Mi", /*#__PURE__*/React.createElement("span", { style: { color: C.bg === "#f5f0ea" ? "#E8A938" : "#F0EDE8", opacity: 0.5 } }, "so")),
           /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 3 } }, "Your kitchen, finally in order")
         )
       ),
