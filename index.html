@@ -492,10 +492,7 @@ async function _setupHousehold(uid) {
   _isNewHousehold = false; // reset on every call
   var cached = localStorage.getItem(_LS_HH_KEY);
   try {
-    // Priority 1: Firestore user profile — always the authoritative source.
-    // This is the ONLY read needed on a new device. Do NOT add a secondary household
-    // verification here — if that read fails for any reason (network, permissions timing)
-    // it would overwrite householdCode with null and permanently break the link.
+    // Priority 1: Firestore user profile — the fast path, works on any device.
     var userDoc = await _fbDb.collection("users").doc(uid).get();
     if (userDoc.exists && userDoc.data().householdCode) {
       var code = userDoc.data().householdCode;
@@ -503,9 +500,22 @@ async function _setupHousehold(uid) {
       localStorage.setItem(_LS_HH_KEY, code);
       return code; // _isNewHousehold stays false
     }
-    // Priority 2: validated local cache. Only reached when Firestore has no valid code —
-    // covers "users/{uid} write failed on first sign-in" (same device rescue).
-    // The membership check prevents a wrong-user's cached code from being used.
+    // Priority 1b: householdCode missing or null in user doc (can happen if a previous bug
+    // overwrote it). Query households by membership — recovers without user action and
+    // repairs the pointer so future logins use Priority 1.
+    var memberSnap = await _fbDb.collection("households")
+      .where("members", "array-contains", uid)
+      .limit(1)
+      .get()
+      .catch(function() { return null; });
+    if (memberSnap && !memberSnap.empty) {
+      var foundCode = memberSnap.docs[0].id;
+      _householdCode = foundCode;
+      localStorage.setItem(_LS_HH_KEY, foundCode);
+      _fbDb.collection("users").doc(uid).set({ householdCode: foundCode }, { merge: true }).catch(function(){});
+      return foundCode; // _isNewHousehold stays false
+    }
+    // Priority 2: validated local cache (same-device fallback).
     if (cached) {
       var hhDoc = await _fbDb.collection("households").doc(cached).get().catch(function(){ return null; });
       if (hhDoc && hhDoc.exists && (hhDoc.data().members || []).indexOf(uid) !== -1) {
