@@ -4303,6 +4303,7 @@ function SizeSlider({
 function Stepper({
   value,
   onChange,
+  haptic: _haptic,
   min = 0,
   max = 99
 }) {
@@ -4316,7 +4317,7 @@ function Stepper({
       overflow: "hidden"
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => onChange(Math.max(min, value - 1)),
+    onClick: () => { _haptic && _haptic("light"); onChange(Math.max(min, value - 1)); },
     style: {
       background: "none",
       border: "none",
@@ -4338,7 +4339,7 @@ function Stepper({
       color: C.white
     }
   }, value), /*#__PURE__*/React.createElement("button", {
-    onClick: () => onChange(Math.min(max, value + 1)),
+    onClick: () => { _haptic && _haptic("light"); onChange(Math.min(max, value + 1)); },
     style: {
       background: "none",
       border: "none",
@@ -5156,7 +5157,7 @@ function DayCardCarousel({
             style: { display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6, minHeight: 18 }
           },
             hasTomorrow && carouselIdx === 0 && /*#__PURE__*/React.createElement("button", {
-              onClick: () => setCarouselIdx(1),
+              onClick: () => { haptic("light"); setCarouselIdx(1); },
               style: {
                 background: "transparent", border: "none", padding: 0,
                 fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
@@ -5173,10 +5174,10 @@ function DayCardCarousel({
             isToday: true,
             isWeekend: WEEKEND.includes(today.name),
             isMichelinWeekendOverride: false,
-            onRecipe: dishName => fetchRecipe(dishName),
+            onRecipe: dishName => { haptic("light"); fetchRecipe(dishName); },
             recipes: recipes,
             locked: !!lockedDays[today.name],
-            onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
+            onSwap: (d, mc, cur) => { haptic("light"); setSwapModal({day:d, mealCat:mc, current:cur}); },
             swapLoading: swapLoading,
             isConfirmed: !!(confirmedDays && confirmedDays[today.name]),
             dishes: dishes,
@@ -5194,7 +5195,7 @@ function DayCardCarousel({
             style: { display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: 6, minHeight: 18 }
           },
             carouselIdx === 1 && /*#__PURE__*/React.createElement("button", {
-              onClick: () => setCarouselIdx(0),
+              onClick: () => { haptic("light"); setCarouselIdx(0); },
               style: {
                 background: "transparent", border: "none", padding: 0,
                 fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
@@ -5210,10 +5211,10 @@ function DayCardCarousel({
             mealCats: mealCats,
             isTomorrow: true,
             isWeekend: WEEKEND.includes(tomorrow.name),
-            onRecipe: dishName => fetchRecipe(dishName),
+            onRecipe: dishName => { haptic("light"); fetchRecipe(dishName); },
             recipes: recipes,
             locked: !!lockedDays[tomorrow.name],
-            onSwap: (d, mc, cur) => setSwapModal({day:d, mealCat:mc, current:cur}),
+            onSwap: (d, mc, cur) => { haptic("light"); setSwapModal({day:d, mealCat:mc, current:cur}); },
             swapLoading: swapLoading,
             isConfirmed: !!(confirmedDays && confirmedDays[tomorrow.name]),
             dishes: dishes,
@@ -5230,7 +5231,7 @@ function DayCardCarousel({
     },
       cards.map((c, i) => /*#__PURE__*/React.createElement("div", {
         key: i,
-        onClick: () => setCarouselIdx(i),
+        onClick: () => { haptic("light"); setCarouselIdx(i); },
         style: {
           height: 6,
           width: i === carouselIdx ? 20 : 6,
@@ -5878,6 +5879,7 @@ function App() {
   function doAddItem() {
     const raw = newName.trim();
     if (!raw) return;
+    haptic("medium");
     const names = raw.split(",").map(s => s.trim()).filter(Boolean);
     const now = Date.now();
     setItems(p => [...p, ...names.map((n, i) => ({
@@ -5922,6 +5924,7 @@ function App() {
   function doAddDish() {
     const n = dishData.name.trim();
     if (!n) return;
+    haptic("medium");
     const d = {
       ...dishData,
       mealCats: dishData.mealCats.length ? dishData.mealCats : ["Dinner"]
@@ -5943,14 +5946,14 @@ function App() {
     haptic("medium");
     setDishes(p => p.filter(d => d.id !== id));
   };
-  const toggleIng = name => setDishData(d => ({
+  const toggleIng = name => { haptic("light"); setDishData(d => ({
     ...d,
     ingredients: d.ingredients.includes(name) ? d.ingredients.filter(i => i !== name) : [...d.ingredients, name]
-  }));
-  const toggleMealCat = cat => setDishData(d => ({
+  })); };
+  const toggleMealCat = cat => { haptic("light"); setDishData(d => ({
     ...d,
     mealCats: d.mealCats.includes(cat) ? d.mealCats.filter(c => c !== cat) : [...d.mealCats, cat]
-  }));
+  })); };
   const togglePair = name => setDishData(d => ({
     ...d,
     pairWith: (d.pairWith || []).includes(name) ? (d.pairWith || []).filter(x => x !== name) : [...(d.pairWith || []), name]
@@ -7265,7 +7268,7 @@ Only output the JSON. No markdown.`;
       letterSpacing: 0.5
     }
   }, "wk ", getWeekKey()), /*#__PURE__*/React.createElement("button", {
-    onClick: () => { closeAllModals(); setShowSettings(s => !s); },
+    onClick: () => { haptic("light"); closeAllModals(); setShowSettings(s => !s); },
     style: {
       background: "none",
       border: `1px solid ${showSettings ? C.dim : C.border2}`,
@@ -7380,17 +7383,17 @@ Only output the JSON. No markdown.`;
       ? /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
           /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 } },
             /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, user.displayName || user.email),
-            /*#__PURE__*/React.createElement("button", { onClick: signOut, style: Object.assign({}, pill(false), { padding: "6px 14px", fontSize: 12, flexShrink: 0 }) }, "Sign out")
+            /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); signOut(); }, style: Object.assign({}, pill(false), { padding: "6px 14px", fontSize: 12, flexShrink: 0 }) }, "Sign out")
           ),
           /*#__PURE__*/React.createElement("button", {
-            onClick: function() { setDeleteAccountAlsoHousehold(false); setDeleteAccountModal(true); },
+            onClick: function() { haptic("light"); setDeleteAccountAlsoHousehold(false); setDeleteAccountModal(true); },
             style: { background: "transparent", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer", textAlign: "left", padding: 0, fontFamily: C.font }
           }, "Delete account and data")
         )
       : syncing
         ? /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "Syncing…")
         : /*#__PURE__*/React.createElement("button", {
-            onClick: signIn,
+            onClick: function(){ haptic("light"); signIn(); },
             style: Object.assign({}, pill(false), { padding: "8px 14px", fontSize: 13, width: "100%", textAlign: "center" })
           }, "Sign in with Google")
   ), /*#__PURE__*/React.createElement("div", {
@@ -7406,7 +7409,7 @@ Only output the JSON. No markdown.`;
                 /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 3 } }, "Your household code"),
                 /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 700, color: C.white, letterSpacing: 4, fontFamily: "monospace" } }, householdCode.slice(0,3) + " " + householdCode.slice(3))
               ),
-              /*#__PURE__*/React.createElement("button", { onClick: function(){ navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
+              /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
             ),
             householdMembers.length > 0 && /*#__PURE__*/React.createElement("div", null,
               /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim, fontWeight: 700, letterSpacing: 1.5, marginBottom: 8 } }, "MEMBERS"),
@@ -7415,7 +7418,7 @@ Only output the JSON. No markdown.`;
                   /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.white } }, m.name + (m.uid === (user && user.uid) ? " (you)" : "")),
                   user && user.uid === householdOwner && m.uid !== user.uid &&
                     /*#__PURE__*/React.createElement("button", {
-                      onClick: function() { setRemoveMemberConfirm({ uid: m.uid, name: m.name }); },
+                      onClick: function() { haptic("light"); setRemoveMemberConfirm({ uid: m.uid, name: m.name }); },
                       style: { background: "transparent", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer", fontFamily: C.font, padding: 0 }
                     }, "Remove")
                 );
@@ -7428,6 +7431,7 @@ Only output the JSON. No markdown.`;
             /*#__PURE__*/React.createElement("button", {
               onClick: function(){
                 if (!joinCode || joinCode.length < 6) { setJoinError("Enter the full 6-character code."); return; }
+                haptic("medium");
                 setJoinLoading(true); setJoinError("");
                 joinHousehold(joinCode).catch(function(e){ setJoinError(e.message || "Failed."); setJoinLoading(false); });
               },
@@ -7442,28 +7446,28 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 14 } }, "AI PROVIDER"),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 18 } },
-      /*#__PURE__*/React.createElement("button", { onClick: function(){ setAiProviderTab("gemini"); }, style: Object.assign({}, pill(aiProviderTab === "gemini"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Google Gemini"),
-      /*#__PURE__*/React.createElement("button", { onClick: function(){ setAiProviderTab("anthropic"); }, style: Object.assign({}, pill(aiProviderTab === "anthropic"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Anthropic Claude")
+      /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setAiProviderTab("gemini"); }, style: Object.assign({}, pill(aiProviderTab === "gemini"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Google Gemini"),
+      /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setAiProviderTab("anthropic"); }, style: Object.assign({}, pill(aiProviderTab === "anthropic"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Anthropic Claude")
     ),
     aiProviderTab === "gemini" && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#c97b2a" } }, "Free tier allows 15 requests/min \u2014 rapid AI calls may fail"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal("gemini"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal("gemini"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
       ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } },
         /*#__PURE__*/React.createElement("input", { type: showGeminiKey ? "text" : "password", value: geminiKey, onChange: function(e){ setGeminiKey(e.target.value); }, placeholder: "AIza...", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12, flex: 1 }) }),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setShowGeminiKey(function(s){ return !s; }); }, style: Object.assign({}, pill(false), { padding: "8px 10px", fontSize: 13, flexShrink: 0 }) }, showGeminiKey ? "Hide" : "Show")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setShowGeminiKey(function(s){ return !s; }); }, style: Object.assign({}, pill(false), { padding: "8px 10px", fontSize: 13, flexShrink: 0 }) }, showGeminiKey ? "Hide" : "Show")
       ),
       geminiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved")
     ),
     aiProviderTab === "anthropic" && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Paid API \u2014 add credits at console.anthropic.com"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal("anthropic"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal("anthropic"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
       ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } },
         /*#__PURE__*/React.createElement("input", { type: showApiKey ? "text" : "password", value: apiKey, onChange: function(e){ setApiKey(e.target.value); }, placeholder: "sk-ant-api03-...", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12, flex: 1 }) }),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setShowApiKey(function(s){ return !s; }); }, style: Object.assign({}, pill(false), { padding: "8px 10px", fontSize: 13, flexShrink: 0 }) }, showApiKey ? "Hide" : "Show")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setShowApiKey(function(s){ return !s; }); }, style: Object.assign({}, pill(false), { padding: "8px 10px", fontSize: 13, flexShrink: 0 }) }, showApiKey ? "Hide" : "Show")
       ),
       apiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved"),
       /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, paddingTop: 16, borderTop: "1px solid " + C.border } },
@@ -7472,7 +7476,7 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("input", { type: "text", value: modelName, onChange: function(e){ setModelName(e.target.value); }, placeholder: "claude-haiku-4-5-20251001", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12 }) }),
         modelName && modelName !== "claude-haiku-4-5-20251001" && /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 } },
           /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "\u270E Custom model active"),
-          /*#__PURE__*/React.createElement("button", { onClick: function(){ setModelName("claude-haiku-4-5-20251001"); }, style: { background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 12, fontFamily: C.font } }, "Reset to default")
+          /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setModelName("claude-haiku-4-5-20251001"); }, style: { background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 12, fontFamily: C.font } }, "Reset to default")
         )
       )
     )
@@ -7578,7 +7582,7 @@ Only output the JSON. No markdown.`;
       lineHeight: 1.5
     }
   }, item.desc)), /*#__PURE__*/React.createElement("button", {
-    onClick: () => item.set(v => !v),
+    onClick: () => { haptic("light"); item.set(v => !v); },
     style: {
       ...pill(item.val),
       padding: "5px 14px",
@@ -7797,7 +7801,7 @@ Only output the JSON. No markdown.`;
           var on=!!(defaultAiSlots[key]);
           cells.push(/*#__PURE__*/React.createElement("button",{
             key:d,
-            onClick:function(){setDefaultAiSlots(function(p){var n=Object.assign({},p);n[key]=!n[key];return n;});},
+            onClick:function(){ haptic("light"); setDefaultAiSlots(function(p){var n=Object.assign({},p);n[key]=!n[key];return n;});},
             style:{
               flex:1,minWidth:30,height:28,borderRadius:4,border:"1px solid "+(on?C.white:C.border2),
               background:on?C.white:"transparent",color:on?C.bg:C.dim2,
@@ -7810,7 +7814,7 @@ Only output the JSON. No markdown.`;
       });
       rows.push(/*#__PURE__*/React.createElement("div",{key:"btns",style:{display:"flex",gap:6,marginTop:8}},
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setDefaultAiSlots(function(){
+          onClick:function(){ haptic("light"); setDefaultAiSlots(function(){
             var n={};
             if(!allOn) allKeys.forEach(function(k){n[k]=true;});
             return n;
@@ -7823,6 +7827,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", {style:{marginTop:12}},
       /*#__PURE__*/React.createElement("button", {
         onClick:function(){
+          haptic("light");
           var updated=dishes.map(function(d){return Object.assign({},d,{suggestedCount:0});});
           setDishes(updated);
           showToast("All dish counts reset","success");
@@ -7961,7 +7966,7 @@ Only output the JSON. No markdown.`;
       marginTop: 2
     }
   }, "Haiku 4.5  ·  $0.80/M in  ·  $4.00/M out")), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setApiCost(0),
+    onClick: () => { haptic("light"); setApiCost(0); },
     style: {
       background: "transparent",
       border: "1px solid " + C.border2,
@@ -8076,6 +8081,7 @@ Only output the JSON. No markdown.`;
     style: { display: "flex", justifyContent: "flex-end", marginBottom: 14 }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
+      haptic("light");
       setCookNowModal(true);
       if (cookNowResults.length === 0) cookNow();
     },
@@ -8103,7 +8109,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){
-          // Mark all missing shopping list items as stocked
+          haptic("medium");
           var STAPLE2=new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
           var activeMenu2=nextMenu||menu;
           var menuDishNames2=new Set();
@@ -8161,7 +8167,7 @@ Only output the JSON. No markdown.`;
           }
         },
         style:{fontSize:11,color:C.dim,background:"transparent",border:"1px solid "+C.border2,
-          borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:C.font,fontWeight:700,fontSize:11,letterSpacing:0.5,flexShrink:0}
+          borderRadius:6,padding:"4px 10px",cursor:"pointer",fontFamily:C.font,fontWeight:700,letterSpacing:0.5,flexShrink:0}
       },"Got it all")
     )
   ),
@@ -8398,16 +8404,16 @@ Only output the JSON. No markdown.`;
   },
   /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:4}},
     /*#__PURE__*/React.createElement("button", {
-      onClick: () => setGenMode("allai"),
+      onClick: () => { haptic("light"); setGenMode("allai"); },
       style: {...pill(genMode==="allai"),fontSize:12,padding:"5px 10px"}
     }, "Full AI"),
     /*#__PURE__*/React.createElement("button", {
-      onClick: () => setGenMode("mixed"),
+      onClick: () => { haptic("light"); setGenMode("mixed"); },
       style: {...pill(genMode==="mixed"),fontSize:12,padding:"5px 10px"}
     }, "Mixed")
   ),
   /*#__PURE__*/React.createElement("button", {
-    onClick: function(){ setIgnoreStock(function(v){return !v;}); },
+    onClick: function(){ haptic("light"); setIgnoreStock(function(v){return !v;}); },
     style: {...pill(ignoreStock), fontSize:12, padding:"5px 10px"}
   }, "Any pantry")
   ),
@@ -8464,7 +8470,7 @@ Only output the JSON. No markdown.`;
   }, (nextMenu ? "Next week" : "This week"), " \xB7 ", (nextMenu||menu).weekKey),
   Object.keys(lockedDays||{}).some(function(d){return lockedDays[d];}) &&
   /*#__PURE__*/React.createElement("button", {
-    onClick: function(){ setLockedDays({}); setConfirmedDays({}); },
+    onClick: function(){ haptic("medium"); setLockedDays({}); setConfirmedDays({}); },
     style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
       borderRadius:10,padding:"4px 10px",fontSize:11,cursor:"pointer",
       fontFamily:C.font,letterSpacing:0.3,marginBottom:6,display:"block"}
@@ -8597,7 +8603,7 @@ Only output the JSON. No markdown.`;
     return /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:5,marginBottom:14}},mets.map(function(s){
       var isP=s.f==="pantry",pSt=isP&&summaryFilter==="stocked",pNd=isP&&summaryFilter==="needed",iLM=C.bg==="#ebebeb"||C.bg==="#f0f0f0";
       return /*#__PURE__*/React.createElement("div",{key:s.l,
-        onClick:function(){if(!s.f)return;if(isP){setSummaryFilter(function(p){return p==="all"?"needed":p==="needed"?"stocked":"all";});}else{setSummaryFilter(function(p){return p===s.f?"all":s.f;});}},
+        onClick:function(){if(!s.f)return; haptic("light"); if(isP){setSummaryFilter(function(p){return p==="all"?"needed":p==="needed"?"stocked":"all";});}else{setSummaryFilter(function(p){return p===s.f?"all":s.f;});}},
         style:{flex:1,
           background:isP
             ?(pSt?(iLM?"#ffffff":"#f0f0f0"):pNd?(iLM?"#e0e0e0":C.card):C.bg)
@@ -8634,7 +8640,7 @@ Only output the JSON. No markdown.`;
       fontWeight: 700
     }
   }, summaryFilter === "stocked" ? "Stocked items" : "Items needed"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setSummaryFilter("all"),
+    onClick: () => { haptic("light"); setSummaryFilter("all"); },
     style: {
       background: "transparent",
       border: "none",
@@ -9039,7 +9045,7 @@ Only output the JSON. No markdown.`;
       gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setAddItemModal(false),
+    onClick: () => { haptic("light"); setAddItemModal(false); },
     style: {
       ...pill(false),
       flex: 1,
@@ -9075,11 +9081,12 @@ Only output the JSON. No markdown.`;
     ),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => setDeleteAccountModal(false),
+        onClick: () => { haptic("light"); setDeleteAccountModal(false); },
         style: { ...pill(false), flex: 1, padding: "9px 0" }
       }, "No, cancel"),
       /*#__PURE__*/React.createElement("button", {
         onClick: () => {
+          haptic("heavy");
           setDeleteAccountModal(false);
           var isCreator = user && user.uid === householdOwner;
           deleteAccount(deleteAccountAlsoHousehold && isCreator).catch(function(e){ alert("Error: " + (e.message || String(e))); });
@@ -9097,11 +9104,11 @@ Only output the JSON. No markdown.`;
     }, "It's a new week. A quick pantry update keeps your menu accurate and AI suggestions on point."),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => { storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); },
+        onClick: () => { haptic("light"); storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); },
         style: { ...pill(false), flex: 1, padding: "9px 0" }
       }, "Later"),
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => { storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); setTab("pantry"); },
+        onClick: () => { haptic("light"); storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); setTab("pantry"); },
         style: { ...pill(true), flex: 1, padding: "9px 0" }
       }, "Go to pantry")
     )
@@ -9114,11 +9121,11 @@ Only output the JSON. No markdown.`;
       "Want to do a quick stock check now? Tap items to mark what you have in — it only takes a minute and keeps your menus accurate."),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => setFirstStockCheckModal(false),
+        onClick: () => { haptic("light"); setFirstStockCheckModal(false); },
         style: { ...pill(false), flex: 1, padding: "9px 0" }
       }, "Later"),
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => { setFirstStockCheckModal(false); setTab("pantry"); },
+        onClick: () => { haptic("light"); setFirstStockCheckModal(false); setTab("pantry"); },
         style: { ...pill(true), flex: 1, padding: "9px 0" }
       }, "Yes, check now")
     )
@@ -9132,11 +9139,12 @@ Only output the JSON. No markdown.`;
       " from this household? They will lose access and need a new invite code to rejoin."),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => setRemoveMemberConfirm(null),
+        onClick: () => { haptic("light"); setRemoveMemberConfirm(null); },
         style: { ...pill(false), flex: 1, padding: "9px 0" }
       }, "Cancel"),
       /*#__PURE__*/React.createElement("button", {
         onClick: function() {
+          haptic("heavy");
           var target = removeMemberConfirm;
           setRemoveMemberConfirm(null);
           setHouseholdMembers(function(prev){ return prev.filter(function(x){ return x.uid !== target.uid; }); });
@@ -9167,6 +9175,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
         onClick: () => {
+          haptic("light");
           storage.set(SK.satGenPromptWeek, getWeekKey());
           setSatGenPrompt(false);
         },
@@ -9174,6 +9183,7 @@ Only output the JSON. No markdown.`;
       }, "Not now"),
       /*#__PURE__*/React.createElement("button", {
         onClick: () => {
+          haptic("medium");
           storage.set(SK.satGenPromptWeek, getWeekKey());
           setSatGenPrompt(false);
           setLockedDays({});
@@ -9233,6 +9243,7 @@ Only output the JSON. No markdown.`;
     }
   }, "Add recipe"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
+      haptic("light");
       setAddDishModal(false);
       setDishAdvanced(false);
     },
@@ -9398,7 +9409,7 @@ Only output the JSON. No markdown.`;
       }, i.name);
     })));
   }))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setDishAdvanced(v => !v),
+    onClick: () => { haptic("light"); setDishAdvanced(v => !v); },
     style: {
       width: "100%",
       display: "flex",
@@ -9475,11 +9486,11 @@ Only output the JSON. No markdown.`;
       color: C.dim
     }
   }, "Force into week when a key ingredient is stocked")), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setDishData(d => ({
+    onClick: () => { haptic("light"); setDishData(d => ({
       ...d,
       mustInclude: !d.mustInclude,
       mustIncludeIngredient: ""
-    })),
+    })); },
     style: {
       ...pill(dishData.mustInclude),
       padding: "5px 10px",
@@ -9492,7 +9503,7 @@ Only output the JSON. No markdown.`;
     }, (dishData.mustIncludeIngredients||[]).map(function(name){
       return /*#__PURE__*/React.createElement("span", {
         key:name,
-        onClick:function(){setDishData(function(d){return Object.assign({},d,{mustIncludeIngredients:(d.mustIncludeIngredients||[]).filter(function(x){return x!==name;})});});},
+        onClick:function(){ haptic("light"); setDishData(function(d){return Object.assign({},d,{mustIncludeIngredients:(d.mustIncludeIngredients||[]).filter(function(x){return x!==name;})});});},
         style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, name+" ✕");
     })),
@@ -9509,7 +9520,7 @@ Only output the JSON. No markdown.`;
     }).map(function(i){
       return /*#__PURE__*/React.createElement("span", {
         key:i.id,
-        onClick:function(){setDishData(function(d){return Object.assign({},d,{mustIncludeIngredients:[...(d.mustIncludeIngredients||[]),i.name]});});},
+        onClick:function(){ haptic("light"); setDishData(function(d){return Object.assign({},d,{mustIncludeIngredients:[...(d.mustIncludeIngredients||[]),i.name]});});},
         style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}
       }, i.name);
     }))
@@ -9542,6 +9553,7 @@ Only output the JSON. No markdown.`;
     value: dishData.timesPerWeek || 0,
     min: 0,
     max: 7,
+    haptic: haptic,
     onChange: v => setDishData(d => ({
       ...d,
       timesPerWeek: v
@@ -9558,7 +9570,7 @@ Only output the JSON. No markdown.`;
     }, (dishData.excludeWith||[]).map(function(p){
       return /*#__PURE__*/React.createElement("span", {
         key:p,
-        onClick:function(){setDishData(function(prev){return Object.assign({},prev,{excludeWith:(prev.excludeWith||[]).filter(function(x){return x!==p;})});});},
+        onClick:function(){ haptic("light"); setDishData(function(prev){return Object.assign({},prev,{excludeWith:(prev.excludeWith||[]).filter(function(x){return x!==p;})});});},
         style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, p+" \u2715");
     })),
@@ -9569,7 +9581,7 @@ Only output the JSON. No markdown.`;
       }).map(function(d){
         return /*#__PURE__*/React.createElement("span", {
           key:d.id,
-          onClick:function(){setDishData(function(prev){return Object.assign({},prev,{excludeWith:[...(prev.excludeWith||[]),d.name]});});},
+          onClick:function(){ haptic("light"); setDishData(function(prev){return Object.assign({},prev,{excludeWith:[...(prev.excludeWith||[]),d.name]});});},
           style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}
         }, d.name);
       })
@@ -9589,6 +9601,7 @@ Only output the JSON. No markdown.`;
         ),
         /*#__PURE__*/React.createElement("button",{
           onClick:function(){
+            haptic("light");
             var cur=dishData.weekendOnly;
             var next=cur===false?true:(cur===true?"weekday":false);
             setDishData(function(p){return Object.assign({},p,{weekendOnly:next});});
@@ -9610,7 +9623,7 @@ Only output the JSON. No markdown.`;
           /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginTop:1}},"Only in Gourmet slots")
         ),
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setDishData(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
+          onClick:function(){ haptic("light"); setDishData(function(p){return Object.assign({},p,{michelinLevel:!p.michelinLevel});});},
           style:{...pill(!!(dishData.michelinLevel)),fontSize:12,padding:"4px 12px"}
         },dishData.michelinLevel?"On":"Off")
       )]
@@ -9626,6 +9639,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
+      haptic("light");
       setAddDishModal(false);
       setDishAdvanced(false);
     },
@@ -10000,6 +10014,7 @@ Only output the JSON. No markdown.`;
     value: editDishModal.timesPerWeek || 0,
     min: 0,
     max: 7,
+    haptic: haptic,
     onChange: v => setEditDishModal(d => ({
       ...d,
       timesPerWeek: v
@@ -10146,7 +10161,7 @@ Only output the JSON. No markdown.`;
           /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}},
             /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.dim,flex:1,paddingRight:8}},r.name),
             /*#__PURE__*/React.createElement("button",{
-              onClick:function(){setCookNowModal(false);setShowSettings(true);},
+              onClick:function(){haptic("light");setCookNowModal(false);setShowSettings(true);},
               style:{...pill(false),fontSize:11,padding:"3px 8px",flexShrink:0,whiteSpace:"nowrap"}
             },"Open settings")
           ),
@@ -10161,7 +10176,7 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}},
           /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,flex:1,paddingRight:8}},r.name),
           /*#__PURE__*/React.createElement("button",{
-            onClick:function(){setCookNowModal(false);fetchRecipe(r.name);},
+            onClick:function(){haptic("light");setCookNowModal(false);fetchRecipe(r.name);},
             style:{...pill(false),fontSize:11,padding:"3px 8px",flexShrink:0,whiteSpace:"nowrap"}
           },"Get recipe")
         ),
@@ -10179,12 +10194,12 @@ Only output the JSON. No markdown.`;
     }),
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8,marginTop:12}},
       /*#__PURE__*/React.createElement("button",{
-        onClick:function(){cookNow();},
+        onClick:function(){haptic("light");cookNow();},
         disabled:cookNowLoading,
         style:{...pill(false),flex:1,padding:"8px 0",fontSize:13,opacity:cookNowLoading?0.5:1}
       },"↺ Try Again"),
       /*#__PURE__*/React.createElement("button",{
-        onClick:function(){setCookNowModal(false);},
+        onClick:function(){haptic("light");setCookNowModal(false);},
         style:{...pill(true),flex:1,padding:"8px 0",fontSize:13}
       },"Done")
     )
@@ -10225,6 +10240,7 @@ Only output the JSON. No markdown.`;
                   return /*#__PURE__*/React.createElement("button",{
                     key:d.name,
                     onClick:function(){
+                      haptic("medium");
                       (nextMenu?setNextMenu:setMenu)(function(prev){
                         return Object.assign({},prev,{plan:Object.assign({},prev.plan,
                           {[swapModal.day]:Object.assign({},prev.plan[swapModal.day],{[swapModal.mealCat]:d.name})})});
@@ -10240,6 +10256,7 @@ Only output the JSON. No markdown.`;
       // DINE OUT option
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){
+          haptic("medium");
           (nextMenu?setNextMenu:setMenu)(function(prev){
             return Object.assign({},prev,{plan:Object.assign({},prev.plan,
               {[swapModal.day]:Object.assign({},prev.plan[swapModal.day],{[swapModal.mealCat]:"🍽 Dine Out"})})});
@@ -10250,18 +10267,18 @@ Only output the JSON. No markdown.`;
       },"🍽 Eating Out"),
       // AI option
       /*#__PURE__*/React.createElement("button",{
-        onClick:function(){swapDish(swapModal.day,swapModal.mealCat,swapModal.current,true);},
+        onClick:function(){haptic("light");swapDish(swapModal.day,swapModal.mealCat,swapModal.current,true);},
         disabled:swapLoading,
         style:{...pill(true),width:"100%",padding:"10px 0",fontSize:13,opacity:swapLoading?0.6:1}
       },swapLoading?"⏳ FINDING…":"✦ Surprise Me")
     ),
     /*#__PURE__*/React.createElement("button",{
-      onClick:function(){setSwapModal(null);setSwapError("");},
+      onClick:function(){haptic("light");setSwapModal(null);setSwapError("");},
       style:{...pill(false),width:"100%",padding:"8px 0",fontSize:13}
     },"Cancel")
   )),
   recipeModal && /*#__PURE__*/React.createElement("div", {
-    onClick: () => setRecipeModal(null),
+    onClick: () => { haptic("light"); setRecipeModal(null); },
     style: {
       position: "fixed",
       inset: 0,
@@ -10319,7 +10336,7 @@ Only output the JSON. No markdown.`;
       color: C.dim
     }
   }, recipes[recipeModal].servings && /*#__PURE__*/React.createElement("span", null, "Serves ", recipes[recipeModal].servings), recipes[recipeModal].prepTime && /*#__PURE__*/React.createElement("span", null, "Prep ", recipes[recipeModal].prepTime), recipes[recipeModal].cookTime && /*#__PURE__*/React.createElement("span", null, "Cook ", recipes[recipeModal].cookTime))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setRecipeModal(null),
+    onClick: () => { haptic("light"); setRecipeModal(null); },
     style: {
       background: "none",
       border: "none",
@@ -10352,7 +10369,7 @@ Only output the JSON. No markdown.`;
       border: "1px solid "+C.border
     }
   }, recipeError, /*#__PURE__*/React.createElement("button", {
-    onClick: () => fetchRecipe(recipeModal),
+    onClick: () => { haptic("light"); fetchRecipe(recipeModal); },
     style: {
       ...pill(true),
       marginLeft: 10,
@@ -10449,12 +10466,13 @@ Only output the JSON. No markdown.`;
                 });
               });
             }
+            haptic("medium");
             addAiDishToMyDishes(recipeModal,mc);
           },
           style:{...pill(true),flex:1,padding:"10px 0",fontSize:14}
         }, "+ Add to My Dishes"),
       /*#__PURE__*/React.createElement("button",{
-        onClick:function(){setRecipeModal(null);},
+        onClick:function(){haptic("light");setRecipeModal(null);},
         style:{...pill(false),padding:"10px 14px",fontSize:14}
       }, "Close")
     )
@@ -10606,15 +10624,15 @@ Only output the JSON. No markdown.`;
       style: { display: "flex", flexDirection: "column", gap: 8 }
     },
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => doRemoveItemConfirmed(true),
+        onClick: () => { haptic("heavy"); doRemoveItemConfirmed(true); },
         style: { ...pill(true, "#E8876B"), padding: "10px 0", fontSize: 14 }
       }, "Remove item and these recipes"),
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => doRemoveItemConfirmed(false),
+        onClick: () => { haptic("heavy"); doRemoveItemConfirmed(false); },
         style: { ...pill(false), padding: "10px 0", fontSize: 14 }
       }, "Remove item only — keep recipes"),
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => setRemoveItemConfirm(null),
+        onClick: () => { haptic("light"); setRemoveItemConfirm(null); },
         style: { background: "transparent", border: "none", color: C.dim2, padding: "8px 0", fontSize: 13, cursor: "pointer", fontFamily: C.font }
       }, "Cancel")
     )
@@ -10687,7 +10705,7 @@ Only output the JSON. No markdown.`;
         )
       )),
       /*#__PURE__*/React.createElement("button", {
-        onClick: () => setOnboardStep(1),
+        onClick: () => { haptic("light"); setOnboardStep(1); },
         style: { ...pill(true), width: "100%", padding: "14px 0", fontSize: 15, marginTop: 8 }
       }, "Set up my kitchen")
     ),
@@ -10699,14 +10717,14 @@ Only output the JSON. No markdown.`;
             "Signed in as ", /*#__PURE__*/React.createElement("strong", { style: { color: C.white } }, user.displayName || user.email), ". Setting up your account…")
         : /*#__PURE__*/React.createElement(React.Fragment, null,
             /*#__PURE__*/React.createElement("button", {
-              onClick: function() { signIn(); },
+              onClick: function() { haptic("light"); signIn(); },
               style: Object.assign({}, pill(true), { width: "100%", padding: "13px 0", fontSize: 16, marginBottom: 10 })
             }, "Sign in with Google"),
             /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, textAlign: "center", marginBottom: 20 } }, "Apple Sign-in coming soon")
           ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(0); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ localStorage.setItem('_pantryos_onboarded','1'); setOnboarded(true); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(0); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); localStorage.setItem('_pantryos_onboarded','1'); setOnboarded(true); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
       )
     ),
     onboardStep === 2 && /*#__PURE__*/React.createElement("div", null,
@@ -10719,7 +10737,7 @@ Only output the JSON. No markdown.`;
                 /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 3 } }, "Your household code"),
                 /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 700, color: C.white, letterSpacing: 4, fontFamily: "monospace" } }, householdCode.slice(0,3) + " " + householdCode.slice(3))
               ),
-              /*#__PURE__*/React.createElement("button", { onClick: function(){ navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
+              /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
             ),
             /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.6 } }, "Share this code with family. They enter it during their setup or in Settings → Family."),
             /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
@@ -10729,6 +10747,7 @@ Only output the JSON. No markdown.`;
                 /*#__PURE__*/React.createElement("button", {
                   onClick: function(){
                     if (!joinCode || joinCode.length < 6) { setJoinError("Enter the full 6-character code."); return; }
+                    haptic("medium");
                     setJoinLoading(true); setJoinError("");
                     joinHousehold(joinCode).catch(function(e){ setJoinError(e.message || "Failed."); setJoinLoading(false); });
                   },
@@ -10741,8 +10760,8 @@ Only output the JSON. No markdown.`;
           )
         : /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, background: C.bg, borderRadius: 12, padding: 16, marginBottom: 16 } }, "Setting up your household…"),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(1); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(3); }, style: Object.assign({}, pill(true), { flex: 1, padding: "13px 0", fontSize: 16 }) }, "Continue")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(1); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(3); }, style: Object.assign({}, pill(true), { flex: 1, padding: "13px 0", fontSize: 16 }) }, "Continue")
       )
     ),
     onboardStep === 3 && /*#__PURE__*/React.createElement("div", null,
@@ -10783,6 +10802,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
         /*#__PURE__*/React.createElement("button", {
           onClick: function() {
+            haptic("medium");
             if (cuisines.length > 0) cuisines.forEach(function(key) { applyCuisinePreset(key); });
             // Stamp pantryCheckWeek BEFORE setOnboarded so the weekly reminder effect
             // never fires for the same week as the first-run firstStockCheckModal.
@@ -10793,7 +10813,7 @@ Only output the JSON. No markdown.`;
           },
           style: Object.assign({}, pill(true), { padding: "13px 0", fontSize: 16 })
         }, cuisines.length === 0 ? "Skip pantry setup" : "Set up my kitchen"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(2); }, style: Object.assign({}, pill(false), { padding: "10px 0", fontSize: 14 }) }, "Back")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(2); }, style: Object.assign({}, pill(false), { padding: "10px 0", fontSize: 14 }) }, "Back")
       )
     )
   )),
@@ -10801,7 +10821,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { onClick: function(e){ e.stopPropagation(); }, style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 340 } },
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: C.white } }, apiHelpModal === "gemini" ? "Get your Gemini key" : "Get your Claude key"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal(null); }, style: { background: "none", border: "none", color: C.dim, fontSize: 20, cursor: "pointer", fontFamily: C.font, lineHeight: 1 } }, "×")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal(null); }, style: { background: "none", border: "none", color: C.dim, fontSize: 20, cursor: "pointer", fontFamily: C.font, lineHeight: 1 } }, "×")
       ),
       apiHelpModal === "gemini"
         ? /*#__PURE__*/React.createElement("div", null,
@@ -10823,7 +10843,7 @@ Only output the JSON. No markdown.`;
             ),
             /*#__PURE__*/React.createElement("div", { style: { background: C.bg, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: C.dim, lineHeight: 1.6 } }, "Claude is a paid API. Add credits at console.anthropic.com/settings/billing.")
           ),
-      /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal(null); }, style: Object.assign({}, pill(true), { width: "100%", padding: "11px 0", fontSize: 14, marginTop: 20 }) }, "Got it")
+      /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal(null); }, style: Object.assign({}, pill(true), { width: "100%", padding: "11px 0", fontSize: 14, marginTop: 20 }) }, "Got it")
     )
   ),
   resetModal > 0 && /*#__PURE__*/React.createElement("div",{
@@ -10846,7 +10866,7 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div",{style:{fontSize:14,color:C.dim,marginBottom:20,lineHeight:1.5}},"Your API key, theme and preferences are kept."),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8}},
-        /*#__PURE__*/React.createElement("button",{onClick:function(){setResetModal(0);},
+        /*#__PURE__*/React.createElement("button",{onClick:function(){haptic("light");setResetModal(0);},
           style:{flex:1,background:"transparent",border:"1px solid "+C.border2,color:C.dim,
             borderRadius:6,padding:"11px 0",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:600}},"Cancel"),
         /*#__PURE__*/React.createElement("button",{onClick:function(){haptic("medium");setResetModal(2);},
@@ -10873,7 +10893,7 @@ Only output the JSON. No markdown.`;
           style:{background:"#ff4444",border:"none",color:"#ffffff",borderRadius:6,
             padding:"13px 0",cursor:"pointer",fontFamily:C.font,fontSize:12,fontWeight:800}
         },"YES, RESET EVERYTHING"),
-        /*#__PURE__*/React.createElement("button",{onClick:function(){setResetModal(0);},
+        /*#__PURE__*/React.createElement("button",{onClick:function(){haptic("light");setResetModal(0);},
           style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
             borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:600}},"Cancel")
       )
@@ -10896,7 +10916,7 @@ Only output the JSON. No markdown.`;
         },
           /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginBottom:16}},"All cuisine packs are already loaded."),
           /*#__PURE__*/React.createElement("button",{
-            onClick:function(){setCuisineModal(null);},
+            onClick:function(){haptic("light");setCuisineModal(null);},
             style:{background:C.bg,border:"1px solid "+C.border2,color:C.white,
               borderRadius:6,padding:"9px 20px",cursor:"pointer",fontFamily:C.font,fontSize:14,fontWeight:600}
           },"Close")
@@ -10928,7 +10948,7 @@ Only output the JSON. No markdown.`;
           })
         ),
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setCuisineModal(null);},
+          onClick:function(){haptic("light");setCuisineModal(null);},
           style:{background:"transparent",border:"1px solid "+C.border2,color:C.dim,
             borderRadius:6,padding:"9px 0",width:"100%",cursor:"pointer",
             fontFamily:C.font,fontSize:13,fontWeight:600}
@@ -11012,7 +11032,7 @@ Only output the JSON. No markdown.`;
           var sel = cuisineModalSel[opt.id];
           return /*#__PURE__*/React.createElement("div",{
             key:opt.id,
-            onClick:function(){setCuisineModalSel(function(prev){return Object.assign({},prev,{[opt.id]:!prev[opt.id]});});},
+            onClick:function(){haptic("light");setCuisineModalSel(function(prev){return Object.assign({},prev,{[opt.id]:!prev[opt.id]});});},
             style:{display:"flex",alignItems:"center",gap:12,background:sel?C.bg:"transparent",
               border:"1px solid "+(sel?C.border2:C.border),borderRadius:7,
               padding:"10px 14px",cursor:"pointer",transition:"all 0.15s"}
@@ -11036,12 +11056,12 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8}},
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setCuisineModal(null);},
+          onClick:function(){haptic("light");setCuisineModal(null);},
           style:{flex:1,background:"transparent",border:"1px solid "+C.border2,color:C.dim,
             borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,fontSize:13,fontWeight:600}
         },"Cancel"),
         /*#__PURE__*/React.createElement("button",{
-          onClick:applySelections,
+          onClick:function(){haptic("medium");applySelections();},
           disabled:!cuisineModalSel.items&&!cuisineModalSel.dishes&&!cuisineModalSel.ai,
           style:{flex:2,background:C.white,border:"none",color:C.bg,
             borderRadius:6,padding:"10px 0",cursor:"pointer",fontFamily:C.font,
@@ -11095,7 +11115,7 @@ Only output the JSON. No markdown.`;
           var on=!!(aiSlotSel&&aiSlotSel[key]);
           cells.push(/*#__PURE__*/React.createElement("button",{
             key:d,
-            onClick:function(){setAiSlotSel(function(prev){var n=Object.assign({},prev);n[key]=!n[key];return n;});},
+            onClick:function(){haptic("light");setAiSlotSel(function(prev){var n=Object.assign({},prev);n[key]=!n[key];return n;});},
             style:{
               flex:1,minWidth:36,height:32,borderRadius:4,border:"1px solid "+(on?C.white:C.border2),
               background:on?C.white:"transparent",color:on?C.bg:C.dim2,
@@ -11112,7 +11132,7 @@ Only output the JSON. No markdown.`;
       var allOn=allKeys.every(function(k){return !!(aiSlotSel&&aiSlotSel[k]);});
       rows.push(/*#__PURE__*/React.createElement("div",{key:"toggle-all",style:{display:"flex",gap:6,marginTop:8}},
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setAiSlotSel(function(){
+          onClick:function(){haptic("light");setAiSlotSel(function(){
             var n={};
             allKeys.forEach(function(k){n[k]=true;});
             return n;
@@ -11120,16 +11140,16 @@ Only output the JSON. No markdown.`;
           style:{...pill(true),fontSize:12,padding:"4px 12px"}
         }, "Select all"),
         /*#__PURE__*/React.createElement("button",{
-          onClick:function(){setAiSlotSel({});},
+          onClick:function(){haptic("light");setAiSlotSel({});},
           style:{...pill(false),fontSize:12,padding:"4px 12px"}
         }, "Clear all")
       ));
       return rows;
     })(),
     /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:8,marginTop:14}},
-      /*#__PURE__*/React.createElement("button", {onClick:()=>setAiSlotPopup(false),style:{...pill(false),flex:1,padding:"9px 0",fontSize:13}}, "Cancel"),
+      /*#__PURE__*/React.createElement("button", {onClick:()=>{haptic("light");setAiSlotPopup(false);},style:{...pill(false),flex:1,padding:"9px 0",fontSize:13}}, "Cancel"),
       /*#__PURE__*/React.createElement("button", {
-        onClick:function(){setAiSlotPopup(false);generateMenu();},
+        onClick:function(){haptic("medium");setAiSlotPopup(false);generateMenu();},
         style:{...pill(true),flex:1,padding:"9px 0",fontSize:13}
       }, "Generate")
     )
