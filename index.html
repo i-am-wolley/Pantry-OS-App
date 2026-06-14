@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -322,7 +322,11 @@ c,!1,d,e);a[Ja]=b.current;sc(8===a.nodeType?a.parentNode:a);return new Xf(b)};Q.
 var d=null!=c&&c.hydratedSources||null,e=!1,f="",g=aj;null!==c&&void 0!==c&&(!0===c.unstable_strictMode&&(e=!0),void 0!==c.identifierPrefix&&(f=c.identifierPrefix),void 0!==c.onRecoverableError&&(g=c.onRecoverableError));b=Wi(b,null,a,1,null!=c?c:null,e,!1,f,g);a[Ja]=b.current;sc(a);if(d)for(a=0;a<d.length;a++)c=d[a],e=c._getVersion,e=e(c._source),null==b.mutableSourceEagerHydrationData?b.mutableSourceEagerHydrationData=[c,e]:b.mutableSourceEagerHydrationData.push(c,e);return new Ud(b)};Q.render=
 function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmountComponentAtNode=function(a){if(!Vd(a))throw Error(m(40));return a._reactRootContainer?(yb(function(){Wd(null,null,a,!1,function(){a._reactRootContainer=null;a[Ja]=null})}),!0):!1};Q.unstable_batchedUpdates=Tf;Q.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!Vd(c))throw Error(m(200));if(null==a||void 0===a._reactInternals)throw Error(m(38));return Wd(a,b,c,!1,d)};Q.version="18.3.1-next-f1338f8080-20240426"});
 })();
-</script><script type="text/javascript">
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script type="text/javascript">
 
 
 
@@ -450,6 +454,112 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 
 
 
+
+// ── Firebase ─────────────────────────────────────────────────────────────────
+const _fbApp = firebase.initializeApp({
+  apiKey: "AIzaSyBP2DMGONwDLORtv2sMmuHxPqF-5jyF28U",
+  authDomain: "pantry-os-prod.firebaseapp.com",
+  projectId: "pantry-os-prod",
+  storageBucket: "pantry-os-prod.firebasestorage.app",
+  messagingSenderId: "557298985239",
+  appId: "1:557298985239:web:c4ee29ed880bf2f7202f52",
+  measurementId: "G-Z3VM7GGTF3"
+});
+const _fbAuth = firebase.auth();
+const _fbDb   = firebase.firestore();
+const _fbGoogleProvider = new firebase.auth.GoogleAuthProvider();
+
+const GEMINI_API_KEY = "";
+
+var _householdCode = localStorage.getItem("_pantryos_hh") || null;
+// Gated to false until after _syncFromFirestore completes, so early storage effects
+// (fired before _setupHousehold resolves) never clobber Firestore with stale/empty data.
+var _fsWriteEnabled = false;
+
+function _generateHouseholdCode() {
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O or 1/I
+  var code = "";
+  for (var i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+var _LS_HH_KEY = "_pantryos_hh";
+
+async function _setupHousehold(uid) {
+  var cached = localStorage.getItem(_LS_HH_KEY);
+  try {
+    // Always validate against Firestore — it's the source of truth.
+    // This prevents stale cached codes when users switch accounts or are removed from a household.
+    var userDoc = await _fbDb.collection("users").doc(uid).get();
+    if (userDoc.exists && userDoc.data().householdCode) {
+      var code = userDoc.data().householdCode;
+      _householdCode = code;
+      localStorage.setItem(_LS_HH_KEY, code);
+      return code;
+    }
+    // Firestore has no household for this user yet.
+    if (cached) {
+      // Re-register the locally cached code so Firestore knows about it again.
+      _householdCode = cached;
+      await _fbDb.collection("users").doc(uid).set({ householdCode: cached }, { merge: true }).catch(function(){});
+      return cached;
+    }
+    // Brand-new user — create a household.
+    var newCode = _generateHouseholdCode();
+    await _fbDb.collection("households").doc(newCode).set({ members: [uid], createdBy: uid });
+    await _fbDb.collection("users").doc(uid).set({ householdCode: newCode }, { merge: true });
+    _householdCode = newCode;
+    localStorage.setItem(_LS_HH_KEY, newCode);
+    return newCode;
+  } catch(e) {
+    console.error("[PantryOS] _setupHousehold failed:", e.message, "— check Firestore rules.");
+    // Firestore unavailable — fall back to local cache so the app still works offline.
+    if (cached) { _householdCode = cached; return cached; }
+    return null;
+  }
+}
+
+async function _joinHousehold(uid, code) {
+  code = code.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  if (code.length !== 6) throw new Error("Enter the full 6-character code.");
+  var doc = await _fbDb.collection("households").doc(code).get();
+  if (!doc.exists) throw new Error("Code not found. Double-check and try again.");
+  await _fbDb.collection("households").doc(code).update({
+    members: firebase.firestore.FieldValue.arrayUnion(uid)
+  });
+  await _fbDb.collection("users").doc(uid).set({ householdCode: code }, { merge: true });
+  _householdCode = code;
+  localStorage.setItem(_LS_HH_KEY, code);
+  return code;
+}
+
+async function _syncFromFirestore(householdCode, syncKeys) {
+  try {
+    var snap = await _fbDb.collection("households").doc(householdCode).collection("data").get();
+    var changed = false;
+    snap.forEach(function(d) {
+      if (syncKeys.has(d.id)) {
+        var v = d.data().v;
+        if (v !== localStorage.getItem(d.id)) { localStorage.setItem(d.id, v); changed = true; }
+      }
+    });
+    return changed;
+  } catch(e) { return false; }
+}
+async function _pushLocalToFirestore(code) {
+  try {
+    var batch = _fbDb.batch();
+    var hasData = false;
+    Object.values(SK_SYNC).forEach(function(k) {
+      var v = localStorage.getItem(k);
+      if (v !== null) {
+        batch.set(_fbDb.collection("households").doc(code).collection("data").doc(k), { v: v });
+        hasData = true;
+      }
+    });
+    if (hasData) await batch.commit();
+  } catch(e) { console.warn("[PantryOS] push to Firestore failed:", e.message); }
+}
 
 // ── Screensaver ──────────────────────────────────────────────────────────────
 function initScreensaver() {
@@ -3138,8 +3248,10 @@ const SK_SYNC = {
   defaultAiSlots:  "pantryos-defaultaislots",
   confirmedDays:   "pantryos-confirmeddays",
   lastAutoGen:     "pantryos-lastautogen",
+  apiKey:          "pantryos-apikey",
+  geminiKey:       "pantryos-geminikey",
 };
-// Keys that stay device-local forever (hardware prefs, credentials, transient state)
+// Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
   sqSize:           "pantryos-sqsize",
   aiCount:          "pantryos-aicount",
@@ -3149,15 +3261,22 @@ const SK_LOCAL = {
   modelName:        "pantryos-model",
   apiCost:          "pantryos-apicost",
   satGenPromptWeek: "pantryos-satgenpromptweek",
-  apiKey:           "pantryos-apikey",
   lastBackup:       "pantryos-lastbackup",
+  pantryCheckWeek:  "pantryos-pantrycheck",
 };
 const SK = { ...SK_SYNC, ...SK_LOCAL };
-// Storage adapter — single seam for swapping localStorage ↔ Firestore later
+const _syncKeySet = new Set(Object.values(SK_SYNC));
+function _fsDoc(key) { return _fbDb.collection("households").doc(_householdCode).collection("data").doc(key); }
 const storage = {
-  get:    localStorage.getItem.bind(localStorage),
-  set:    localStorage.setItem.bind(localStorage),
-  remove: localStorage.removeItem.bind(localStorage),
+  get: localStorage.getItem.bind(localStorage),
+  set: function(key, value) {
+    localStorage.setItem(key, value);
+    if (_fsWriteEnabled && _householdCode && _syncKeySet.has(key)) _fsDoc(key).set({ v: value }).catch(function(){});
+  },
+  remove: function(key) {
+    localStorage.removeItem(key);
+    if (_fsWriteEnabled && _householdCode && _syncKeySet.has(key)) _fsDoc(key).delete().catch(function(){});
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3951,6 +4070,15 @@ const EMPTY_DISH = {
   leftoverMeal: "",
   leftoverSlot: ""
 };
+function getPantryCheckKey() {
+  var now = new Date();
+  var day = now.getDay();
+  var sat = new Date(now);
+  var daysBack = day === 6 ? 0 : day + 1;
+  sat.setDate(sat.getDate() - daysBack);
+  if (day === 6 && now.getHours() < 7) sat.setDate(sat.getDate() - 7);
+  return sat.getFullYear() + '-' + (sat.getMonth() + 1) + '-' + sat.getDate();
+}
 function getWeekKey() {
   const d = new Date(),
     day = d.getDay(),
@@ -4250,16 +4378,7 @@ function PantryTile({
       WebkitTouchCallout: "none",
       touchAction: "manipulation"
     }
-  }, onRemove && /*#__PURE__*/React.createElement("button", {
-    onClick: (e) => { e.stopPropagation(); if (haptic) haptic("light"); onRemove(); },
-    style: {
-      position: "absolute", top: -6, left: -6, width: 20, height: 20, borderRadius: "50%",
-      background: C.card, border: "1px solid " + C.border2, color: C.dim,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 11, lineHeight: 1, cursor: "pointer", padding: 0, zIndex: 2,
-      fontFamily: C.font, boxShadow: "0 1px 4px rgba(0,0,0,0.12)"
-    }
-  }, "\u2715"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     onClick: () => {
       if (longPressed.current) { longPressed.current = false; return; }
       if (item.type === "binary") onToggle();else onInc();
@@ -4422,14 +4541,6 @@ function DishTile({
         border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.25)"),
         borderRadius:3,padding:"1px 4px",background:"transparent",pointerEvents:"none"}
     }, count),
-    onRemove && /*#__PURE__*/React.createElement("button", {
-      onClick: function(e){e.stopPropagation();onRemove();},
-      style:{background:"transparent",border:"none",
-        color: isLight ? "rgba(0,0,0,0.70)" : "rgba(255,255,255,0.50)",
-        width:14,height:14,fontSize:9,cursor:"pointer",
-        display:"flex",alignItems:"center",justifyContent:"center",
-        lineHeight:1,padding:0,pointerEvents:"all",WebkitAppearance:"none"}
-    }, "\u2715")
   ),
   (dish.weekendOnly===true || dish.weekendOnly==="weekday" || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
     style:{position:"absolute",bottom:4,left:4,display:"flex",gap:2,pointerEvents:"none",zIndex:1}
@@ -4457,16 +4568,13 @@ function DishTile({
     }, "G")
   ),
   /*#__PURE__*/React.createElement("div", {
-    style:{position:"absolute",top:4,left:4,height:14,display:"flex",alignItems:"center",zIndex:2}
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: function(e){e.stopPropagation(); if(onToggleLock)onToggleLock();},
+    style:{position:"absolute",top:4,left:4,height:14,display:"flex",alignItems:"center",zIndex:2,pointerEvents:"none"}
+  }, /*#__PURE__*/React.createElement("div", {
     style:{width:8,height:8,
-      borderRadius:"50%",cursor:"pointer",border:"none",padding:0,
+      borderRadius:"50%",border:"none",padding:0,
       background: dish.lockedForMenu
         ? (isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.80)")
-        : "transparent",
-      outline: "none",
-      WebkitAppearance:"none"}
+        : "transparent"}
   })));
 }
 
@@ -5090,15 +5198,98 @@ function DayCardCarousel({
   );
 }
 
-// Auth stub — swap body for Firebase Auth in the next PR.
-// Returns { user, signIn, signOut } so callAI and storage can branch on
-// user !== null without changes to every call site.
+var _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
 function useAuth() {
-  return {
-    user: null,       // GoogleUser | AppleUser once Firebase is wired
-    signIn:  function() {},
-    signOut: function() {},
-  };
+  const [user, setUser] = React.useState(_fbAuth.currentUser);
+  const [syncing, setSyncing] = React.useState(false);
+  const [householdCode, setHouseholdCode] = React.useState(null);
+  React.useEffect(function() {
+    return _fbAuth.onAuthStateChanged(async function(u) {
+      if (u) {
+        _fbDb.collection("users").doc(u.uid).set({ displayName: u.displayName || null, email: u.email || null }, { merge: true }).catch(function(){});
+        var code = await _setupHousehold(u.uid);
+        if (code) setHouseholdCode(code);
+        if (!sessionStorage.getItem("_fbSynced") && code) {
+          setSyncing(true);
+          sessionStorage.setItem("_fbSynced", "1");
+          var changed = await _syncFromFirestore(code, _syncKeySet);
+          setSyncing(false);
+          if (changed) { window.location.reload(); return; }
+          // Firestore had nothing newer — push local data up so it's there on next login
+          await _pushLocalToFirestore(code);
+        }
+        // Safe to write to Firestore now: sync is done (or already done this session)
+        _fsWriteEnabled = true;
+      }
+      setUser(u);
+    });
+  }, []);
+  async function signIn() {
+    if (_isNative) {
+      try {
+        var FirebaseAuthentication = window.Capacitor.Plugins.FirebaseAuthentication;
+        if (!FirebaseAuthentication) throw new Error("FirebaseAuthentication plugin not found");
+        var result = await FirebaseAuthentication.signInWithGoogle();
+        var idToken = result && result.credential && result.credential.idToken;
+        if (!idToken) throw new Error("No idToken in result");
+        var credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+        return _fbAuth.signInWithCredential(credential);
+      } catch(e) {
+        console.error("Native sign-in failed", e);
+        alert("Sign-in error: " + (e.message || String(e)));
+      }
+      return;
+    }
+    return _fbAuth.signInWithPopup(_fbGoogleProvider).catch(function(e) {
+      console.error("Sign-in failed", e);
+    });
+  }
+  function signOut() {
+    _fsWriteEnabled = false;
+    sessionStorage.removeItem("_fbSynced");
+    sessionStorage.removeItem("_memberValidated");
+    Object.values(SK).forEach(function(k){ localStorage.removeItem(k); });
+    // Intentionally keep _LS_HH_KEY so next login immediately finds the household code
+    // without waiting for a Firestore round-trip. _setupHousehold always validates it against
+    // the server, so stale/switched-account codes are corrected on the next login.
+    localStorage.removeItem("pantryos-version");
+    _householdCode = null;
+    _fbAuth.signOut().then(function(){ window.location.reload(); });
+  }
+  async function deleteAccount(deleteHouseholdData) {
+    var u = _fbAuth.currentUser;
+    if (!u) return;
+    if (deleteHouseholdData && _householdCode) {
+      await Promise.all(Object.values(SK_SYNC).map(function(k){ return _fsDoc(k).delete().catch(function(){}); }));
+    }
+    Object.values(SK).forEach(function(k){ localStorage.removeItem(k); });
+    localStorage.removeItem(_LS_HH_KEY);
+    localStorage.removeItem("pantryos-version");
+    _householdCode = null;
+    await u.delete();
+    window.location.reload();
+  }
+  async function joinHousehold(code) {
+    var u = _fbAuth.currentUser;
+    if (!u) throw new Error("Sign in first.");
+    await _joinHousehold(u.uid, code);
+    // Pull existing household data BEFORE React re-renders so storage hooks
+    // cannot push the joiner's empty local data to Firestore and wipe the household.
+    await _syncFromFirestore(code, _syncKeySet);
+    setHouseholdCode(code);
+    sessionStorage.removeItem("_fbSynced");
+    sessionStorage.removeItem("_memberValidated");
+    window.location.reload();
+  }
+  async function removeHouseholdMember(targetUid) {
+    if (!_householdCode) return;
+    await _fbDb.collection("households").doc(_householdCode).update({
+      members: firebase.firestore.FieldValue.arrayRemove(targetUid)
+    });
+    await _fbDb.collection("users").doc(targetUid).set({ householdCode: null }, { merge: true });
+  }
+  return { user, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember };
 }
 
 function App() {
@@ -5107,7 +5298,14 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const { user, signIn, signOut } = useAuth();
+  const [geminiKey, setGeminiKey] = useState("");
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [aiProviderTab, setAiProviderTab] = useState("gemini");
+  const [apiHelpModal, setApiHelpModal] = useState(null);
+  const { user, signIn, signOut, deleteAccount, syncing, householdCode, joinHousehold, removeHouseholdMember } = useAuth();
+  const [joinCode, setJoinCode] = useState("");
+  const [joinError, setJoinError] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [stock, setStock] = useState({});
   const [dishes, setDishes] = useState([]);
@@ -5215,6 +5413,11 @@ function App() {
   const [onboarded, setOnboarded] = useState(true);
   const [dataVersion, setDataVersion] = useState(CURRENT_VERSION); // set false after load check
   const [onboardStep, setOnboardStep] = useState(0);
+  const [pantryCheckReminder, setPantryCheckReminder] = useState(false);
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [deleteAccountAlsoHousehold, setDeleteAccountAlsoHousehold] = useState(false);
+  const [householdMembers, setHouseholdMembers] = useState([]);
+  const [householdOwner, setHouseholdOwner] = useState(null);
 
   // ── Load from localStorage ──
   useEffect(() => {
@@ -5256,8 +5459,11 @@ function App() {
       if (sa) setAiCount(Number(sa));
       const sr = storage.get(SK.recipes);
       if (sr) setRecipes(JSON.parse(sr));
-      const sk = storage.get(SK_LOCAL.apiKey);
+      const sk = storage.get(SK.apiKey);
       if (sk) setApiKey(sk);
+      const sgk = storage.get(SK.geminiKey);
+      if (sgk) { setGeminiKey(sgk); setAiProviderTab("gemini"); }
+      else if (sk) setAiProviderTab("anthropic");
       const sld = storage.get(SK.lockedDays);
       if (sld) setLockedDays(JSON.parse(sld));
       const sab = storage.get(SK.autoBackup);
@@ -5373,13 +5579,30 @@ function App() {
     var today = new Date().getDay(); // 0=Sun..6=Sat
     if (today === 6) return; // it's Saturday — normal auto-gen path handles it
     if (nextMenu) return; // already have next week's plan
-    if (!apiKey || !dishes || dishes.length < 5) return;
+    if (!(apiKey || geminiKey) || !dishes || dishes.length < 5) return;
     if (!menu) return; // nothing to base/replace yet
     var wk = getWeekKey();
     if (lastAutoGen === wk) return; // Saturday's auto-gen for this week already succeeded
     if (storage.get(SK.satGenPromptWeek) === wk) return; // already asked this week
     setSatGenPrompt(true);
   }, [loaded, nextMenu, menu, apiKey, dishes, lastAutoGen]);
+  useEffect(() => {
+    if (!loaded || !onboarded || !user) return;
+    if (storage.get(SK.pantryCheckWeek) !== getPantryCheckKey()) setPantryCheckReminder(true);
+  }, [loaded, onboarded, user]);
+  useEffect(() => {
+    if (!householdCode) return;
+    _fbDb.collection("households").doc(householdCode).get().then(function(doc) {
+      if (!doc.exists) return;
+      var uids = doc.data().members || [];
+      setHouseholdOwner(doc.data().createdBy || null);
+      Promise.all(uids.map(function(uid){ return _fbDb.collection("users").doc(uid).get(); })).then(function(docs) {
+        setHouseholdMembers(docs.map(function(d, i) {
+          return { uid: uids[i], name: d.exists ? (d.data().displayName || d.data().email || uids[i].slice(0,8)+"…") : uids[i].slice(0,8)+"…" };
+        }));
+      });
+    }).catch(function(){});
+  }, [householdCode]);
   useEffect(() => {
     if (loaded) storage.set(SK.items, JSON.stringify(items));
   }, [items, loaded]);
@@ -5415,8 +5638,11 @@ function App() {
     if (loaded) storage.set(SK.recipes, JSON.stringify(recipes));
   }, [recipes, loaded]);
   useEffect(() => {
-    if (loaded) storage.set(SK_LOCAL.apiKey, apiKey);
+    if (loaded) storage.set(SK.apiKey, apiKey);
   }, [apiKey, loaded]);
+  useEffect(() => {
+    if (loaded) storage.set(SK.geminiKey, geminiKey);
+  }, [geminiKey, loaded]);
   useEffect(() => {
     if (loaded) storage.set(SK.lockedDays, JSON.stringify(lockedDays));
   }, [lockedDays, loaded]);
@@ -5719,7 +5945,7 @@ function App() {
 
     if(_genMode==="allai"){
       // ALL AI: full AI for every non-locked slot
-      if(!apiKey){ setAiError("No API key. Go to Settings."); setAiLoading(false); return; }
+      if(!(apiKey || geminiKey)){ setAiError("No AI key. Go to Settings."); setAiLoading(false); return; }
       var tmpl=remainingDays.map(function(d){
         var slots=mealCats.map(function(mc){
           if(plan[d][mc]!==null) return '"'+mc+'":"'+plan[d][mc]+'"';
@@ -5986,7 +6212,7 @@ function App() {
 
       // Call AI for AI slots
       if(aiSlotsNeeded.length>0){
-        if(!apiKey){ setAiError("No API key for AI slots. Go to Settings."); setAiLoading(false); return; }
+        if(!(apiKey || geminiKey)){ setAiError("No AI key for AI slots. Go to Settings."); setAiLoading(false); return; }
         var allDishNames=dishes.map(function(d){return d.name;});
         var aiTmpl="{\n"+aiSlotsNeeded.map(function(s){
           var isWE=WEEKEND.includes(s.day);
@@ -6028,7 +6254,7 @@ function App() {
     }
 
     // ── Fetch ingredients for AI-generated dishes (batch call) ──
-    if(apiKey){
+    if(apiKey || geminiKey){
       var dishNameSet3=new Set(dishes.map(function(d){return d.name;}));
       var aiDishNames=[];
       Object.values(plan).forEach(function(dayPlan){
@@ -6153,8 +6379,41 @@ function App() {
     return null;
   }
 
-  // Single dispatch point for all AI calls — provider routing (Gemini/Claude) goes here later
+  async function callGemini({ system, prompt, maxTokens }) {
+    var fullPrompt = system ? system + "\n\n" + prompt : prompt;
+    var body = JSON.stringify({
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens }
+    });
+    var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + geminiKey;
+    var maxAttempts = 3;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      var res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body });
+      if (res.status === 429) {
+        if (attempt < maxAttempts) {
+          var errData = await res.json().catch(function(){ return {}; });
+          var retryDelay = 15;
+          try {
+            var details = (errData.error && errData.error.details) || [];
+            for (var i = 0; i < details.length; i++) {
+              if (details[i].retryDelay) { retryDelay = parseInt(details[i].retryDelay) || 15; break; }
+            }
+          } catch(_) {}
+          await new Promise(function(r){ setTimeout(r, (retryDelay + 1) * 1000); });
+          continue;
+        }
+        throw new Error("Gemini rate limit hit. Wait a moment and try again (free tier: 15 req/min).");
+      }
+      if (!res.ok) throw new Error("Gemini " + res.status + ": " + res.statusText);
+      var data = await res.json();
+      var text = ((data.candidates || [])[0]?.content?.parts || []).map(function(p){ return p.text || ""; }).join("").trim();
+      return { text: text, json: repairAndParse(text) };
+    }
+  }
+
   async function callAI({ system, prompt, maxTokens, stream = false }) {
+    if (geminiKey && !apiKey) return callGemini({ system, prompt, maxTokens });
+    if (!apiKey && !geminiKey) throw new Error("No AI key set. Add a Gemini or Claude key in Settings.");
     var body = {
       model: modelName, max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }]
@@ -6270,8 +6529,8 @@ function App() {
       // No inventory dish found → fall through to AI
     }
 
-    if (!apiKey) {
-      setSwapError("No API key. Go to Settings.");
+    if (!(apiKey || geminiKey)) {
+      setSwapError("No AI key. Go to Settings.");
       setSwapLoading(false);
       return;
     }
@@ -6351,7 +6610,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     if(!dishName) return;
     setRecipeModal(dishName);
     if(recipes[dishName]) return; // already cached
-    if(!apiKey) return;
+    if(!(apiKey || geminiKey)) return;
     var STAPLE=["oil","salt","water","sugar","black pepper","cooking oil"];
     var stockByCat={};
     (typeof PANTRY_CATEGORIES!=="undefined"?PANTRY_CATEGORIES:[]).forEach(function(pc){
@@ -6394,7 +6653,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     if (!menuToUse || !menuToUse.plan) {
       return;
     }
-    if (!apiKey) {
+    if (!(apiKey || geminiKey)) {
       return;
     }
     setNutLoading(true);
@@ -6475,7 +6734,7 @@ Only output the JSON. No markdown.`;
       if (isSaturday) {
         const nextWeekKey = getWeekKey();
         const alreadyGenerated = lastAutoGen === nextWeekKey;
-        const hasApiKey = !!apiKey;
+        const hasApiKey = !!(apiKey || geminiKey);
         const hasDishes = dishes && dishes.length >= 5;
         const noNextMenu = !nextMenu;
         
@@ -6630,11 +6889,11 @@ Only output the JSON. No markdown.`;
     // Take up to 2 inventory dishes
     var matchedDishes = allMatched.slice(0,2);
 
-    if (!apiKey) {
-      // No API key — show the non-AI matches, and a placeholder explaining the AI slot
+    if (!(apiKey || geminiKey)) {
+      // No AI key — show the non-AI matches, and a placeholder explaining the AI slot
       setCookNowResults([...matchedDishes, {
         name: "AI suggestions",
-        why: "Add your Claude API key in Settings to also get a fresh AI-generated dish from your pantry.",
+        why: "Add a Gemini or Claude API key in Settings to also get a fresh AI-generated dish from your pantry.",
         ingredients: [],
         aiUnavailable: true
       }]);
@@ -6816,6 +7075,9 @@ Only output the JSON. No markdown.`;
   // ── Theme ──
   Object.assign(C, theme === "light" ? LIGHT : DARK);
   isMichelinWeekend = michelinWeekend;
+  if (_isNative && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar) {
+    window.Capacitor.Plugins.StatusBar.setStyle({ style: theme === "light" ? "LIGHT" : "DARK" }).catch(function(){});
+  }
   const inp = mkInp(C);
   const pill = mkPill(C);
 
@@ -7024,121 +7286,122 @@ Only output the JSON. No markdown.`;
     }
   }, "SETTINGS"), /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.bg,
-      border: `1px solid ${C.border2}`,
-      borderRadius: 8,
-      padding: "14px",
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: C.dim,
-      letterSpacing: 0.3,
-      fontWeight: 700,
-      marginBottom: 12
-    }
-  }, "API Key"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: C.dim,
-      marginBottom: 10,
-      lineHeight: 1.6
-    }
-  }, "Required for AI menu generation and recipes. Get yours at console.anthropic.com \u2192 API Keys. Your key is stored only on this device in localStorage."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 6,
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: showApiKey ? "text" : "password",
-    value: apiKey,
-    onChange: e => setApiKey(e.target.value),
-    placeholder: "sk-ant-api03-...",
-    style: {
-      background: C.card,
-      border: `1px solid ${C.border2}`,
-      color: C.white,
-      borderRadius: 5,
-      padding: "8px 10px",
-      fontFamily: "monospace",
-      fontSize: 12,
-      outline: "none",
-      flex: 1,
-      boxSizing: "border-box"
-    }
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setShowApiKey(s => !s),
-    style: {
-      ...pill(false),
-      padding: "8px 10px",
-      fontSize: 13,
-      flexShrink: 0
-    }
-  }, showApiKey ? "Hide" : "Show")), apiKey && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.dim,
-      marginTop: 6
-    }
-  }, "\u2713 Key saved to this device")), /*#__PURE__*/React.createElement("div", {
-    style: {
       background: C.card,
       border: "1px solid " + C.border,
       borderRadius: 12,
-      padding: "18px",
-      marginBottom: 10,
-      boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
+      padding: "14px",
+      marginBottom: 12
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.dim,
-      letterSpacing: 2,
-      fontWeight: 700,
-      marginBottom: 6
-    }
-  }, "AI Model"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: C.dim,
-      marginBottom: 10,
-      lineHeight: 1.5
-    }
-  }, "The Claude model used for all AI features. Update this when Anthropic releases a new model or deprecates the current one. Find current model names at console.anthropic.com."), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: modelName,
-    onChange: e => setModelName(e.target.value),
-    placeholder: "claude-haiku-4-5-20251001",
-    style: {
-      ...mkInp(C),
-      fontFamily: "monospace",
-      fontSize: 12
-    }
-  }), modelName && modelName !== "claude-haiku-4-5-20251001" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginTop: 6
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.dim
-    }
-  }, "\u270E Custom model active"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setModelName("claude-haiku-4-5-20251001"),
-    style: {
-      background: "none",
-      border: "none",
-      color: C.dim,
-      cursor: "pointer",
-      fontSize: 12,
-      fontFamily: C.font
-    }
-  }, "Reset to default"))), /*#__PURE__*/React.createElement(BackupPanel, {
+  },
+    /*#__PURE__*/React.createElement("div", {
+      style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 10 }
+    }, "ACCOUNT"),
+    user
+      ? /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+          /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 } },
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, user.displayName || user.email),
+            /*#__PURE__*/React.createElement("button", { onClick: signOut, style: Object.assign({}, pill(false), { padding: "6px 14px", fontSize: 12, flexShrink: 0 }) }, "Sign out")
+          ),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function() { setDeleteAccountAlsoHousehold(false); setDeleteAccountModal(true); },
+            style: { background: "transparent", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer", textAlign: "left", padding: 0, fontFamily: C.font }
+          }, "Delete account and data")
+        )
+      : syncing
+        ? /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "Syncing…")
+        : /*#__PURE__*/React.createElement("button", {
+            onClick: signIn,
+            style: Object.assign({}, pill(false), { padding: "8px 14px", fontSize: 13, width: "100%", textAlign: "center" })
+          }, "Sign in with Google")
+  ), /*#__PURE__*/React.createElement("div", {
+    style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "14px", marginBottom: 12 }
+  },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 12 } }, "FAMILY"),
+    !user
+      ? /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, lineHeight: 1.6 } }, "Sign in with Google to set up family sharing.")
+      : /*#__PURE__*/React.createElement("div", null,
+          householdCode && /*#__PURE__*/React.createElement("div", { style: { marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid " + C.border } },
+            /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 } },
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 3 } }, "Your household code"),
+                /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 700, color: C.white, letterSpacing: 4, fontFamily: "monospace" } }, householdCode.slice(0,3) + " " + householdCode.slice(3))
+              ),
+              /*#__PURE__*/React.createElement("button", { onClick: function(){ navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
+            ),
+            householdMembers.length > 0 && /*#__PURE__*/React.createElement("div", null,
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim, fontWeight: 700, letterSpacing: 1.5, marginBottom: 8 } }, "MEMBERS"),
+              householdMembers.map(function(m) {
+                return /*#__PURE__*/React.createElement("div", { key: m.uid, style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" } },
+                  /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.white } }, m.name + (m.uid === (user && user.uid) ? " (you)" : "")),
+                  user && user.uid === householdOwner && m.uid !== user.uid &&
+                    /*#__PURE__*/React.createElement("button", {
+                      onClick: function() {
+                        removeHouseholdMember(m.uid).then(function(){
+                          setHouseholdMembers(function(prev){ return prev.filter(function(x){ return x.uid !== m.uid; }); });
+                          showToast("Member removed", "success");
+                        }).catch(function(){ showToast("Failed to remove member", "error"); });
+                      },
+                      style: { background: "transparent", border: "none", color: "#c0392b", fontSize: 12, cursor: "pointer", fontFamily: C.font, padding: 0 }
+                    }, "Remove")
+                );
+              })
+            )
+          ),
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 8 } }, "JOIN A HOUSEHOLD"),
+          /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 6 } },
+            /*#__PURE__*/React.createElement("input", { type: "text", value: joinCode, onChange: function(e){ setJoinCode(e.target.value.toUpperCase()); setJoinError(""); }, placeholder: "ABC123", maxLength: 6, style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 16, letterSpacing: 4, flex: 1, textAlign: "center" }) }),
+            /*#__PURE__*/React.createElement("button", {
+              onClick: function(){
+                if (!joinCode || joinCode.length < 6) { setJoinError("Enter the full 6-character code."); return; }
+                setJoinLoading(true); setJoinError("");
+                joinHousehold(joinCode).catch(function(e){ setJoinError(e.message || "Failed."); setJoinLoading(false); });
+              },
+              disabled: joinLoading || joinCode.length < 6,
+              style: Object.assign({}, pill(joinCode.length === 6), { padding: "8px 14px", fontSize: 13, flexShrink: 0, opacity: joinCode.length < 6 ? 0.4 : 1 })
+            }, joinLoading ? "Joining…" : "Join")
+          ),
+          joinError && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#e87070", marginBottom: 4 } }, joinError)
+        )
+  ), /*#__PURE__*/React.createElement("div", {
+    style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "18px", marginBottom: 10, boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none" }
+  },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 14 } }, "AI PROVIDER"),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 18 } },
+      /*#__PURE__*/React.createElement("button", { onClick: function(){ setAiProviderTab("gemini"); }, style: Object.assign({}, pill(aiProviderTab === "gemini"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Google Gemini"),
+      /*#__PURE__*/React.createElement("button", { onClick: function(){ setAiProviderTab("anthropic"); }, style: Object.assign({}, pill(aiProviderTab === "anthropic"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Anthropic Claude")
+    ),
+    aiProviderTab === "gemini" && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#c97b2a" } }, "Free tier allows 15 requests/min \u2014 rapid AI calls may fail"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal("gemini"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } },
+        /*#__PURE__*/React.createElement("input", { type: showGeminiKey ? "text" : "password", value: geminiKey, onChange: function(e){ setGeminiKey(e.target.value); }, placeholder: "AIza...", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12, flex: 1 }) }),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setShowGeminiKey(function(s){ return !s; }); }, style: Object.assign({}, pill(false), { padding: "8px 10px", fontSize: 13, flexShrink: 0 }) }, showGeminiKey ? "Hide" : "Show")
+      ),
+      geminiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved")
+    ),
+    aiProviderTab === "anthropic" && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Paid API \u2014 add credits at console.anthropic.com"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal("anthropic"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } },
+        /*#__PURE__*/React.createElement("input", { type: showApiKey ? "text" : "password", value: apiKey, onChange: function(e){ setApiKey(e.target.value); }, placeholder: "sk-ant-api03-...", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12, flex: 1 }) }),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setShowApiKey(function(s){ return !s; }); }, style: Object.assign({}, pill(false), { padding: "8px 10px", fontSize: 13, flexShrink: 0 }) }, showApiKey ? "Hide" : "Show")
+      ),
+      apiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved"),
+      /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, paddingTop: 16, borderTop: "1px solid " + C.border } },
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, letterSpacing: 1.5, fontWeight: 700, marginBottom: 8 } }, "MODEL"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 10, lineHeight: 1.5 } }, "The Claude model for all AI features. Find names at console.anthropic.com."),
+        /*#__PURE__*/React.createElement("input", { type: "text", value: modelName, onChange: function(e){ setModelName(e.target.value); }, placeholder: "claude-haiku-4-5-20251001", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12 }) }),
+        modelName && modelName !== "claude-haiku-4-5-20251001" && /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 } },
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "\u270E Custom model active"),
+          /*#__PURE__*/React.createElement("button", { onClick: function(){ setModelName("claude-haiku-4-5-20251001"); }, style: { background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 12, fontFamily: C.font } }, "Reset to default")
+        )
+      )
+    )
+  ), /*#__PURE__*/React.createElement(BackupPanel, {
     items: items,
     stock: stock,
     dishes: dishes,
@@ -7199,22 +7462,7 @@ Only output the JSON. No markdown.`;
       fontWeight: 700,
       marginBottom: 12
     }
-  }, "Features"), [{
-    key: "autoBackup",
-    val: autoBackup,
-    set: setAutoBackup,
-    label: "Auto-Backup on Sundays",
-    desc: (() => {
-      const ua = navigator.userAgent || "";
-      const isIpad = ua.includes("iPad") || ua.includes("Mac") && navigator.maxTouchPoints > 1;
-      const isIphone = ua.includes("iPhone");
-      const isAndroid = ua.includes("Android");
-      if (isIpad) return "Every Sunday at 11:59 PM, auto-downloads a backup JSON. Find it in: Files app → On My iPad → Downloads.";
-      if (isIphone) return "Every Sunday at 11:59 PM, auto-downloads a backup JSON. Find it in: Files app → On My iPhone → Downloads.";
-      if (isAndroid) return "Every Sunday at 11:59 PM, auto-downloads a backup JSON. Find it in: Files / My Files → Downloads.";
-      return "Every Sunday at 11:59 PM, auto-downloads a backup JSON to your browser's default Downloads folder.";
-    })()
-  }, {
+  }, ""), [{
     key: "haptics",
     val: haptics,
     set: setHaptics,
@@ -7770,7 +8018,7 @@ Only output the JSON. No markdown.`;
       alignItems: "center",
       gap: 6
     }
-  }, /*#__PURE__*/React.createElement(Icon, { name: "leaf", size: 16, style: { color: colorMode === "mono" ? C.dim : "#6F9E80" } }), "What can I cook tonight?")), (nextMenu||menu) && (nextMenu||menu).plan && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Icon, { name: "leaf", size: 16, style: { color: colorMode === "mono" ? C.dim : "#6F9E80" } }), "What can I cook now?")), (nextMenu||menu) && (nextMenu||menu).plan && /*#__PURE__*/React.createElement("div", {
     style: {marginBottom:16}
   }, /*#__PURE__*/React.createElement("div", {
     style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
@@ -8003,14 +8251,7 @@ Only output the JSON. No markdown.`;
       letterSpacing: 2,
       fontWeight: 700
     }
-  }, "Meal categories"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setAddMealCatModal(true),
-    style: {
-      ...pill(false),
-      padding: "4px 8px",
-      fontSize: 12
-    }
-  }, "+ Category")), /*#__PURE__*/React.createElement("div", {
+  }, "Meal categories")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexWrap: "wrap",
@@ -8737,6 +8978,58 @@ Only output the JSON. No markdown.`;
       padding: "9px 0"
     }
   }, "Add"))), /*#__PURE__*/React.createElement(Modal, {
+    open: deleteAccountModal,
+    onClose: () => setDeleteAccountModal(false),
+    title: "Delete account?"
+  },
+    /*#__PURE__*/React.createElement("div", {
+      style: { fontSize: 14, color: C.dim, lineHeight: 1.6, marginBottom: 16 }
+    }, "Your account will be permanently removed and you'll be signed out. This can't be undone."),
+    householdCode && /*#__PURE__*/React.createElement("label", {
+      style: { display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 16, cursor: "pointer" }
+    },
+      /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: deleteAccountAlsoHousehold,
+        onChange: function(e){ setDeleteAccountAlsoHousehold(e.target.checked); },
+        style: { marginTop: 2, flexShrink: 0, accentColor: "#c0392b" }
+      }),
+      /*#__PURE__*/React.createElement("span", {
+        style: { fontSize: 13, color: C.white, lineHeight: 1.5 }
+      }, "Also delete shared household data (pantry, dishes, menu) — only tick this if you're the only member")
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => setDeleteAccountModal(false),
+        style: { ...pill(false), flex: 1, padding: "9px 0" }
+      }, "No, cancel"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => {
+          setDeleteAccountModal(false);
+          deleteAccount(deleteAccountAlsoHousehold).catch(function(e){ alert("Error: " + (e.message || String(e))); });
+        },
+        style: { ...pill(true, "#c0392b"), color: "#ffffff", flex: 1, padding: "9px 0" }
+      }, "Yes, delete")
+    )
+  ), /*#__PURE__*/React.createElement(Modal, {
+    open: pantryCheckReminder,
+    onClose: () => { storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); },
+    title: "Time to check your pantry!"
+  },
+    /*#__PURE__*/React.createElement("div", {
+      style: { fontSize: 14, color: C.dim, lineHeight: 1.6, marginBottom: 16 }
+    }, "It's a new week. A quick pantry update keeps your menu accurate and AI suggestions on point."),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => { storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); },
+        style: { ...pill(false), flex: 1, padding: "9px 0" }
+      }, "Later"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => { storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); setTab("pantry"); },
+        style: { ...pill(true), flex: 1, padding: "9px 0" }
+      }, "Go to pantry")
+    )
+  ), /*#__PURE__*/React.createElement(Modal, {
     open: satGenPrompt,
     onClose: () => {
       storage.set(SK.satGenPromptWeek, getWeekKey());
@@ -9685,6 +9978,9 @@ Only output the JSON. No markdown.`;
       background: C.card
     }
   }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => { var id = editDishModal.id; setEditDishModal(null); setEditDishAdvanced(false); removeDish(id); },
+    style: { ...pill(true, "#c0392b"), color: "#ffffff", padding: "9px 14px", fontSize: 13, flexShrink: 0 }
+  }, "Delete"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setEditDishModal(null);
       setEditDishAdvanced(false);
@@ -9710,7 +10006,7 @@ Only output the JSON. No markdown.`;
     style:{background:C.card,border:"none",borderRadius:20,boxShadow:"0 8px 32px rgba(0,0,0,0.25)",
       padding:20,width:"100%",maxWidth:380,maxHeight:"75vh",overflowY:"auto"}
   },
-    /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:4}},"◎ What can I cook tonight?"),
+    /*#__PURE__*/React.createElement("div",{style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:4}},"◎ What can I cook now?"),
     /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:C.dim,marginBottom:14}},"What to cook for " + (function(){var h=new Date().getHours();return h<11?"Breakfast":h<15?"Lunch":h<18?"Snacks":"Dinner";})()),
     cookNowLoading && /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:C.dim,textAlign:"center",padding:"20px 0"}},"⏳ Finding dishes…"),
     cookNowError && /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:"#f55",marginBottom:10}},cookNowError),
@@ -10037,45 +10333,7 @@ Only output the JSON. No markdown.`;
         style:{...pill(false),padding:"10px 14px",fontSize:14}
       }, "Close")
     )
-  ))), /*#__PURE__*/React.createElement(Modal, {
-    open: addMealCatModal,
-    onClose: () => setAddMealCatModal(false),
-    title: "Add meal category"
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: C.dim,
-      letterSpacing: 1,
-      marginBottom: 4
-    }
-  }, "Category name"), /*#__PURE__*/React.createElement(TouchInput, {
-    value: newMealCat,
-    onChange: setNewMealCat,
-    placeholder: "e.g. Brunch, Supper\u2026"
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setAddMealCatModal(false),
-    style: {
-      ...pill(false),
-      flex: 1,
-      padding: "9px 0"
-    }
-  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
-    onClick: doAddMealCat,
-    style: {
-      ...pill(true),
-      flex: 1,
-      padding: "9px 0"
-    }
-  }, "Add"))), editItemModal && /*#__PURE__*/React.createElement(Modal, {
+  ))), editItemModal && /*#__PURE__*/React.createElement(Modal, {
     open: true,
     onClose: () => setEditItemModal(null),
     title: "Edit pantry item"
@@ -10184,6 +10442,9 @@ Only output the JSON. No markdown.`;
       gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => { var item = editItemModal; setEditItemModal(null); confirmRemoveItem(item); },
+    style: { ...pill(true, "#c0392b"), color: "#ffffff", padding: "9px 14px", fontSize: 13, flexShrink: 0 }
+  }, "Delete"), /*#__PURE__*/React.createElement("button", {
     onClick: () => setEditItemModal(null),
     style: {
       ...pill(false),
@@ -10384,7 +10645,7 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("button", {
           onClick: function() {
             cuisines.forEach(function(key) { applyCuisinePreset(key); });
-            setOnboarded(true);
+            setOnboardStep(2);
           },
           disabled: cuisines.length === 0,
           style: Object.assign({}, pill(cuisines.length > 0), {
@@ -10400,13 +10661,95 @@ Only output the JSON. No markdown.`;
             style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 })
           }, "Back"),
           /*#__PURE__*/React.createElement("button", {
-            onClick: function() { setOnboarded(true); },
+            onClick: function() { setOnboardStep(2); },
             style: { flex: 1, background: "transparent", border: "none", color: C.dim,
               fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" }
           }, "Skip for now")
         )
       )
-    ))),
+    ),
+    onboardStep === 2 && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Sign in to sync"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 24, lineHeight: 1.6 } }, "Your pantry, dishes and menus stay in sync across all your devices."),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function() { signIn().then(function(){ setOnboardStep(3); }); },
+        style: Object.assign({}, pill(true), { width: "100%", padding: "13px 0", fontSize: 16, marginBottom: 10 })
+      }, "Sign in with Google"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, textAlign: "center", marginBottom: 20 } }, "Apple Sign-in coming soon"),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(1); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboarded(true); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
+      )
+    ),
+    onboardStep === 3 && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Set up your household"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Share your pantry and menu with family members. Each person signs in with their own Google account."),
+      householdCode
+        ? /*#__PURE__*/React.createElement("div", null,
+            /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, padding: "12px 14px", background: C.bg, borderRadius: 10 } },
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 3 } }, "Your household code"),
+                /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 700, color: C.white, letterSpacing: 4, fontFamily: "monospace" } }, householdCode.slice(0,3) + " " + householdCode.slice(3))
+              ),
+              /*#__PURE__*/React.createElement("button", { onClick: function(){ navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
+            ),
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.6 } }, "Share this code with your family. They enter it during their setup or in Settings → Family."),
+            /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 8 } }, "JOINING SOMEONE ELSE'S HOUSEHOLD?"),
+              /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6 } },
+                /*#__PURE__*/React.createElement("input", { type: "text", value: joinCode, onChange: function(e){ setJoinCode(e.target.value.toUpperCase()); setJoinError(""); }, placeholder: "ABC123", maxLength: 6, style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 16, letterSpacing: 4, flex: 1, textAlign: "center" }) }),
+                /*#__PURE__*/React.createElement("button", {
+                  onClick: function(){
+                    if (!joinCode || joinCode.length < 6) { setJoinError("Enter the full 6-character code."); return; }
+                    setJoinLoading(true); setJoinError("");
+                    joinHousehold(joinCode).catch(function(e){ setJoinError(e.message || "Failed."); setJoinLoading(false); });
+                  },
+                  disabled: joinLoading || joinCode.length < 6,
+                  style: Object.assign({}, pill(joinCode.length === 6), { padding: "8px 16px", fontSize: 13, flexShrink: 0, opacity: joinCode.length < 6 ? 0.4 : 1 })
+                }, joinLoading ? "Joining…" : "Join")
+              ),
+              joinError && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#e87070", marginTop: 6 } }, joinError)
+            )
+          )
+        : /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, background: C.bg, borderRadius: 12, padding: 16, marginBottom: 16 } }, "Sign in with Google first to get your household code."),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboarded(true); }, style: Object.assign({}, pill(true), { padding: "13px 0", fontSize: 16 }) }, "Let's go"),
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+          /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboardStep(2); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
+          /*#__PURE__*/React.createElement("button", { onClick: function(){ setOnboarded(true); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
+        )
+      )
+    ),
+    )),
+  apiHelpModal && /*#__PURE__*/React.createElement("div", { onClick: function(){ setApiHelpModal(null); }, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, padding: 24 } },
+    /*#__PURE__*/React.createElement("div", { onClick: function(e){ e.stopPropagation(); }, style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 340 } },
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } },
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 16, fontWeight: 800, color: C.white } }, apiHelpModal === "gemini" ? "Get your Gemini key" : "Get your Claude key"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal(null); }, style: { background: "none", border: "none", color: C.dim, fontSize: 20, cursor: "pointer", fontFamily: C.font, lineHeight: 1 } }, "×")
+      ),
+      apiHelpModal === "gemini"
+        ? /*#__PURE__*/React.createElement("div", null,
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16, lineHeight: 1.8 } },
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "1. Open ", /*#__PURE__*/React.createElement("a", { href: "https://aistudio.google.com/apikey", target: "_blank", rel: "noopener noreferrer", style: { color: C.white } }, "aistudio.google.com/apikey")),
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "2. Sign in with your Google account"),
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "3. Click Create API key"),
+              /*#__PURE__*/React.createElement("div", null, "4. Copy the key and paste it here")
+            ),
+            /*#__PURE__*/React.createElement("div", { style: { background: C.bg, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: C.dim, lineHeight: 1.6 } }, "Free tier is limited to 15 requests per minute. If AI fails, wait a moment and try again.")
+          )
+        : /*#__PURE__*/React.createElement("div", null,
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16, lineHeight: 1.8 } },
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "1. Open ", /*#__PURE__*/React.createElement("a", { href: "https://console.anthropic.com", target: "_blank", rel: "noopener noreferrer", style: { color: C.white } }, "console.anthropic.com")),
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "2. Create an account or sign in"),
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "3. Go to API Keys in the sidebar"),
+              /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } }, "4. Click Create Key"),
+              /*#__PURE__*/React.createElement("div", null, "5. Copy the key (starts with sk-ant-...) and paste it here")
+            ),
+            /*#__PURE__*/React.createElement("div", { style: { background: C.bg, borderRadius: 10, padding: "10px 14px", fontSize: 12, color: C.dim, lineHeight: 1.6 } }, "Claude is a paid API. Add credits at console.anthropic.com/settings/billing.")
+          ),
+      /*#__PURE__*/React.createElement("button", { onClick: function(){ setApiHelpModal(null); }, style: Object.assign({}, pill(true), { width: "100%", padding: "11px 0", fontSize: 14, marginTop: 20 }) }, "Got it")
+    )
+  ),
   resetModal > 0 && /*#__PURE__*/React.createElement("div",{
     onClick:function(){setResetModal(0);},
     style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",display:"flex",
