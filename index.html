@@ -499,12 +499,17 @@ async function _setupHousehold(uid) {
     }
     // Firestore has no household for this user yet.
     if (cached) {
-      // Re-register the locally cached code so Firestore knows about it again.
-      _householdCode = cached;
-      await _fbDb.collection("users").doc(uid).set({ householdCode: cached }, { merge: true }).catch(function(){});
-      return cached;
+      // Verify this uid is actually a member of the cached household before re-registering.
+      // Protects against user B inheriting user A's cached code on a shared device.
+      var hhDoc = await _fbDb.collection("households").doc(cached).get().catch(function(){ return null; });
+      if (hhDoc && hhDoc.exists && (hhDoc.data().members || []).indexOf(uid) !== -1) {
+        _householdCode = cached;
+        await _fbDb.collection("users").doc(uid).set({ householdCode: cached }, { merge: true }).catch(function(){});
+        return cached;
+      }
+      // Cached household doesn't include this user — fall through to create a new one.
     }
-    // Brand-new user — create a household.
+    // Brand-new user (or inherited-cache mismatch) — create a household.
     var newCode = _generateHouseholdCode();
     await _fbDb.collection("households").doc(newCode).set({ members: [uid], createdBy: uid });
     await _fbDb.collection("users").doc(uid).set({ householdCode: newCode }, { merge: true });
