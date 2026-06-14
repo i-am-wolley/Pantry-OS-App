@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "557298985239",
+    "project_id": "pantry-os-prod",
+    "storage_bucket": "pantry-os-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:557298985239:android:6be14dcc99f1c3a4202f52",
+        "android_client_info": {
+          "package_name": "app.pantryos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "557298985239-sv1orj5grsh9e5sbhm1s3fvv2jgdm6i6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.pantryos",
+            "certificate_hash": "ea1fc545d23b39360263f35a40b456341c79da8a"
+          }
+        },
+        {
+          "client_id": "557298985239-f37vu2r2pdpq2gtn7goku66gp25p4siq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnI5_JqOdjtP2lYz15slKo2pZplp4fzyM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "557298985239-f37vu2r2pdpq2gtn7goku66gp25p4siq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

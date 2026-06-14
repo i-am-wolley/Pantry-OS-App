@@ -1,0 +1,14 @@
+{
+  "appId": "app.pantryos",
+  "appName": "Pantry OS",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": ["google.com"]
+    }
+  }
+}

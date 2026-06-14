@@ -493,36 +493,46 @@ async function _setupHousehold(uid) {
   var cached = localStorage.getItem(_LS_HH_KEY);
   try {
     // Priority 1: Firestore user profile — always the authoritative source.
+    // Works correctly on a new device where local cache is empty.
     var userDoc = await _fbDb.collection("users").doc(uid).get();
     if (userDoc.exists && userDoc.data().householdCode) {
       var code = userDoc.data().householdCode;
-      _householdCode = code;
-      localStorage.setItem(_LS_HH_KEY, code);
-      return code; // _isNewHousehold stays false
+      // Verify household still exists (guards against orphaned user docs after household deletion).
+      var hhVerify = await _fbDb.collection("households").doc(code).get().catch(function(){ return null; });
+      if (hhVerify && hhVerify.exists) {
+        _householdCode = code;
+        localStorage.setItem(_LS_HH_KEY, code);
+        return code; // _isNewHousehold stays false
+      }
+      // Household doc was deleted — clear the stale pointer and fall through.
+      _fbDb.collection("users").doc(uid).set({ householdCode: null }, { merge: true }).catch(function(){});
     }
-    // Priority 2: validated local cache. Checked for ALL cases where Firestore has no code —
-    // covers the "write failed on first sign-in" and "same-device other-user deleted" scenarios.
+    // Priority 2: validated local cache. Only reached when Firestore has no valid code —
+    // covers "users/{uid} write failed on first sign-in" (same device rescue).
     // The membership check prevents a wrong-user's cached code from being used.
     if (cached) {
       var hhDoc = await _fbDb.collection("households").doc(cached).get().catch(function(){ return null; });
       if (hhDoc && hhDoc.exists && (hhDoc.data().members || []).indexOf(uid) !== -1) {
         _householdCode = cached;
-        // Re-sync householdCode back to Firestore if it was missing.
+        // Repair: re-sync householdCode back to Firestore so next login (any device) finds it.
         _fbDb.collection("users").doc(uid).set({ householdCode: cached }, { merge: true }).catch(function(){});
         return cached; // _isNewHousehold stays false
       }
     }
-    // Priority 3: truly new user (no Firestore record, no valid cache) — create a household.
+    // Priority 3: truly new user — batch write so both docs succeed or both fail atomically.
+    // Prevents the "household exists but users/{uid} has no code" inconsistency on new devices.
     _isNewHousehold = true;
     var newCode = _generateHouseholdCode();
-    await _fbDb.collection("households").doc(newCode).set({ members: [uid], createdBy: uid });
-    await _fbDb.collection("users").doc(uid).set({ householdCode: newCode }, { merge: true });
+    var batch = _fbDb.batch();
+    batch.set(_fbDb.collection("households").doc(newCode), { members: [uid], createdBy: uid });
+    batch.set(_fbDb.collection("users").doc(uid), { householdCode: newCode }, { merge: true });
+    await batch.commit();
     _householdCode = newCode;
     localStorage.setItem(_LS_HH_KEY, newCode);
     return newCode;
   } catch(e) {
     console.error("[PantryOS] _setupHousehold failed:", e.message, "— check Firestore rules.");
-    // On any error: treat as returning user (don't create a new household on network glitches).
+    // On any error: treat as returning user — never create a new household on network glitches.
     _isNewHousehold = false;
     if (cached) { _householdCode = cached; return cached; }
     return null;

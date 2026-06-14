@@ -1,0 +1,31 @@
+{
+  "name": "pantry-os-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "sync": "node -e \"require('fs').copyFileSync('index.html','www/index.html')\" && npx cap sync",
+    "android": "node -e \"require('fs').copyFileSync('index.html','www/index.html')\" && npx cap sync && npx cap open android",
+    "ios": "node -e \"require('fs').copyFileSync('index.html','www/index.html')\" && npx cap sync && npx cap open ios"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/i-am-wolley/Pantry-OS-App.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/i-am-wolley/Pantry-OS-App/issues"
+  },
+  "homepage": "https://github.com/i-am-wolley/Pantry-OS-App#readme",
+  "dependencies": {
+    "@capacitor-firebase/authentication": "^8.3.0",
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
+    "@capacitor/status-bar": "^8.0.2"
+  }
+}
