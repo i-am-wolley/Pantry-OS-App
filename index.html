@@ -5469,8 +5469,14 @@ function App() {
     if (window.__ssSyncGapBg) window.__ssSyncGapBg();
   }, [theme]);
   const [colorMode, setColorMode] = useState("color"); // "color" | "mono"
-  const [screensaverOn, setScreensaverOn] = useState(true);
+  const [screensaverOn, setScreensaverOn] = useState(false);
   const [screensaverMins, setScreensaverMins] = useState(15);
+  const [focusTick, setFocusTick] = useState(0);
+  useEffect(() => {
+    function onVisible() { if (document.visibilityState === 'visible') setFocusTick(t => t + 1); }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
   const [cookTime, setCookTime] = useState(0); // 0=any, else minutes
   const [modelName, setModelName] = useState("claude-haiku-4-5-20251001");
   const [apiCost, setApiCost] = useState(0); // lifetime USD cost
@@ -5650,7 +5656,7 @@ function App() {
       storage.remove(SK.confirmedDays);
       showToast("New week's menu loaded", "success");
     } catch(e) {}
-  }, [loaded]);
+  }, [loaded, focusTick]);
 
   // ── Saturday auto-gen missed: prompt user on next open ──
   // Fires both for "menu is current week but next week wasn't generated" (normal
@@ -11169,7 +11175,7 @@ Only output the JSON. No markdown.`;
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(App, null)));
   try {
     var _sso = storage.get("pantryos-screensaver-on");
-    window.__ssEnabled = _sso === null ? true : JSON.parse(_sso);
+    window.__ssEnabled = _sso === null ? false : JSON.parse(_sso);
     var _ssm = storage.get("pantryos-screensaver-mins");
     window.__ssIdleMs = (_ssm ? JSON.parse(_ssm) : 15) * 60 * 1000;
   } catch(e) { window.__ssEnabled = true; window.__ssIdleMs = 15*60*1000; }
