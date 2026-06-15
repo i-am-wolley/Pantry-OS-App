@@ -5728,6 +5728,52 @@ function App() {
     if (loaded && Object.keys(aiDishIngredients).length > 0)
       storage.set(SK.aiDishIng, JSON.stringify(aiDishIngredients));
   }, [aiDishIngredients, loaded]);
+  // Background retry: fetch ingredients for AI dishes that were never fetched
+  // (catches failed initial fetch during generation). Intentionally excludes
+  // aiDishIngredients from deps to avoid loop — uses snapshot at fire time.
+  useEffect(() => {
+    if (!loaded || !(apiKey || geminiKey)) return;
+    var activeM = nextMenu || menu;
+    if (!activeM || !activeM.plan) return;
+    var dishNameSet = new Set(dishes.map(function(d){return d.name;}));
+    var toFetch = [];
+    Object.values(activeM.plan).forEach(function(dp){
+      if(!dp||typeof dp!=="object") return;
+      Object.values(dp).forEach(function(name){
+        if(name && name!=="🍽 Dine Out" && !dishNameSet.has(name) && !(name in aiDishIngredients))
+          toFetch.push(name);
+      });
+    });
+    var unique = [...new Set(toFetch)];
+    if(unique.length===0) return;
+    var STAPLE_SET=new Set(["oil","cooking oil","salt","water","sugar","black pepper","ghee","butter"]);
+    var nonStapleItems=items.filter(function(it){return !STAPLE_SET.has(it.name.toLowerCase().trim());});
+    var pantryIdMap={};
+    nonStapleItems.forEach(function(it){pantryIdMap[it.id]=it.name;});
+    var pantryList=nonStapleItems.map(function(it){return it.id+":"+it.name;}).join(", ");
+    var prompt="Pantry items (id:name):\n"+pantryList+"\n\nFor each dish below, return the IDs of pantry items needed.\nReturn ONLY valid JSON, no markdown: {\"dish name\": [id1, id2, ...]}\nOmit staples. Dishes: "+unique.join(", ");
+    callAI({system:"You are a culinary assistant. Output ONLY valid JSON with numeric IDs. No markdown, no preamble.",
+      prompt:prompt,maxTokens:2000,stream:true}).then(function(res){
+      if(!res||!res.json||typeof res.json!=="object") return;
+      var mapped={};
+      Object.keys(res.json).forEach(function(dishName){
+        var ids=res.json[dishName];
+        if(Array.isArray(ids)){
+          mapped[dishName]=ids.filter(function(id){
+            return pantryIdMap[id]!==undefined||pantryIdMap[Number(id)]!==undefined;
+          }).map(function(id){return Number(id)||id;});
+        }
+      });
+      // Mark all requested dishes as fetched, even those AI returned nothing for
+      unique.forEach(function(n){ if(!(n in mapped)) mapped[n]=[]; });
+      setAiDishIngredients(function(prev){return Object.assign({},prev,mapped);});
+    }).catch(function(){
+      // On failure, mark all as fetched-with-empty so we don't spam retries
+      var fallback={};
+      unique.forEach(function(n){fallback[n]=[];});
+      setAiDishIngredients(function(prev){return Object.assign({},prev,fallback);});
+    });
+  }, [loaded, menu, nextMenu, apiKey, geminiKey]); // eslint-disable-line
   useEffect(() => {
     if (loaded) storage.set(SK.mealCats, JSON.stringify(mealCats));
   }, [mealCats, loaded]);
@@ -6367,7 +6413,7 @@ function App() {
       Object.values(plan).forEach(function(dayPlan){
         if(!dayPlan||typeof dayPlan!=="object") return;
         Object.values(dayPlan).forEach(function(name){
-          if(name && !dishNameSet3.has(name) && !aiDishIngredients[name]){
+          if(name && !dishNameSet3.has(name) && !(name in aiDishIngredients)){
             aiDishNames.push(name);
           }
         });
@@ -6403,7 +6449,7 @@ function App() {
                 var validIds=ids.filter(function(id){
                   return pantryIdMap[id]!==undefined || pantryIdMap[Number(id)]!==undefined;
                 }).map(function(id){return Number(id)||id;});
-                if(validIds.length>0) mapped[dishName]=validIds;
+                mapped[dishName]=validIds; // always store, even [] — marks as "fetched, no pantry matches"
               }
             });
             setAiDishIngredients(function(prev){return Object.assign({},prev,mapped);});
@@ -8271,7 +8317,7 @@ Only output the JSON. No markdown.`;
     });
     // AI dishes with no ingredient data yet
     var unknownAI = [...menuDishNames].filter(function(n){
-      return !dishes.find(function(d){return d.name===n;}) && !aiDishIngredients[n];
+      return !dishes.find(function(d){return d.name===n;}) && !(n in aiDishIngredients);
     });
     if(missingList.length===0 && unknownAI.length===0){
       return /*#__PURE__*/React.createElement("div", {
