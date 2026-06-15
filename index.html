@@ -8562,7 +8562,7 @@ Only output the JSON. No markdown.`;
       var useSatOffsets=((nextMenu||menu)&&(nextMenu||menu).generatedOnSaturday) && todayIdx2===6;
       var offset=useSatOffsets
         ? (idx===6?7:idx+1)  // Saturday generated: Sat=+7, Sun=+1...Fri=+6
-        : (idx>=todayIdx2?idx-todayIdx2:7-(todayIdx2-idx));
+        : idx-todayIdx2;     // promoted week: negative=past, 0=today, positive=future
       var d=new Date(); d.setDate(d.getDate()+offset);
       return d.toLocaleDateString("en-IN",{day:"numeric",month:"short"});
     })(),
