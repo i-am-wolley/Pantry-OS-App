@@ -7188,21 +7188,16 @@ Only output the JSON. No markdown.`;
     try {
       var H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics;
       if (H) {
-        if (style === "heavy") {
-          H.impact({ style: "HEAVY" });
-        } else if (style === "medium") {
-          H.impact({ style: "MEDIUM" });
-        } else {
+        if (style === "heavy" || style === "medium") {
           H.impact({ style: "LIGHT" });
+        } else {
+          H.selectionChanged();
         }
         return;
       }
     } catch(e) {}
     if (window.navigator && window.navigator.vibrate) {
-      if (style === "light") window.navigator.vibrate(10);
-      else if (style === "medium") window.navigator.vibrate(20);
-      else if (style === "heavy") window.navigator.vibrate([30, 10, 30]);
-      else window.navigator.vibrate(10);
+      window.navigator.vibrate(8);
     }
   }
 
