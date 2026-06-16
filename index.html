@@ -8510,22 +8510,52 @@ Only output the JSON. No markdown.`;
     style: {display:"flex",flexDirection:"column",gap:10}
   },
   /*#__PURE__*/React.createElement("div", {
-    style: {display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}
+    style: {display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:10}
   },
-  /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:4}},
-    /*#__PURE__*/React.createElement("button", {
-      onClick: () => { haptic("light"); setGenMode("allai"); },
-      style: {...pill(genMode==="allai"),fontSize:12,padding:"5px 10px"}
-    }, "Full AI"),
-    /*#__PURE__*/React.createElement("button", {
-      onClick: () => { haptic("light"); setGenMode("mixed"); },
-      style: {...pill(genMode==="mixed"),fontSize:12,padding:"5px 10px"}
-    }, "Mixed")
+    /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:4}},
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function(){ haptic("light"); setGenMode("allai"); },
+        style: Object.assign({},pill(genMode==="allai"),{fontSize:12,padding:"5px 10px"})
+      }, "Let AI choose"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function(){ haptic("light"); setGenMode("mixed"); },
+        style: Object.assign({},pill(genMode==="mixed"),{fontSize:12,padding:"5px 10px"})
+      }, "Mixed")
+    ),
+    /*#__PURE__*/React.createElement("div", {
+      style:{display:"flex",borderRadius:8,overflow:"hidden",border:"1px solid "+C.border2,flexShrink:0}
+    },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function(){ haptic("light"); setIgnoreStock(true); },
+        style:{background:ignoreStock?C.white:"transparent",color:ignoreStock?C.bg:C.dim,border:"none",
+          padding:"4px 9px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:C.font,whiteSpace:"nowrap"}
+      }, "Any pantry"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function(){ haptic("light"); setIgnoreStock(false); },
+        style:{background:!ignoreStock?C.white:"transparent",color:!ignoreStock?C.bg:C.dim,border:"none",
+          padding:"4px 9px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:C.font,whiteSpace:"nowrap"}
+      }, "Stocked only")
+    )
   ),
-  /*#__PURE__*/React.createElement("button", {
-    onClick: function(){ haptic("light"); setIgnoreStock(function(v){return !v;}); },
-    style: {...pill(ignoreStock), fontSize:12, padding:"5px 10px"}
-  }, "Any pantry")
+  genMode==="allai" && /*#__PURE__*/React.createElement("div", {
+    style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:10}
+  },
+    ...[["calories","kcal"],["protein","g protein"],["carbs","g carbs"],["fat","g fat"]].map(function(pair){
+      var key=pair[0], unit=pair[1];
+      return /*#__PURE__*/React.createElement("div", {key:key},
+        /*#__PURE__*/React.createElement("div", {style:{fontSize:10,color:C.dim,marginBottom:3,fontWeight:600,letterSpacing:0.5,textTransform:"uppercase"}}, key),
+        /*#__PURE__*/React.createElement("input", {
+          type:"number",min:"0",
+          value: macros[key]||"",
+          onChange: function(e){
+            var v=parseInt(e.target.value)||0;
+            setMacros(function(prev){return Object.assign({},prev,{[key]:v});});
+          },
+          placeholder: "0 "+unit,
+          style: Object.assign({},mkInp(C),{fontSize:12,padding:"6px 8px",width:"100%",boxSizing:"border-box"})
+        })
+      );
+    })
   ),
   /*#__PURE__*/React.createElement("button", {
     onClick: function() {
