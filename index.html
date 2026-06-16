@@ -3318,7 +3318,7 @@ const storage = {
 // ─────────────────────────────────────────────────────────────────────────────
 //  VERSION & MIGRATION SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
-const CURRENT_VERSION = 9;
+const CURRENT_VERSION = 10;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
@@ -3535,7 +3535,18 @@ const MIGRATIONS = {
     return data;
   },
   // v8 → v9: allergen system introduced (schema marker, no data migration needed)
-  8: function(data) { return data; }
+  8: function(data) { return data; },
+  // v9 → v10: backfill allergens on existing pantry items from ITEM_ALLERGEN_SEED
+  9: function(data) {
+    if (data.items && Array.isArray(data.items)) {
+      data.items = data.items.map(function(item) {
+        if (item.allergens !== undefined) return item; // user already set (or cleared) — don't touch
+        var als = ITEM_ALLERGEN_SEED[(item.name||"").toLowerCase().trim()];
+        return (als && als.length) ? Object.assign({}, item, { allergens: als }) : item;
+      });
+    }
+    return data;
+  }
 };
 
 const ALLERGENS = [
@@ -3574,6 +3585,65 @@ const ALLERGEN_MAP = {
   "mustard seeds":["mustard"],"mustard paste":["mustard"],"mustard":["mustard"],
   "celery":["celery"],"lupin":["lupin"],
 };
+
+// Maps pantry item names (lowercase) → allergen IDs — pre-tags DEFAULT_ITEMS and used in migration v9→v10
+const ITEM_ALLERGEN_SEED = {
+  // Milk / dairy
+  "milk":["milk"],"butter":["milk"],"cheese":["milk"],"yogurt":["milk"],
+  "paneer":["milk"],"condensed milk":["milk"],"fresh cream":["milk"],
+  "sour cream":["milk"],"cream cheese":["milk"],"mozzarella":["milk"],
+  "cheddar":["milk"],"buttermilk":["milk"],"skimmed milk":["milk"],
+  "lactose free milk":["milk"],"gouda":["milk"],"curd":["milk"],
+  "spiced buttermilk":["milk"],"parmesan":["milk"],"feta cheese":["milk"],
+  "creme fraiche":["milk"],"gruyere":["milk"],"ghee":["milk"],
+  "ice cream":["milk"],"lassi":["milk"],"ricotta":["milk"],
+  "dark chocolate":["milk"],"chocolate chips":["milk"],"protein shake":["milk"],
+  "biscuits":["gluten","milk"],"cookies":["gluten","milk","eggs"],"croissant":["gluten","milk"],
+  // Gluten / wheat
+  "white bread":["gluten"],"brown bread":["gluten"],"whole wheat bread":["gluten"],
+  "pita bread":["gluten"],"burger buns":["gluten"],"pizza bread":["gluten"],
+  "arabic bread":["gluten"],"naan":["gluten"],"roti":["gluten"],
+  "paratha":["gluten"],"tortilla wraps":["gluten"],
+  "spring roll wrappers":["gluten"],"wonton wrappers":["gluten"],
+  "all-purpose flour":["gluten"],"wheat flour":["gluten"],
+  "self-raising flour":["gluten"],"00 flour":["gluten"],
+  "dhurum wheat":["gluten"],"oat flour":["gluten"],"semolina":["gluten"],
+  "spaghetti":["gluten"],"penne":["gluten"],"oats":["gluten"],
+  "vermicelli":["gluten"],"pasta":["gluten"],"noodles":["gluten"],
+  "udon noodles":["gluten"],"bulgur wheat":["gluten"],"maggi":["gluten"],
+  "crackers":["gluten"],"pretzels":["gluten"],"instant noodles":["gluten"],
+  "panko breadcrumbs":["gluten"],"granola bar":["gluten","nuts"],"freekeh":["gluten"],
+  // Tree nuts
+  "almond flour":["nuts"],"almonds":["nuts"],"cashews":["nuts"],"walnuts":["nuts"],
+  "pistachios":["nuts"],"hazelnuts":["nuts"],"pecans":["nuts"],"pine nuts":["nuts"],
+  "mixed nuts":["nuts"],"hazelnut dukah":["nuts"],
+  // Peanuts
+  "peanuts":["peanuts"],"peanut butter":["peanuts"],
+  // Eggs
+  "eggs":["eggs"],"mayonnaise":["eggs"],
+  // Soybeans
+  "tofu":["soybeans"],"edamame":["soybeans"],"tempeh":["soybeans"],
+  "soy sauce":["soybeans"],"miso paste":["soybeans"],"shiro miso":["soybeans"],
+  // Fish
+  "fish fillet":["fish"],"boneless basa cubes":["fish"],"salmon":["fish"],
+  "fish sauce":["fish"],"anchovies":["fish"],"frozen fish":["fish"],
+  // Crustaceans
+  "prawns":["crustaceans"],"frozen prawns":["crustaceans"],"shrimp paste":["crustaceans"],
+  // Molluscs
+  "oyster sauce":["molluscs"],
+  // Celery
+  "celery":["celery"],
+  // Mustard
+  "mustard seeds":["mustard"],"mustard sauce":["mustard"],"dijon mustard":["mustard"],
+  // Sesame
+  "sesame oil":["sesame"],"sesame seeds":["sesame"],"tahini":["sesame"],
+};
+
+// Stamp allergens onto DEFAULT_ITEMS so cuisine presets and fresh seeds carry them pre-tagged
+DEFAULT_ITEMS.forEach(function(item) {
+  var als = ITEM_ALLERGEN_SEED[item.name.toLowerCase().trim()];
+  if (als && als.length) item.allergens = als;
+});
 
 var CUISINE_PRESETS = {
   "vegetarian": {
