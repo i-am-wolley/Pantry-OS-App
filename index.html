@@ -6154,18 +6154,19 @@ function App() {
       });
     });
 
-    // Build stock description
+    // Build stock description — Any pantry uses all items; Stocked only uses stocked items
+    var promptItems = _ignoreStock ? items : stockedItems;
     var stockByCat={};
     PANTRY_CATEGORIES.forEach(function(pc){
       var seen=new Set();
-      var names=stockedItems.filter(function(i){return i.cat===pc.id;}).map(function(i){return i.name;}).filter(function(n){
+      var names=promptItems.filter(function(i){return i.cat===pc.id;}).map(function(i){return i.name;}).filter(function(n){
         var k=n.toLowerCase().trim(); if(seen.has(k))return false; seen.add(k); return true;
       });
       if(names.length) stockByCat[pc.label]=names;
     });
     var stockDesc=Object.entries(stockByCat).map(function(e){return e[0]+": "+e[1].join(", ");}).join("\n");
-    var fruits=stockedItems.filter(function(i){return i.cat==="fruit";}).map(function(i){return i.name;});
-    var vegs=stockedItems.filter(function(i){return i.cat==="veg";}).map(function(i){return i.name;});
+    var fruits=promptItems.filter(function(i){return i.cat==="fruit";}).map(function(i){return i.name;});
+    var vegs=promptItems.filter(function(i){return i.cat==="veg";}).map(function(i){return i.name;});
     var dietFlags=Object.keys(dietary).filter(function(k){return dietary[k];});
     if(cuisines&&cuisines.includes("vegan")&&!dietFlags.includes("Vegan")) dietFlags=dietFlags.concat(["Vegan"]);
     if(cuisines&&cuisines.includes("vegan")&&!dietFlags.includes("Vegan")) dietFlags=dietFlags.concat(["Vegan"]);
@@ -6174,6 +6175,17 @@ function App() {
     if(macros.protein>0)macroLines.push("prot:"+macros.protein+"g");
     if(macros.carbs>0)macroLines.push("carbs:"+macros.carbs+"g");
     if(macros.fat>0)macroLines.push("fat:"+macros.fat+"g");
+    // Allergen exclusion line for AI prompts
+    var allergenLine="";
+    if(activeAllergens.length){
+      var allergenLabels=activeAllergens.map(function(id){
+        var al=ALLERGENS.find(function(a){return a.id===id;});
+        return al?al.label+" ("+al.desc+")":id;
+      });
+      allergenLine="STRICT ALLERGEN EXCLUSIONS — do NOT use any of these or any ingredient containing them: "+allergenLabels.join(", ")+".\n";
+    }
+    // Stock constraint line for AI prompts
+    var stockConstraintLine=!_ignoreStock?"STRICT STOCKED ONLY — use ONLY the exact ingredients listed in PANTRY. Do not suggest any ingredient not on that list.\n":"";
 
     if(_genMode==="allai"){
       // ALL AI: full AI for every non-locked slot
@@ -6195,6 +6207,8 @@ function App() {
         "MICHELIN_LUNCH/MICHELIN_DINNER=Gourmet quality dish from pantry.\n"+
         "Use ONLY pantry ingredients listed. Staples: oil,salt,water,sugar,black pepper always available.\n"+
         "Every day needs fruit and vegetable. Respect meal slot appropriateness.\n"+
+        allergenLine+
+        stockConstraintLine+
         (cookTime>0?"Max cook time "+cookTime+"min for weekday meals.\n":"")+
         (dietFlags.length?"Diet: "+dietFlags.join(",")+"\n":"")+
         (macroLines.length?"Macros: "+macroLines.join(",")+"\n":"");
@@ -6443,9 +6457,8 @@ function App() {
         });
       });
 
-      // Call AI for AI slots
-      if(aiSlotsNeeded.length>0){
-        if(!(apiKey || geminiKey)){ setAiError("No AI key for AI slots. Go to Settings."); setAiLoading(false); return; }
+      // Call AI for AI slots (skip if AI unavailable — unfilled slots trigger post-gen warning)
+      if(aiSlotsNeeded.length>0 && aiEnabled && (apiKey || geminiKey)){
         var allDishNames=dishes.map(function(d){return d.name;});
         var aiTmpl="{\n"+aiSlotsNeeded.map(function(s){
           var isWE=WEEKEND.includes(s.day);
@@ -6461,6 +6474,8 @@ function App() {
           "AI_DISH=creative dish, SNACK=simple max 20min snack, MICHELIN_*=Gourmet quality.\n"+
           (hasFallback?"PANTRY_FALLBACK slots: use ONLY the exact ingredients listed. Zero creativity outside pantry.\n":"")+
           "Use ONLY pantry ingredients listed below. Staples (oil,salt,water,sugar,pepper) always available.\n"+
+          allergenLine+
+          stockConstraintLine+
           "Do NOT use or closely resemble: "+allDishNames.join(", ")+"\n"+
           (cookTime>0?"Max cook: "+cookTime+"min.\n":"")+
           (dietFlags.length?"Diet: "+dietFlags.join(",")+"\n":"")+
