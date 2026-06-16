@@ -1,7 +1,7 @@
 {
   "appId": "app.pantryos",
   "appName": "Pantry OS",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
     "androidScheme": "https"
   },
