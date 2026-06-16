@@ -3297,6 +3297,7 @@ const SK_LOCAL = {
   satGenPromptWeek: "pantryos-satgenpromptweek",
   lastBackup:       "pantryos-lastbackup",
   pantryCheckWeek:  "pantryos-pantrycheck",
+  notifications:    "pantryos-notifications",
 };
 const SK = { ...SK_SYNC, ...SK_LOCAL };
 const _syncKeySet = new Set(Object.values(SK_SYNC));
@@ -5456,6 +5457,8 @@ function App() {
   const [autoBackup, setAutoBackup] = useState(false);
   const [autoNutrition, setAutoNutrition] = useState(false);
   const [haptics, setHaptics] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [pantryGapBanner, setPantryGapBanner] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(true);
   const [aiGateModal, setAiGateModal] = useState(null);
   const [theme, setTheme] = useState("light"); // "dark" | "light"
@@ -5565,6 +5568,8 @@ function App() {
       if (san) setAutoNutrition(JSON.parse(san));
       const shp = storage.get(SK.haptics);
       if (shp) setHaptics(JSON.parse(shp));
+      const sne = storage.get(SK.notifications);
+      if (sne !== null) setNotificationsEnabled(JSON.parse(sne));
       const saie = storage.get(SK.aiEnabled);
       if (saie !== null) setAiEnabled(JSON.parse(saie));
       const sth = storage.get(SK.theme);
@@ -5823,6 +5828,9 @@ function App() {
   useEffect(() => {
     if (loaded) storage.set(SK.haptics, JSON.stringify(haptics));
   }, [haptics, loaded]);
+  useEffect(() => {
+    if (loaded) storage.set(SK.notifications, JSON.stringify(notificationsEnabled));
+  }, [notificationsEnabled, loaded]);
   useEffect(() => {
     if (loaded) storage.set(SK.aiEnabled, JSON.stringify(aiEnabled));
   }, [aiEnabled, loaded]);
@@ -7264,6 +7272,54 @@ Only output the JSON. No markdown.`;
   const inp = mkInp(C);
   const pill = mkPill(C);
 
+  // ── Notifications ──
+  async function scheduleNotification() {
+    var LN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+    if (!LN) return;
+    try {
+      var perm = await LN.requestPermissions();
+      if (perm.display !== "granted") { setNotificationsEnabled(false); return; }
+      var now = new Date();
+      var fireAt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0, 0);
+      if (fireAt <= now) fireAt.setDate(fireAt.getDate() + 1);
+      await LN.schedule({ notifications: [{
+        id: 1001, title: "Miso",
+        body: "Your pantry needs a top-up for this week’s plan",
+        schedule: { at: fireAt, repeats: true, every: "day" },
+        actionTypeId: "", extra: null
+      }]});
+    } catch(e) {}
+  }
+  async function cancelNotification() {
+    var LN = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+    if (!LN) return;
+    try { await LN.cancel({ notifications: [{ id: 1001 }] }); } catch(e) {}
+  }
+  useEffect(function(){
+    if (!loaded || !notificationsEnabled || !menu || !menu.plan) return;
+    var hour = new Date().getHours();
+    if (hour < 6 || hour >= 12) return;
+    var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    var todayIdx = new Date().getDay();
+    if (todayIdx === 6) return;
+    var remainingDays = DAY_NAMES.slice(todayIdx);
+    var stockedSet = new Set(items.filter(function(i){ return i.type==="quantity"?(stock[i.id]||0)>0:stock[i.id]===true; }).map(function(i){ return i.name.toLowerCase(); }));
+    var STAPLES = new Set(["oil","salt","water","sugar","black pepper","cooking oil","butter","ghee"]);
+    var hasGaps = false;
+    remainingDays.forEach(function(day){
+      if(hasGaps) return;
+      var dp = menu.plan[day];
+      if(!dp||typeof dp!=="object") return;
+      Object.values(dp).forEach(function(dishName){
+        if(!dishName||hasGaps) return;
+        var dish = dishes.find(function(d){ return d.name===dishName; });
+        if(!dish||!dish.ingredients||!dish.ingredients.length) return;
+        dish.ingredients.forEach(function(ing){ if(!STAPLES.has(ing.toLowerCase())&&!stockedSet.has(ing.toLowerCase())) hasGaps=true; });
+      });
+    });
+    if(hasGaps) setPantryGapBanner(true);
+  }, [loaded, notificationsEnabled]);
+
   // ── AI gate ──
   function withAI(cb) {
     if (!aiEnabled) { setAiGateModal("disabled"); return; }
@@ -7589,6 +7645,25 @@ Only output the JSON. No markdown.`;
           /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setModelName("claude-haiku-4-5-20251001"); }, style: { background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 12, fontFamily: C.font } }, "Reset to default")
         )
       )
+    )
+  ), /*#__PURE__*/React.createElement("div", {
+    style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "18px", marginBottom: 10, boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none" }
+  },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 14 } }, "NOTIFICATIONS"),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
+      /*#__PURE__*/React.createElement("div", null,
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: C.white, marginBottom: 2 } }, "Morning reminders"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Daily 8am alert if pantry gaps exist this week")
+      ),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: function(){
+          haptic("light");
+          var next = !notificationsEnabled;
+          setNotificationsEnabled(next);
+          if (next) scheduleNotification(); else cancelNotification();
+        },
+        style: Object.assign({}, pill(notificationsEnabled), { padding: "5px 16px", fontSize: 13, flexShrink: 0 })
+      }, notificationsEnabled ? "ON" : "OFF")
     )
   ), /*#__PURE__*/React.createElement(BackupPanel, {
     items: items,
@@ -8424,7 +8499,20 @@ Only output the JSON. No markdown.`;
       WebkitOverflowScrolling: "touch",
       padding: "12px 10px 80px"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  },
+  pantryGapBanner && /*#__PURE__*/React.createElement("div", {
+    style: { background: "rgba(201,163,106,0.12)", border: "1px solid rgba(201,163,106,0.3)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }
+  },
+    /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: C.white, marginBottom: 1 } }, "Pantry top-up needed"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Some ingredients for this week are missing")
+    ),
+    /*#__PURE__*/React.createElement("button", {
+      onClick: function(){ haptic("light"); setPantryGapBanner(false); },
+      style: { background: "none", border: "none", color: C.dim, fontSize: 20, cursor: "pointer", fontFamily: C.font, lineHeight: 1, padding: 0, flexShrink: 0 }
+    }, "\xd7")
+  ),
+  /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
