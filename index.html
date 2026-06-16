@@ -5471,6 +5471,7 @@ function App() {
   const [dishSearch, setDishSearch] = useState(""); // dish obj being edited
   const [pantrySearch, setPantrySearch] = useState("");
   const [newIsStaple, setNewIsStaple] = useState(false);
+  const [newAllergens, setNewAllergens] = useState([]);
   const [removeItemConfirm, setRemoveItemConfirm] = useState(null); // {item, linked}
   const [dishAdvanced, setDishAdvanced] = useState(false); // show advanced rules in add dish
   const [cookNowModal, setCookNowModal] = useState(false);
@@ -6011,12 +6012,14 @@ function App() {
       name: n,
       type: newType,
       cat: newCat,
-      isStaple: newCat === "staples" ? true : newIsStaple
+      isStaple: newCat === "staples" ? true : newIsStaple,
+      allergens: newAllergens.length ? [...newAllergens] : undefined
     }))]);
     setNewName("");
     setNewType("binary");
     setNewCat("other");
     setNewIsStaple(false);
+    setNewAllergens([]);
     setAddItemModal(false);
   }
 
@@ -6133,8 +6136,11 @@ function App() {
     function dishHasActiveAllergen(dish){
       if(!activeAllergens.length||!dish.ingredients||!dish.ingredients.length) return false;
       return dish.ingredients.some(function(ing){
-        var als=ALLERGEN_MAP[(ing||"").toLowerCase().trim()]||[];
-        return als.some(function(a){return activeAllergens.includes(a);});
+        var key=(ing||"").toLowerCase().trim();
+        var als=ALLERGEN_MAP[key]||[];
+        if(als.some(function(a){return activeAllergens.includes(a);})) return true;
+        var item=items.find(function(it){return it.name.toLowerCase().trim()===key;});
+        return !!(item&&item.allergens&&item.allergens.some(function(a){return activeAllergens.includes(a);}));
       });
     }
 
@@ -9371,6 +9377,26 @@ Only output the JSON. No markdown.`;
     name: pc.icon,
     size: 11
   }), pc.label)))), /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 16 }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 12, color: C.dim, letterSpacing: 1, marginBottom: 6 }
+  }, "CONTAINS ALLERGENS"), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", flexWrap: "wrap", gap: 5 }
+  }, ALLERGENS.map(function(al) {
+    var on = newAllergens.includes(al.id);
+    return /*#__PURE__*/React.createElement("button", {
+      key: al.id,
+      onClick: function(){ haptic("light"); setNewAllergens(function(p){ return on ? p.filter(function(x){return x!==al.id;}) : [...p, al.id]; }); },
+      style: {
+        background: on ? "#c0392b22" : "transparent",
+        color: on ? "#e57373" : C.dim,
+        border: "1px solid " + (on ? "#e57373" : C.dim2),
+        borderRadius: 5, cursor: "pointer", fontFamily: C.font,
+        fontSize: 12, fontWeight: 600, letterSpacing: 0.5,
+        transition: "all 0.12s", padding: "5px 9px"
+      }
+    }, al.label);
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -10914,6 +10940,29 @@ Only output the JSON. No markdown.`;
     name: pc.icon,
     size: 11
   }), pc.label)))), /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 16 }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 12, color: C.dim, letterSpacing: 1, marginBottom: 6 }
+  }, "CONTAINS ALLERGENS"), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", flexWrap: "wrap", gap: 5 }
+  }, ALLERGENS.map(function(al) {
+    var on = !!(editItemModal.allergens && editItemModal.allergens.includes(al.id));
+    return /*#__PURE__*/React.createElement("button", {
+      key: al.id,
+      onClick: function(){ haptic("light"); setEditItemModal(function(p){
+        var cur = p.allergens || [];
+        return Object.assign({}, p, { allergens: on ? cur.filter(function(x){return x!==al.id;}) : [...cur, al.id] });
+      }); },
+      style: {
+        background: on ? "#c0392b22" : "transparent",
+        color: on ? "#e57373" : C.dim,
+        border: "1px solid " + (on ? "#e57373" : C.dim2),
+        borderRadius: 5, cursor: "pointer", fontFamily: C.font,
+        fontSize: 12, fontWeight: 600, letterSpacing: 0.5,
+        transition: "all 0.12s", padding: "5px 9px"
+      }
+    }, al.label);
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
