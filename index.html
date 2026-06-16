@@ -8531,22 +8531,20 @@ Only output the JSON. No markdown.`;
     onClick: function() {
       haptic("medium");
       if (genMode === "mixed") {
-        withAI(function(){
-          var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-          var todayIdx = new Date().getDay();
-          var remaining = todayIdx===6 ? DAY_NAMES.slice(0) : DAY_NAMES.slice(todayIdx);
-          var sel = Object.assign({}, defaultAiSlots);
-          if(lockedDays) Object.keys(sel).forEach(function(k){
-            var day=k.split("|")[0];
-            if(lockedDays[day]) delete sel[k];
-          });
-          Object.keys(sel).forEach(function(k){
-            var day=k.split("|")[0];
-            if(!remaining.includes(day)) delete sel[k];
-          });
-          setAiSlotSel(sel);
-          setAiSlotPopup(true);
+        var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        var todayIdx = new Date().getDay();
+        var remaining = todayIdx===6 ? DAY_NAMES.slice(0) : DAY_NAMES.slice(todayIdx);
+        var sel = Object.assign({}, defaultAiSlots);
+        if(lockedDays) Object.keys(sel).forEach(function(k){
+          var day=k.split("|")[0];
+          if(lockedDays[day]) delete sel[k];
         });
+        Object.keys(sel).forEach(function(k){
+          var day=k.split("|")[0];
+          if(!remaining.includes(day)) delete sel[k];
+        });
+        setAiSlotSel(sel);
+        setAiSlotPopup(true);
       } else {
         withAI(function(){ generateMenu(); });
       }
@@ -11283,7 +11281,15 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", {style:{display:"flex",gap:8,marginTop:14}},
       /*#__PURE__*/React.createElement("button", {onClick:()=>{haptic("light");setAiSlotPopup(false);},style:{...pill(false),flex:1,padding:"9px 0",fontSize:13}}, "Cancel"),
       /*#__PURE__*/React.createElement("button", {
-        onClick:function(){haptic("medium");setAiSlotPopup(false);generateMenu();},
+        onClick:function(){
+          haptic("medium");
+          var hasAiSlots = Object.keys(aiSlotSel).length > 0;
+          if(hasAiSlots){
+            withAI(function(){ setAiSlotPopup(false); generateMenu(); });
+          } else {
+            setAiSlotPopup(false); generateMenu();
+          }
+        },
         style:{...pill(true),flex:1,padding:"9px 0",fontSize:13}
       }, "Generate")
     )
