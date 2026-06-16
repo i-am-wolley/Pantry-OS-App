@@ -5601,6 +5601,16 @@ function App() {
     setLoaded(true);
   }, []);
 
+  // ── One-time backfill: items in the Staples category should always have isStaple:true ──
+  useEffect(() => {
+    if (!loaded) return;
+    setItems(prev => {
+      var needsFix = prev.some(function(i){ return i.cat === "staples" && !i.isStaple; });
+      if (!needsFix) return prev;
+      return prev.map(function(i){ return i.cat === "staples" && !i.isStaple ? Object.assign({}, i, { isStaple: true }) : i; });
+    });
+  }, [loaded]);
+
   // ── One-time backfill: dishes saved from AI suggestions before this got fixed
   // were stored with ingredients:[]. If we have cached AI ingredient data for
   // that dish name, fill it in now. ──
@@ -5940,7 +5950,7 @@ function App() {
       name: n,
       type: newType,
       cat: newCat,
-      isStaple: newIsStaple
+      isStaple: newCat === "staples" ? true : newIsStaple
     }))]);
     setNewName("");
     setNewType("binary");
@@ -5954,10 +5964,10 @@ function App() {
   function doEditItem() {
     if (!editItemModal) return;
     haptic("medium");
-    setItems(p => p.map(i => i.id === editItemModal.id ? {
-      ...i,
-      ...editItemModal
-    } : i));
+    var toSave = editItemModal.cat === "staples"
+      ? Object.assign({}, editItemModal, { isStaple: true })
+      : editItemModal;
+    setItems(p => p.map(i => i.id === toSave.id ? { ...i, ...toSave } : i));
     setEditItemModal(null);
   }
 
@@ -9002,7 +9012,7 @@ Only output the JSON. No markdown.`;
       fontSize: 14,
       padding: 20
     }
-  }, "No recipes yet. Tap + Recipe.")), /*#__PURE__*/React.createElement(Modal, {
+  }, "No dishes yet. Tap + Dish.")), /*#__PURE__*/React.createElement(Modal, {
     open: addItemModal,
     onClose: () => setAddItemModal(false),
     title: "Add pantry item"
