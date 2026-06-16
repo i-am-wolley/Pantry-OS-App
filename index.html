@@ -3284,6 +3284,7 @@ const SK_SYNC = {
   apiKey:          "pantryos-apikey",
   geminiKey:       "pantryos-geminikey",
   aiEnabled:       "pantryos-aienabled",
+  activeAllergens: "pantryos-allergens",
 };
 // Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
@@ -3317,7 +3318,7 @@ const storage = {
 // ─────────────────────────────────────────────────────────────────────────────
 //  VERSION & MIGRATION SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
-const CURRENT_VERSION = 8;
+const CURRENT_VERSION = 9;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
@@ -3520,8 +3521,7 @@ const MIGRATIONS = {
     }
     return data;
   },
-  // v7 → v8: add a handful of new catalog items (Leeks, Berries, Chocolate Chips,
-  // Guacamole, Ketchup, Coleslaw) introduced to cover cuisine-preset dish ingredients.
+  // v7 → v8: add a handful of new catalog items
   7: function (data) {
     if (data.items && Array.isArray(data.items)) {
       var uN = new Set(data.items.map(function(i){return i.name.toLowerCase().trim();}));
@@ -3533,9 +3533,47 @@ const MIGRATIONS = {
       });
     }
     return data;
-  }
+  },
+  // v8 → v9: allergen system introduced (schema marker, no data migration needed)
+  8: function(data) { return data; }
 };
 
+const ALLERGENS = [
+  {id:"gluten",      label:"Gluten",      desc:"wheat · rye · barley · oats"},
+  {id:"crustaceans", label:"Crustaceans", desc:"shrimp · crab · lobster"},
+  {id:"eggs",        label:"Eggs",        desc:"all egg products"},
+  {id:"fish",        label:"Fish",        desc:"all fish types"},
+  {id:"peanuts",     label:"Peanuts",     desc:"groundnuts"},
+  {id:"soybeans",    label:"Soybeans",    desc:"soy · tofu · edamame"},
+  {id:"milk",        label:"Milk",        desc:"dairy · lactose"},
+  {id:"nuts",        label:"Tree Nuts",   desc:"almonds · cashews · walnuts"},
+  {id:"celery",      label:"Celery",      desc:"celery and celeriac"},
+  {id:"mustard",     label:"Mustard",     desc:"mustard seeds · paste"},
+  {id:"sesame",      label:"Sesame",      desc:"sesame seeds · oil"},
+  {id:"sulphites",   label:"Sulphites",   desc:"wine · dried fruit · vinegar"},
+  {id:"lupin",       label:"Lupin",       desc:"lupin flour and seeds"},
+  {id:"molluscs",    label:"Molluscs",    desc:"squid · mussels · oysters"},
+];
+const ALLERGEN_MAP = {
+  "milk":["milk"],"butter":["milk"],"cream":["milk"],"yogurt":["milk"],
+  "cheddar":["milk"],"mozzarella":["milk"],"parmesan":["milk"],"paneer":["milk"],
+  "fresh cream":["milk"],"ghee":["milk"],"cheese":["milk"],"ricotta":["milk"],
+  "eggs":["eggs"],"egg":["eggs"],
+  "wheat flour":["gluten"],"00 flour":["gluten"],"oats":["gluten"],
+  "white bread":["gluten"],"roti":["gluten"],"pita bread":["gluten"],
+  "pasta":["gluten"],"noodles":["gluten"],"spaghetti":["gluten"],
+  "tortilla wraps":["gluten"],"spring roll wrappers":["gluten"],"arborio rice":[],"udon noodles":["gluten"],
+  "peanuts":["peanuts"],
+  "almonds":["nuts"],"cashews":["nuts"],"walnuts":["nuts"],"pistachios":["nuts"],
+  "hazelnuts":["nuts"],"mixed nuts":["nuts"],"pine nuts":["nuts"],
+  "tofu":["soybeans"],"soy sauce":["soybeans"],"miso paste":["soybeans"],"edamame":["soybeans"],
+  "sesame oil":["sesame"],"tahini":["sesame"],"sesame seeds":["sesame"],
+  "salmon":["fish"],"tuna":["fish"],"cod":["fish"],"fish sauce":["fish"],"anchovies":["fish"],
+  "shrimp":["crustaceans"],"prawns":["crustaceans"],"crab":["crustaceans"],"lobster":["crustaceans"],
+  "squid":["molluscs"],"mussels":["molluscs"],"oysters":["molluscs"],"scallops":["molluscs"],
+  "mustard seeds":["mustard"],"mustard paste":["mustard"],"mustard":["mustard"],
+  "celery":["celery"],"lupin":["lupin"],
+};
 
 var CUISINE_PRESETS = {
   "vegetarian": {
@@ -5461,6 +5499,7 @@ function App() {
   const [pantryGapBanner, setPantryGapBanner] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(true);
   const [aiGateModal, setAiGateModal] = useState(null);
+  const [activeAllergens, setActiveAllergens] = useState([]);
   const [theme, setTheme] = useState("light"); // "dark" | "light"
   useEffect(() => {
     var meta = document.querySelector('meta[name="theme-color"]');
@@ -5572,6 +5611,8 @@ function App() {
       if (sne !== null) setNotificationsEnabled(JSON.parse(sne));
       const saie = storage.get(SK.aiEnabled);
       if (saie !== null) setAiEnabled(JSON.parse(saie));
+      const sall = storage.get(SK.activeAllergens);
+      if (sall) setActiveAllergens(JSON.parse(sall));
       const sth = storage.get(SK.theme);
       if (sth) setTheme(JSON.parse(sth));
       const scm = storage.get(SK.colorMode);
@@ -5835,6 +5876,9 @@ function App() {
     if (loaded) storage.set(SK.aiEnabled, JSON.stringify(aiEnabled));
   }, [aiEnabled, loaded]);
   useEffect(() => {
+    if (loaded) storage.set(SK.activeAllergens, JSON.stringify(activeAllergens));
+  }, [activeAllergens, loaded]);
+  useEffect(() => {
     if (loaded) storage.set(SK.theme, JSON.stringify(theme));
   }, [theme, loaded]);
   useEffect(() => {
@@ -6085,6 +6129,14 @@ function App() {
     const todayName=DAY_NAMES[todayIdx];
     const STAPLE_PASS=new Set(["oil","cooking oil","salt","water","sugar","black pepper"]);
 
+    function dishHasActiveAllergen(dish){
+      if(!activeAllergens.length||!dish.ingredients||!dish.ingredients.length) return false;
+      return dish.ingredients.some(function(ing){
+        var als=ALLERGEN_MAP[(ing||"").toLowerCase().trim()]||[];
+        return als.some(function(a){return activeAllergens.includes(a);});
+      });
+    }
+
     const stockedNameSet=new Set(stockedItems.map(function(i){return i.name.toLowerCase();}));
     function isFullyStocked(dish){
       if(_ignoreStock) return true; // ignore stock mode: all dishes eligible
@@ -6301,6 +6353,7 @@ function App() {
           var cats=Array.isArray(d.mealCats)?d.mealCats:[d.mealCat||"Dinner"];
           if(!cats.includes(mc)) return false;
           if(!isFullyStocked(d)) return false;
+          if(dishHasActiveAllergen(d)) return false;
           if(d.lockedForMenu===true) return false;
           if(d.weekendOnly===true&&!isWE) return false;
           if(d.weekendOnly==="weekday"&&isWE) return false;
@@ -7664,6 +7717,31 @@ Only output the JSON. No markdown.`;
         },
         style: Object.assign({}, pill(notificationsEnabled), { padding: "5px 16px", fontSize: 13, flexShrink: 0 })
       }, notificationsEnabled ? "ON" : "OFF")
+    )
+  ), /*#__PURE__*/React.createElement("div", {
+    style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "18px", marginBottom: 10, boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none" }
+  },
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, letterSpacing: 2, fontWeight: 700, marginBottom: 4 } }, "ALLERGENS"),
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 14, lineHeight: 1.5 } },
+      activeAllergens.length === 0
+        ? "No allergens set — all dishes included in planning"
+        : activeAllergens.length + " allergen" + (activeAllergens.length>1?"s":"") + " active · matching dishes excluded from generation"
+    ),
+    /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
+      ALLERGENS.map(function(al){
+        var on = activeAllergens.includes(al.id);
+        return /*#__PURE__*/React.createElement("button", {
+          key: al.id,
+          onClick: function(){
+            haptic("light");
+            setActiveAllergens(function(prev){
+              return on ? prev.filter(function(a){ return a!==al.id; }) : prev.concat([al.id]);
+            });
+          },
+          title: al.desc,
+          style: Object.assign({}, pill(on), { fontSize: 12, padding: "4px 10px" })
+        }, al.label);
+      })
     )
   ), /*#__PURE__*/React.createElement(BackupPanel, {
     items: items,
@@ -11029,19 +11107,47 @@ Only output the JSON. No markdown.`;
       })()),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
         /*#__PURE__*/React.createElement("button", {
+          onClick: function() { haptic("medium"); setOnboardStep(4); },
+          style: Object.assign({}, pill(true), { padding: "13px 0", fontSize: 16 })
+        }, "Continue"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(2); }, style: Object.assign({}, pill(false), { padding: "10px 0", fontSize: 14 }) }, "Back")
+      )
+    ),
+    onboardStep === 4 && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Any food allergies?"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Select allergens and we'll automatically exclude those dishes and ingredients from your plan. You can change this anytime in Settings."),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } },
+        ALLERGENS.map(function(al){
+          var on = activeAllergens.includes(al.id);
+          return /*#__PURE__*/React.createElement("button", {
+            key: al.id,
+            onClick: function(){
+              haptic("light");
+              setActiveAllergens(function(prev){
+                return on ? prev.filter(function(a){ return a!==al.id; }) : prev.concat([al.id]);
+              });
+            },
+            title: al.desc,
+            style: Object.assign({}, pill(on), { fontSize: 13, padding: "6px 12px" })
+          }, al.label);
+        })
+      ),
+      activeAllergens.length > 0 && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 16 } },
+        activeAllergens.length + " allergen" + (activeAllergens.length>1?"s":"") + " selected — matching dishes will be excluded"
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8, marginTop: 16 } },
+        /*#__PURE__*/React.createElement("button", {
           onClick: function() {
             haptic("medium");
             if (cuisines.length > 0) cuisines.forEach(function(key) { applyCuisinePreset(key); });
-            // Stamp pantryCheckWeek BEFORE setOnboarded so the weekly reminder effect
-            // never fires for the same week as the first-run firstStockCheckModal.
             storage.set(SK.pantryCheckWeek, getPantryCheckKey());
             localStorage.setItem('_pantryos_onboarded', '1');
             setOnboarded(true);
             setFirstStockCheckModal(true);
           },
           style: Object.assign({}, pill(true), { padding: "13px 0", fontSize: 16 })
-        }, cuisines.length === 0 ? "Skip pantry setup" : "Set up my kitchen"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(2); }, style: Object.assign({}, pill(false), { padding: "10px 0", fontSize: 14 }) }, "Back")
+        }, "Finish setup"),
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(3); }, style: Object.assign({}, pill(false), { padding: "10px 0", fontSize: 14 }) }, "Back")
       )
     )
   )),
