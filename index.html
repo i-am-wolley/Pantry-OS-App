@@ -4316,7 +4316,8 @@ function Stepper({
       background: C.card,
       border: `1px solid ${C.border2}`,
       borderRadius: 6,
-      overflow: "hidden"
+      overflow: "hidden",
+      flexShrink: 0
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => { _haptic && _haptic("light"); onChange(Math.max(min, value - 1)); },
@@ -4480,7 +4481,7 @@ function PantryTile({
       borderRadius: 3,
       border: "none",
       background: active ? C.dim : C.card,
-      color: active ? C.bg : C.dim2,
+      color: active ? C.white : C.dim2,
       fontSize: Math.max(11, size * 0.16),
       cursor: "pointer",
       display: "flex",
@@ -4492,7 +4493,7 @@ function PantryTile({
     style: {
       fontSize: Math.max(12, size * 0.18),
       fontWeight: 700,
-      color: active ? C.bg : C.dim2,
+      color: C.white,
       minWidth: size * 0.18,
       textAlign: "center"
     }
@@ -4507,7 +4508,7 @@ function PantryTile({
       borderRadius: 3,
       border: "none",
       background: active ? C.dim : C.card,
-      color: active ? C.bg : C.dim2,
+      color: active ? C.white : C.dim2,
       fontSize: Math.max(11, size * 0.16),
       cursor: "pointer",
       display: "flex",
@@ -4550,9 +4551,11 @@ function DishTile({
     onPointerUp: endPress,
     onPointerLeave: endPress,
     onPointerCancel: endPress,
+    onContextMenu: function(e){ e.preventDefault(); },
     onClick: function(e) { if (longPressed.current) e.stopPropagation(); },
     style: {
       width:"100%", height:"100%",
+      userSelect:"none", WebkitUserSelect:"none", WebkitTouchCallout:"none",
       background: missingIngredients ? (isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.025)") : C.card,
       border: missingIngredients
         ? "1.5px dashed " + (isLight ? "rgba(0,0,0,0.22)" : "rgba(255,255,255,0.18)")
@@ -4587,8 +4590,7 @@ function DishTile({
       style:{
         color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.55)",
         fontSize:10,fontWeight:700,lineHeight:1,
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.25)"),
-        borderRadius:3,padding:"1px 4px",background:"transparent",pointerEvents:"none"}
+        background:"transparent",pointerEvents:"none"}
     }, count),
   ),
   (dish.weekendOnly===true || dish.weekendOnly==="weekday" || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
@@ -4598,22 +4600,19 @@ function DishTile({
       style:{fontSize:9,
         background:"transparent",
         color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.30)"),
-        borderRadius:2,padding:"0px 3px",fontWeight:700,letterSpacing:0.3}
+        fontWeight:700,letterSpacing:0.3}
     }, "WE"),
     dish.weekendOnly==="weekday" && /*#__PURE__*/React.createElement("div", {
       style:{fontSize:9,
         background:"transparent",
         color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.30)"),
-        borderRadius:2,padding:"0px 3px",fontWeight:700,letterSpacing:0.3}
+        fontWeight:700,letterSpacing:0.3}
     }, "WD"),
     dish.michelinLevel && /*#__PURE__*/React.createElement("div", {
       style:{fontSize:9,
         background:"transparent",
         color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
-        border:"1px solid "+(isLight?"rgba(0,0,0,0.35)":"rgba(255,255,255,0.30)"),
-        borderRadius:2,padding:"0px 3px",fontWeight:700}
+        fontWeight:700}
     }, "G")
   ),
   /*#__PURE__*/React.createElement("div", {
