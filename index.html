@@ -5499,6 +5499,7 @@ function App() {
   const [pantryGapBanner, setPantryGapBanner] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(true);
   const [aiGateModal, setAiGateModal] = useState(null);
+  const [menuGapModal, setMenuGapModal] = useState(null); // null | { count, reasons:[] }
   const [activeAllergens, setActiveAllergens] = useState([]);
   const [theme, setTheme] = useState("light"); // "dark" | "light"
   useEffect(() => {
@@ -6265,6 +6266,7 @@ function App() {
           var cdCats=Array.isArray(cd.mealCats)?cd.mealCats:[cd.mealCat||"Dinner"];
           if(!cdCats.includes(mc)) continue;
           if(!isFullyStocked(cd)) continue;
+          if(dishHasActiveAllergen(cd)) continue;
           if(cd.weekendOnly===true&&!isWE) continue;
           if(cd.weekendOnly==="weekday"&&isWE) continue;
           if(cd.michelinLevel===true&&!isMich) continue;
@@ -6294,6 +6296,7 @@ function App() {
           if(d.weekendOnly===true&&!isWE) return false;
           if(d.weekendOnly==="weekday"&&isWE) return false;
           if(!isFullyStocked(d)) return false;
+          if(dishHasActiveAllergen(d)) return false;
           var ings=(d.mustIncludeIngredients&&d.mustIncludeIngredients.length)
             ? d.mustIncludeIngredients
             : (d.mustIncludeIngredient?[d.mustIncludeIngredient]:[]);
@@ -6416,6 +6419,7 @@ function App() {
             if(d.weekendOnly===true&&!isWE) return false;
             if(d.weekendOnly==="weekday"&&isWE) return false;
             if(!isFullyStocked(d)) return false;
+            if(dishHasActiveAllergen(d)) return false;
             if((freqCount[d.name]||0)>=1) return false;
             for(var i=0;i<placedNames.length;i++){
               if(d.name===placedNames[i]) return false;
@@ -6586,13 +6590,22 @@ function App() {
 
     if(autoNutrition){ setTimeout(function(){checkNutrition(newMenu);},400); }
 
-    // Warn if any slots couldn't be filled
+    // Warn if any slots couldn’t be filled — build specific reason list
     var emptySlots=0;
     remainingDays.forEach(function(d){
       mealCats.forEach(function(mc){ if(!plan[d][mc]) emptySlots++; });
     });
     if(emptySlots>0){
-      setAiError("Some meal slots couldn’t be filled — add more dishes to your pantry or enable AI.");
+      var gapReasons=[];
+      if(activeAllergens.length){
+        var alLabels=activeAllergens.map(function(id){var al=ALLERGENS.find(function(a){return a.id===id;});return al?al.label:id;});
+        gapReasons.push("Active allergens ("+alLabels.join(", ")+") are filtering out matching dishes");
+      }
+      if(!_ignoreStock) gapReasons.push("’Stocked only’ mode limits dishes to fully stocked ingredients");
+      if(!aiEnabled) gapReasons.push("AI is switched off — turn it on to fill remaining slots automatically");
+      else if(!(apiKey||geminiKey)) gapReasons.push("No AI account connected — add a key in Settings to fill remaining slots");
+      if(!gapReasons.length) gapReasons.push("Not enough dishes in your pantry to fill all meal slots");
+      setMenuGapModal({count:emptySlots, reasons:gapReasons});
     }
 
     setAiLoading(false);
@@ -11166,6 +11179,32 @@ Only output the JSON. No markdown.`;
       )
     )
   )),
+  menuGapModal && /*#__PURE__*/React.createElement("div", { onClick: function(){ setMenuGapModal(null); }, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, padding: 24 } },
+    /*#__PURE__*/React.createElement("div", { onClick: function(e){ e.stopPropagation(); }, style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 360 } },
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 18, fontWeight: 800, color: C.white, marginBottom: 6 } },
+        menuGapModal.count + " slot" + (menuGapModal.count>1?"s":"") + " couldn't be filled"
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16, lineHeight: 1.6 } }, "Here's why:"),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 22 } },
+        menuGapModal.reasons.map(function(r, i){
+          return /*#__PURE__*/React.createElement("div", { key: i, style: { display: "flex", gap: 10, alignItems: "flex-start" } },
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: "#c9a36a", flexShrink: 0, marginTop: 1 } }, "•"),
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, lineHeight: 1.6 } }, r)
+          );
+        })
+      ),
+      /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+        /*#__PURE__*/React.createElement("button", {
+          onClick: function(){ haptic("light"); setMenuGapModal(null); setShowSettings(true); },
+          style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0", fontSize: 13 })
+        }, "Open Settings"),
+        /*#__PURE__*/React.createElement("button", {
+          onClick: function(){ haptic("light"); setMenuGapModal(null); },
+          style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0", fontSize: 13 })
+        }, "OK")
+      )
+    )
+  ),
   aiGateModal && /*#__PURE__*/React.createElement("div", { onClick: function(){ setAiGateModal(null); }, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, padding: 24 } },
     /*#__PURE__*/React.createElement("div", { onClick: function(e){ e.stopPropagation(); }, style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 360 } },
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 18, fontWeight: 800, color: C.white, marginBottom: 8 } },
