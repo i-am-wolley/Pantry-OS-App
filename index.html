@@ -3283,6 +3283,7 @@ const SK_SYNC = {
   lastAutoGen:     "pantryos-lastautogen",
   apiKey:          "pantryos-apikey",
   geminiKey:       "pantryos-geminikey",
+  aiEnabled:       "pantryos-aienabled",
 };
 // Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
@@ -3296,7 +3297,6 @@ const SK_LOCAL = {
   satGenPromptWeek: "pantryos-satgenpromptweek",
   lastBackup:       "pantryos-lastbackup",
   pantryCheckWeek:  "pantryos-pantrycheck",
-  aiEnabled:        "pantryos-aienabled",
 };
 const SK = { ...SK_SYNC, ...SK_LOCAL };
 const _syncKeySet = new Set(Object.values(SK_SYNC));
@@ -11283,7 +11283,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("button", {
         onClick:function(){
           haptic("medium");
-          var hasAiSlots = Object.keys(aiSlotSel).length > 0;
+          var hasAiSlots = Object.keys(aiSlotSel).some(function(k){ return !!aiSlotSel[k]; });
           if(hasAiSlots){
             withAI(function(){ setAiSlotPopup(false); generateMenu(); });
           } else {
