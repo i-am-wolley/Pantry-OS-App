@@ -7223,7 +7223,7 @@ Only output the JSON. No markdown.`;
   }, {
     t: "dishes",
     icon: "dishesTab",
-    label: "Recipes"
+    label: "Dishes"
   }];
 
   // ── Theme ──
@@ -8903,7 +8903,7 @@ Only output the JSON. No markdown.`;
       letterSpacing: 1,
       fontWeight: 700
     }
-  }, "Your recipes (", dishes.length, ")"), /*#__PURE__*/React.createElement("div", {
+  }, "Your dishes (", dishes.length, ")"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6,
@@ -8934,7 +8934,7 @@ Only output the JSON. No markdown.`;
       fontFamily: C.font,
       whiteSpace: "nowrap"
     }
-  }, "+ Recipe"))),
+  }, "+ Dish"))),
   /*#__PURE__*/React.createElement("input", {
     value: dishSearch,
     onChange: function(e){setDishSearch(e.target.value);},
@@ -9305,7 +9305,7 @@ Only output the JSON. No markdown.`;
       fontWeight: 700,
       color: C.white
     }
-  }, "Add recipe"), /*#__PURE__*/React.createElement("button", {
+  }, "Add dish"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       haptic("light");
       setAddDishModal(false);
@@ -9719,7 +9719,7 @@ Only output the JSON. No markdown.`;
       flex: 1,
       padding: "9px 0"
     }
-  }, "Save recipe"))))), editDishModal && /*#__PURE__*/React.createElement("div", {
+  }, "Save dish"))))), editDishModal && /*#__PURE__*/React.createElement("div", {
     onPointerDown: (e) => {
       if(e.target===e.currentTarget){ setEditDishModal(null); setEditDishAdvanced(false); }
     },
@@ -9766,7 +9766,7 @@ Only output the JSON. No markdown.`;
       fontWeight: 700,
       color: C.white
     }
-  }, "Edit recipe"), /*#__PURE__*/React.createElement("button", {
+  }, "Edit dish"), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       haptic("light");
       setEditDishModal(null);
