@@ -5287,7 +5287,11 @@ const STATIC_RECIPES = {
 
   "Chicken Yakitori": `## Ingredients\n- Chicken Breast (500g, chunks)\n- Soy Sauce (4 tbsp)\n- Honey (3 tbsp)\n- Garlic (2 cloves)\n- Ginger (2cm)\n- Sesame Seeds (2 tbsp)\n- Spring Onions (4)\n## Steps\n1. Thread chicken onto skewers.\n2. Mix soy, honey, garlic and ginger into baste.\n3. Grill skewers 3 min per side.\n4. Brush baste while cooking.\n5. Scatter sesame seeds, serve with spring onions.\n## Time\nPrep: 10 min · Cook: 15 min`,
 
-  "Zaru Soba": `## Ingredients\n- Noodles (300g)\n- Soy Sauce (4 tbsp)\n- Ginger (2cm)\n- Spring Onions (4)\n- Sesame Seeds (2 tbsp)\n- Sesame Oil (1 tbsp)\n## Steps\n1. Cook noodles per pack, rinse under cold water.\n2. Mix soy, sesame oil and grated ginger into dipping sauce.\n3. Serve noodles cold.\n4. Dip noodles in sauce.\n5. Top with spring onions and sesame seeds.\n## Time\nPrep: 5 min · Cook: 5 min`
+  "Zaru Soba": `## Ingredients\n- Noodles (300g)\n- Soy Sauce (4 tbsp)\n- Ginger (2cm)\n- Spring Onions (4)\n- Sesame Seeds (2 tbsp)\n- Sesame Oil (1 tbsp)\n## Steps\n1. Cook noodles per pack, rinse under cold water.\n2. Mix soy, sesame oil and grated ginger into dipping sauce.\n3. Serve noodles cold.\n4. Dip noodles in sauce.\n5. Top with spring onions and sesame seeds.\n## Time\nPrep: 5 min · Cook: 5 min`,
+
+  "Vietnamese Egg Crepe": `## Ingredients\n- Eggs (3)\n- Rice Flour (½ cup)\n- Coconut Milk (100ml)\n- Onions (½, diced)\n- Mushrooms (150g)\n- Soy Sauce (2 tbsp)\n- Sesame Oil (1 tbsp)\n## Steps\n1. Whisk eggs, rice flour and coconut milk into thin batter.\n2. Stir-fry onions and mushrooms with soy sauce 3 min.\n3. Pour thin batter into oiled pan, swirl to coat.\n4. Cook 2 min until set and edges lift.\n5. Fill with mushroom mixture, fold and serve with sesame oil.\n## Time\nPrep: 8 min · Cook: 15 min`,
+
+  "Vietnamese Noodle Soup": `## Ingredients\n- Noodles (300g)\n- Chicken Breast (300g)\n- Onions (1)\n- Ginger (3cm)\n- Soy Sauce (3 tbsp)\n- Coriander (handful)\n- Spring Onions (4)\n- Limes (1)\n## Steps\n1. Char onion and ginger in dry pan 3 min.\n2. Simmer with 1.5L water and chicken 20 min.\n3. Remove chicken, shred.\n4. Season broth with soy sauce.\n5. Cook noodles in broth, serve with chicken, coriander, spring onions and lime.\n## Time\nPrep: 5 min · Cook: 25 min`
 };
 
 const ANTHROPIC_API_KEY = "";
@@ -5952,7 +5956,7 @@ function DayCard({
         const isDineOut = dishName && dishName.indexOf("Dine Out") >= 0;
         const isAI = !isDineOut && isAiDish(dishName);
         const alreadySaved = onSaveDish && onSaveDish.saved && onSaveDish.saved(dishName);
-        const hasRecipe = recipes && recipes[dishName];
+        const hasRecipe = (recipes && recipes[dishName]) || !!STATIC_RECIPES[dishName];
         const isLast = idx === mealCats.filter(m => dayMenu[m] && typeof dayMenu[m] === "string").length - 1;
         const meta = mealCatMeta(mc, colorMode, C);
         return /*#__PURE__*/React.createElement("div", {
