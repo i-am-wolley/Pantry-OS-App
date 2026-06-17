@@ -11519,7 +11519,7 @@ Only output the JSON. No markdown.`;
   cuisineModal && (function(){
     // Pick mode: show cuisine grid to select which to add
     if(cuisineModal.mode === "pick"){
-      var unloaded = ['south_indian','north_indian','vegetarian','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','american','vegan'].filter(function(k){return !cuisines.includes(k);});
+      var unloaded = ['south_indian','north_indian','vegetarian','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','american','vegan','south_american','japanese'].filter(function(k){return !cuisines.includes(k);});
       if(unloaded.length === 0){
         return /*#__PURE__*/React.createElement("div",{
           onClick:function(){setCuisineModal(null);},
