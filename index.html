@@ -8071,7 +8071,8 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
 
   // ── Scan dish from photo or URL ──
   const SCAN_SYSTEM = "You are a culinary assistant. Identify the dish from the image or URL provided and return ONLY valid JSON, no markdown, no preamble.";
-  const SCAN_SCHEMA = '{"name":"<dish name>","mealCats":["Breakfast"|"Lunch"|"Dinner"|"Snacks"],"ingredients":["<name only>"],"recipe":"## Ingredients\\n- item (qty)\\n## Steps\\n1. step\\n## Time\\nPrep: X min · Cook: Y min"}';
+  const SCAN_CAT_IDS = "staples|dairy|bakery|flour|protein|grain|veg|herb|fruit|spice|condiment|nuts|beverage|frozen|snack";
+  const SCAN_SCHEMA = '{"name":"<dish name>","mealCats":["Breakfast"|"Lunch"|"Dinner"|"Snacks"],"ingredients":[{"name":"<ingredient name>","cat":"' + SCAN_CAT_IDS + '"}],"recipe":"## Ingredients\\n- Ingredient (quantity)\\n## Steps\\n1. Clear detailed step (1-2 sentences explaining what to do and why)\\n2. Next step\\n## Time\\nPrep: X min · Cook: Y min"}';
 
   async function callGeminiVision({ base64, mimeType, prompt }) {
     var body = JSON.stringify({
@@ -8079,7 +8080,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
         { text: prompt },
         { inline_data: { mime_type: mimeType, data: base64 } }
       ]}],
-      generationConfig: { maxOutputTokens: 1200 }
+      generationConfig: { maxOutputTokens: 2000 }
     });
     var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + geminiKey;
     var res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body });
@@ -8110,14 +8111,14 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
   }
 
   async function scanDishFromImage(base64, mimeType) {
-    var prompt = SCAN_SYSTEM + "\n\nIdentify the dish in this photo. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot identify a dish, return {\"error\":\"Could not identify dish\"}.";
+    var prompt = SCAN_SYSTEM + "\n\nIdentify the dish in this photo. Write recipe steps in detail — each step should be 1-2 clear sentences. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot identify a dish, return {\"error\":\"Could not identify dish\"}.";
     var parsed = geminiKey ? await callGeminiVision({ base64, mimeType, prompt }) : await callClaudeVision({ base64, mimeType, prompt });
     return parsed;
   }
 
   async function scanDishFromUrl(url) {
-    var prompt = SCAN_SYSTEM + "\n\nThis URL likely points to a recipe page: " + url + "\nIdentify the dish and provide a recipe. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot determine a recipe from this URL, return {\"error\":\"Could not identify dish\"}.";
-    var parsed = (await callAI({ system: SCAN_SYSTEM, prompt, maxTokens: 1200 }));
+    var prompt = SCAN_SYSTEM + "\n\nThis URL likely points to a recipe page: " + url + "\nIdentify the dish and provide a full recipe. Write recipe steps in detail — each step should be 1-2 clear sentences. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot determine a recipe from this URL, return {\"error\":\"Could not identify dish\"}.";
+    var parsed = (await callAI({ system: SCAN_SYSTEM, prompt, maxTokens: 2000 }));
     return parsed && parsed.json ? parsed.json : parsed;
   }
 
@@ -8153,11 +8154,34 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
 
   function acceptScanResult() {
     if (!scanResult) return;
+    var norm = function(s){ return (s || "").toLowerCase().trim(); };
+    var newPantryItems = [];
+    var resolvedIngredients = (scanResult.ingredients || []).map(function(ingObj) {
+      var name = typeof ingObj === "string" ? ingObj : (ingObj.name || "");
+      var cat = (typeof ingObj === "object" && ingObj.cat) ? ingObj.cat : "staples";
+      if (!name) return null;
+      // exact match
+      var match = items.find(function(i){ return norm(i.name) === norm(name); });
+      if (match) return match.name;
+      // fuzzy: one contains the other (whole-word preference)
+      var fuzzy = items.find(function(i){
+        var a = norm(i.name), b = norm(name);
+        return a.includes(b) || b.includes(a);
+      });
+      if (fuzzy) return fuzzy.name;
+      // unknown — schedule creation
+      newPantryItems.push({ id: Date.now() + newPantryItems.length, name: name, cat: cat, staple: false });
+      return name;
+    }).filter(Boolean);
+
+    if (newPantryItems.length > 0) {
+      setItems(function(prev){ return prev.concat(newPantryItems); });
+    }
     setDishData(function(d) {
       return Object.assign({}, d, {
         name: scanResult.name || d.name,
         mealCats: (scanResult.mealCats && scanResult.mealCats.length) ? scanResult.mealCats : d.mealCats,
-        ingredients: (scanResult.ingredients && scanResult.ingredients.length) ? scanResult.ingredients : d.ingredients
+        ingredients: resolvedIngredients.length ? resolvedIngredients : d.ingredients
       });
     });
     if (scanResult.recipe && scanResult.name) {
