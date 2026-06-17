@@ -8160,16 +8160,32 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     var newPantryItems = [];
     var resolvedIngredients = (scanResult.ingredients || []).map(function(ingObj) {
       var name = typeof ingObj === "string" ? ingObj : (ingObj.name || "");
-      var cat = (typeof ingObj === "object" && ingObj.cat) ? ingObj.cat : "staples";
+      var aiCat = (typeof ingObj === "object" && ingObj.cat) ? ingObj.cat : "staples";
       if (!name) return null;
-      var match = items.find(function(i){ return norm(i.name) === norm(name); });
-      if (match) return match.name;
-      var fuzzy = items.find(function(i){
-        var a = norm(i.name), b = norm(name);
-        return a.includes(b) || b.includes(a);
+      var nb = norm(name);
+
+      // 1. Already in user's pantry — no addition needed
+      var inPantry = items.find(function(i){ return norm(i.name) === nb; });
+      if (inPantry) return inPantry.name;
+      var inPantryFuzzy = items.find(function(i){
+        var a = norm(i.name);
+        return a.includes(nb) || nb.includes(a);
       });
-      if (fuzzy) return fuzzy.name;
-      newPantryItems.push({ id: Date.now() + newPantryItems.length, name: name, cat: cat, staple: false });
+      if (inPantryFuzzy) return inPantryFuzzy.name;
+
+      // 2. In DEFAULT_ITEMS master list — use its predefined id, cat, type
+      var inDefault = DEFAULT_ITEMS.find(function(di){ return norm(di.name) === nb; });
+      if (!inDefault) inDefault = DEFAULT_ITEMS.find(function(di){
+        var a = norm(di.name);
+        return a.includes(nb) || nb.includes(a);
+      });
+      if (inDefault) {
+        newPantryItems.push(Object.assign({}, inDefault));
+        return inDefault.name;
+      }
+
+      // 3. Truly unknown — create new with AI-suggested category
+      newPantryItems.push({ id: Date.now() + newPantryItems.length, name: name, cat: aiCat, staple: false });
       return name;
     }).filter(Boolean);
 
