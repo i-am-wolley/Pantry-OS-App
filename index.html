@@ -3184,6 +3184,10 @@ const DEFAULT_ITEMS = [
   id: 2049, name: "Ketchup", type: "binary", cat: "condiment"
 }, {
   id: 2050, name: "Coleslaw", type: "binary", cat: "veg"
+}, {
+  id: 2051, name: "Yuca", type: "binary", cat: "veg"
+}, {
+  id: 2052, name: "Aji Amarillo Paste", type: "binary", cat: "condiment"
 }
 ];
 const DEFAULT_MEAL_CATS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
@@ -3318,7 +3322,7 @@ const storage = {
 // ─────────────────────────────────────────────────────────────────────────────
 //  VERSION & MIGRATION SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
-const CURRENT_VERSION = 10;
+const CURRENT_VERSION = 11;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
@@ -3541,6 +3545,24 @@ const MIGRATIONS = {
     if (data.items && Array.isArray(data.items)) {
       data.items = data.items.map(function(item) {
         if (item.allergens !== undefined) return item; // user already set (or cleared) — don't touch
+        var als = ITEM_ALLERGEN_SEED[(item.name||"").toLowerCase().trim()];
+        return (als && als.length) ? Object.assign({}, item, { allergens: als }) : item;
+      });
+    }
+    return data;
+  },
+  // v10 → v11: add South American + Japanese preset items; re-sweep allergen backfill for items added post-v9
+  10: function(data) {
+    if (data.items && Array.isArray(data.items)) {
+      var uN = new Set(data.items.map(function(i){ return i.name.toLowerCase().trim(); }));
+      var now = Date.now();
+      DEFAULT_ITEMS.forEach(function(di, idx){
+        if (di.id >= 2051 && !uN.has(di.name.toLowerCase().trim()))
+          data.items.push(Object.assign({}, di, { id: now + idx }));
+      });
+      // Re-sweep allergens for any items still missing them (added via add modal after v9→v10 ran)
+      data.items = data.items.map(function(item) {
+        if (item.allergens !== undefined) return item;
         var als = ITEM_ALLERGEN_SEED[(item.name||"").toLowerCase().trim()];
         return (als && als.length) ? Object.assign({}, item, { allergens: als }) : item;
       });
@@ -4192,6 +4214,68 @@ var CUISINE_PRESETS = {
       {name:"Corn on the Cob",mealCats:["Dinner"],ingredients:["Corn","Butter","Garlic","Smoked Paprika","Parsley","Lemons"]},
       {name:"Southern Fried Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","All-Purpose Flour","Eggs","Milk","Smoked Paprika","Garlic","Hot Sauce","Black Pepper"]},
       {name:"Clam Chowder Style Soup",mealCats:["Dinner"],ingredients:["Salmon","Potatoes","Corn","Onions","Celery","Milk","Fresh Cream","Butter","Thyme"]}
+    ]
+  },
+  "south_american": {
+    label: "South American", emoji: "🌎",
+    desc: "Feijoada · Ceviche · Chimichurri",
+    items: ["Aji Amarillo Paste","Avocado","Bananas","Black Beans","Butter","Capsicum","Cheddar","Chicken Breast","Chipotle","Chorizo","Cinnamon","Coconut Milk","Coriander","Corn","Corn Flour","Corn Tortillas","Cumin Powder","Cumin Seeds","Eggs","Fish Fillet","Garlic","Guacamole","Honey","Jalapeños","Kidney Beans","Limes","Mango","Oats","Olive Oil","Onions","Papaya","Paprika","Plantain","Potatoes","Quinoa","Salsa","Smoked Paprika","Sour Cream","Soy Sauce","Spinach","Sweet Potato","Tomatoes","Tortilla Wraps","White Bread","White Rice","Yuca"],
+    dishes: [
+      {name:"Arepas with Cheese",mealCats:["Breakfast"],ingredients:["Corn Flour","Cheddar","Butter","Eggs"]},
+      {name:"Brazilian Scrambled Eggs",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Onions","Coriander","Butter","Capsicum"]},
+      {name:"Tropical Fruit Bowl",mealCats:["Breakfast"],ingredients:["Mango","Papaya","Limes","Honey","Coconut Milk"]},
+      {name:"Avocado Toast Latin",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Limes","Jalapeños","Coriander","Eggs"]},
+      {name:"Colombian Oatmeal",mealCats:["Breakfast"],ingredients:["Oats","Coconut Milk","Honey","Cinnamon","Bananas"]},
+      {name:"Fish Ceviche",mealCats:["Lunch"],ingredients:["Fish Fillet","Limes","Onions","Coriander","Jalapeños","Capsicum","Tomatoes"]},
+      {name:"Peruvian Chicken Rice",mealCats:["Lunch"],ingredients:["Chicken Breast","White Rice","Onions","Cumin Powder","Garlic","Coriander","Aji Amarillo Paste"]},
+      {name:"Quinoa Veggie Bowl",mealCats:["Lunch"],ingredients:["Quinoa","Corn","Black Beans","Avocado","Limes","Coriander","Tomatoes"]},
+      {name:"Lomo Saltado",mealCats:["Lunch"],ingredients:["Chicken Breast","Potatoes","Capsicum","Tomatoes","Soy Sauce","Onions","Cumin Seeds","Coriander"]},
+      {name:"Chicken Empanadas",mealCats:["Lunch"],ingredients:["Corn Tortillas","Chicken Breast","Onions","Cumin Seeds","Eggs","Coriander","Smoked Paprika"]},
+      {name:"Black Bean Soup",mealCats:["Lunch"],ingredients:["Black Beans","Onions","Garlic","Cumin Seeds","Coriander","Chorizo","Tomatoes"]},
+      {name:"Guacamole with Tortilla Chips",mealCats:["Snacks"],ingredients:["Guacamole","Corn Tortillas","Limes","Coriander","Jalapeños"]},
+      {name:"Fried Plantain",mealCats:["Snacks"],ingredients:["Plantain","Olive Oil","Coriander","Limes"]},
+      {name:"Corn Salsa",mealCats:["Snacks"],ingredients:["Corn","Tomatoes","Jalapeños","Coriander","Limes","Onions"]},
+      {name:"Black Bean Dip",mealCats:["Snacks"],ingredients:["Black Beans","Garlic","Cumin Seeds","Limes","Coriander","Olive Oil"]},
+      {name:"Feijoada",mealCats:["Dinner"],ingredients:["Black Beans","Chorizo","Onions","Garlic","Cumin Seeds","Coriander","White Rice"]},
+      {name:"Arroz con Pollo",mealCats:["Dinner"],ingredients:["Chicken Breast","White Rice","Capsicum","Onions","Garlic","Cumin Powder","Tomatoes","Coriander"]},
+      {name:"Chimichurri Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Coriander","Garlic","Olive Oil","Limes","Smoked Paprika","Onions"]},
+      {name:"Peruvian Aji Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Aji Amarillo Paste","Potatoes","Onions","Garlic","Coriander","Limes"]},
+      {name:"Brazilian Chorizo Stew",mealCats:["Dinner"],ingredients:["Kidney Beans","Chorizo","Sweet Potato","Tomatoes","Garlic","Onions","Cumin Seeds","Coriander"]},
+      {name:"Stuffed Plantains",mealCats:["Dinner"],ingredients:["Plantain","Black Beans","Cheddar","Coriander","Sour Cream","Onions"]},
+      {name:"Coconut Fish Stew",mealCats:["Dinner"],ingredients:["Fish Fillet","Coconut Milk","Tomatoes","Onions","Garlic","Coriander","Limes","Capsicum"]},
+      {name:"Chorizo Rice Bowl",mealCats:["Dinner"],ingredients:["Chorizo","White Rice","Capsicum","Onions","Tomatoes","Cumin Powder","Coriander","Sour Cream"]},
+      {name:"Yuca Fries",mealCats:["Dinner","Snacks"],ingredients:["Yuca","Garlic","Olive Oil","Coriander","Limes","Sour Cream"]}
+    ]
+  },
+  "japanese": {
+    label: "Japanese", emoji: "🍣",
+    desc: "Ramen · Teriyaki · Sushi",
+    items: ["Avocado","Bean Sprouts","Bok Choy","Broccoli","Cabbage","Capsicum","Chicken Breast","Corn Flour","Cucumber","Dashi Stock","Edamame","Eggs","Garlic","Ginger","Honey","Mirin","Miso Paste","Mushrooms","Noodles","Nori Sheets","Panko Breadcrumbs","Radish","Rice Vinegar","Sake","Salmon","Sesame Oil","Sesame Seeds","Shiro Miso","Soy Sauce","Spring Onion","Sushi Rice","Sweet Potato","Tofu","Udon Noodles","Wasabi","White Rice","Wonton Wrappers"],
+    dishes: [
+      {name:"Tamago Gohan",mealCats:["Breakfast"],ingredients:["White Rice","Eggs","Soy Sauce","Sesame Oil","Spring Onion"]},
+      {name:"Japanese Tamagoyaki",mealCats:["Breakfast"],ingredients:["Eggs","Mirin","Soy Sauce","Spring Onion","Sesame Oil"]},
+      {name:"Miso Soup",mealCats:["Breakfast","Snacks"],ingredients:["Miso Paste","Tofu","Nori Sheets","Spring Onion","Dashi Stock"]},
+      {name:"Japanese Rice Porridge",mealCats:["Breakfast"],ingredients:["White Rice","Dashi Stock","Ginger","Soy Sauce","Spring Onion","Sesame Oil"]},
+      {name:"Onigiri",mealCats:["Breakfast","Snacks"],ingredients:["Sushi Rice","Nori Sheets","Salmon","Sesame Seeds","Rice Vinegar"]},
+      {name:"Chicken Teriyaki Bowl",mealCats:["Lunch"],ingredients:["Chicken Breast","Soy Sauce","Mirin","Sake","White Rice","Spring Onion","Sesame Seeds"]},
+      {name:"Salmon Sushi Roll",mealCats:["Lunch"],ingredients:["Sushi Rice","Salmon","Nori Sheets","Wasabi","Soy Sauce","Avocado","Cucumber","Rice Vinegar"]},
+      {name:"Tofu Miso Ramen",mealCats:["Lunch"],ingredients:["Udon Noodles","Miso Paste","Tofu","Dashi Stock","Spring Onion","Bean Sprouts","Sesame Oil"]},
+      {name:"Chicken Katsu",mealCats:["Lunch"],ingredients:["Chicken Breast","Panko Breadcrumbs","Eggs","Corn Flour","Soy Sauce","White Rice"]},
+      {name:"Agedashi Tofu",mealCats:["Lunch"],ingredients:["Tofu","Dashi Stock","Soy Sauce","Mirin","Corn Flour","Spring Onion","Sesame Seeds"]},
+      {name:"Edamame Sesame Salad",mealCats:["Lunch","Snacks"],ingredients:["Edamame","Cucumber","Radish","Sesame Oil","Soy Sauce","Rice Vinegar","Sesame Seeds"]},
+      {name:"Japanese Pickled Cucumber",mealCats:["Snacks"],ingredients:["Cucumber","Rice Vinegar","Soy Sauce","Sesame Seeds","Ginger"]},
+      {name:"Sesame Onigiri",mealCats:["Snacks"],ingredients:["Sushi Rice","Nori Sheets","Sesame Seeds","Soy Sauce"]},
+      {name:"Edamame with Salt",mealCats:["Snacks"],ingredients:["Edamame","Sesame Seeds"]},
+      {name:"Chicken Ramen",mealCats:["Dinner"],ingredients:["Noodles","Chicken Breast","Dashi Stock","Soy Sauce","Mirin","Spring Onion","Bean Sprouts","Eggs","Mushrooms"]},
+      {name:"Salmon Teriyaki",mealCats:["Dinner"],ingredients:["Salmon","Soy Sauce","Mirin","Sake","White Rice","Bok Choy","Sesame Seeds","Sesame Oil"]},
+      {name:"Vegetable Tempura",mealCats:["Dinner"],ingredients:["Capsicum","Broccoli","Sweet Potato","Corn Flour","Eggs","Mushrooms","Dashi Stock","Soy Sauce"]},
+      {name:"Oyakodon",mealCats:["Dinner"],ingredients:["Chicken Breast","Eggs","Onions","Dashi Stock","Soy Sauce","Mirin","White Rice","Spring Onion"]},
+      {name:"Yaki Udon",mealCats:["Dinner"],ingredients:["Udon Noodles","Chicken Breast","Cabbage","Mushrooms","Soy Sauce","Sesame Oil","Spring Onion","Ginger"]},
+      {name:"Gyoza",mealCats:["Dinner","Snacks"],ingredients:["Wonton Wrappers","Chicken Breast","Cabbage","Ginger","Garlic","Soy Sauce","Sesame Oil"]},
+      {name:"Salmon Donburi",mealCats:["Dinner"],ingredients:["Salmon","White Rice","Soy Sauce","Rice Vinegar","Avocado","Cucumber","Nori Sheets","Sesame Seeds"]},
+      {name:"Spicy Tofu Hot Pot",mealCats:["Dinner"],ingredients:["Tofu","Bok Choy","Mushrooms","Dashi Stock","Miso Paste","Ginger","Soy Sauce","Spring Onion"]},
+      {name:"Chicken Yakitori",mealCats:["Dinner"],ingredients:["Chicken Breast","Soy Sauce","Mirin","Sake","Spring Onion","Sesame Seeds","Sesame Oil"]},
+      {name:"Zaru Soba",mealCats:["Lunch","Dinner"],ingredients:["Noodles","Soy Sauce","Dashi Stock","Mirin","Ginger","Spring Onion","Sesame Seeds","Nori Sheets"]}
     ]
   }
 };
@@ -6077,14 +6161,17 @@ function App() {
     haptic("medium");
     const names = raw.split(",").map(s => s.trim()).filter(Boolean);
     const now = Date.now();
-    setItems(p => [...p, ...names.map((n, i) => ({
-      id: now + i,
-      name: n,
-      type: newType,
-      cat: newCat,
-      isStaple: newCat === "staples" ? true : newIsStaple,
-      allergens: newAllergens.length ? [...newAllergens] : undefined
-    }))]);
+    setItems(p => [...p, ...names.map((n, i) => {
+      var seedAls = ITEM_ALLERGEN_SEED[n.toLowerCase().trim()];
+      return {
+        id: now + i,
+        name: n,
+        type: newType,
+        cat: newCat,
+        isStaple: newCat === "staples" ? true : newIsStaple,
+        allergens: newAllergens.length ? [...newAllergens] : (seedAls && seedAls.length ? seedAls : undefined)
+      };
+    })]);
     setNewName("");
     setNewType("binary");
     setNewCat("other");
@@ -11222,7 +11309,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Select your cuisines — we'll load the right ingredients and dishes automatically."),
       /*#__PURE__*/React.createElement("div", {
         style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }
-      }, ['south_indian', 'north_indian', 'vegetarian', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'american', 'vegan'].map(function(key) {
+      }, ['south_indian', 'north_indian', 'vegetarian', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'american', 'vegan', 'south_american', 'japanese'].map(function(key) {
         var preset = CUISINE_PRESETS[key];
         if(!preset) return null;
         var active = cuisines.includes(key);
