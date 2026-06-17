@@ -4280,6 +4280,106 @@ var CUISINE_PRESETS = {
   }
 };
 
+const STATIC_RECIPES = {
+  // ── South Indian ──
+  "Idli Sambar": `## Ingredients\n- Dosa Batter (1 cup, fermented)\n- Toor Dal (½ cup)\n- Tomatoes (2)\n- Sambar Powder (2 tsp)\n- Tamarind Paste (1 tbsp)\n- Mustard Seeds (1 tsp)\n- Curry Leaves (10)\n- Ghee (1 tbsp)\n## Steps\n1. Steam batter in idli moulds 10–12 min until firm.\n2. Pressure cook dal until soft.\n3. In a pot sauté mustard seeds and curry leaves.\n4. Add tomatoes, sambar powder and tamarind, cook 5 min.\n5. Add cooked dal with 1½ cups water, simmer 10 min.\n6. Serve idlis hot with sambar and coconut chutney.\n## Time\nPrep: 8 min · Cook: 25 min`,
+
+  "Sambar Rice": `## Ingredients\n- White Rice (1 cup)\n- Toor Dal (½ cup)\n- Tomatoes (2)\n- Drumstick (2, cut in pieces)\n- Sambar Powder (2 tsp)\n- Tamarind Paste (1 tbsp)\n- Mustard Seeds (1 tsp)\n- Curry Leaves (8)\n## Steps\n1. Cook rice and dal separately until soft.\n2. Sauté mustard seeds and curry leaves in ghee.\n3. Add tomatoes and drumstick, cook 5 min.\n4. Add sambar powder, tamarind and 2 cups water.\n5. Simmer 12 min, stir in cooked dal.\n6. Mix sambar into rice or serve alongside.\n## Time\nPrep: 5 min · Cook: 30 min`,
+
+  "Pongal": `## Ingredients\n- White Rice (1 cup)\n- Moong Dal (½ cup)\n- Ghee (3 tbsp)\n- Cumin Seeds (1 tsp)\n- Peppercorn (1 tsp, crushed)\n- Curry Leaves (10)\n- Cashews (10)\n## Steps\n1. Dry-roast moong dal until fragrant.\n2. Pressure cook rice and dal together with 4 cups water.\n3. Heat ghee, fry cashews until golden, set aside.\n4. In same ghee splutter cumin seeds, peppercorn and curry leaves.\n5. Add tempering to cooked rice-dal, mix well.\n6. Top with fried cashews and serve with sambar or chutney.\n## Time\nPrep: 5 min · Cook: 20 min`,
+
+  // ── North Indian ──
+  "Palak Paneer": `## Ingredients\n- Paneer (250g)\n- Spinach (400g)\n- Onions (1)\n- Tomatoes (1)\n- Garlic (3 cloves)\n- Ginger (1 inch)\n- Garam Masala (1 tsp)\n- Fresh Cream (2 tbsp)\n## Steps\n1. Blanch spinach 2 min, drain and blend smooth.\n2. Sauté onions until golden, add garlic and ginger.\n3. Add tomatoes and garam masala, cook until oil separates.\n4. Stir in spinach purée, simmer 5 min.\n5. Add paneer cubes, cook 3 min.\n6. Stir in cream and serve with roti or naan.\n## Time\nPrep: 10 min · Cook: 20 min`,
+
+  "Rajma Chawal": `## Ingredients\n- Rajma (1 cup, soaked overnight)\n- Basmati Rice (1 cup)\n- Onions (1, chopped)\n- Tomatoes (2, pureed)\n- Garam Masala (2 tsp)\n- Ginger (1 inch)\n- Garlic (3 cloves)\n- Ghee (2 tbsp)\n## Steps\n1. Pressure cook rajma until tender.\n2. Cook basmati rice and keep warm.\n3. Sauté onions in ghee until golden.\n4. Add ginger, garlic and tomato purée, cook 8 min.\n5. Add cooked rajma, garam masala and ½ cup water, simmer 10 min.\n6. Serve rajma over steamed rice with raw onion and pickle.\n## Time\nPrep: 10 min · Cook: 35 min (+ overnight soak)`,
+
+  "Aloo Paratha": `## Ingredients\n- Wheat Flour (2 cups)\n- Potatoes (3, boiled)\n- Ghee (3 tbsp)\n- Cumin Seeds (1 tsp)\n- Green Chilli (1, minced)\n- Coriander (handful)\n## Steps\n1. Knead flour with water and a pinch of salt into soft dough, rest 15 min.\n2. Mash potatoes with cumin seeds, green chilli and coriander.\n3. Divide dough into balls, flatten, stuff with potato filling, seal.\n4. Roll into discs, cook on hot tawa with generous ghee.\n5. Cook 2–3 min per side until golden spots appear.\n6. Serve with yogurt, butter and pickle.\n## Time\nPrep: 25 min · Cook: 20 min`,
+
+  // ── Vegetarian ──
+  "Masala Dosa": `## Ingredients\n- Dosa Batter (2 cups)\n- Potatoes (3, boiled)\n- Onions (1)\n- Mustard Seeds (1 tsp)\n- Curry Leaves (10)\n- Turmeric Powder (½ tsp)\n- Green Chutney (2 tbsp)\n- Butter (1 tbsp)\n## Steps\n1. Mash potatoes with turmeric, sautéed onion and mustard seeds for filling.\n2. Heat tawa well, pour ladle of batter and spread in circles.\n3. Add butter and cook until edges crisp.\n4. Spoon filling on one side, fold and press.\n5. Cook until golden and crisp on both sides.\n6. Serve immediately with green chutney and sambar.\n## Time\nPrep: 10 min · Cook: 20 min`,
+
+  "Dal Tadka with Roti": `## Ingredients\n- Toor Dal (1 cup)\n- Onions (1)\n- Tomatoes (2)\n- Garlic (3 cloves)\n- Cumin Seeds (1 tsp)\n- Turmeric Powder (½ tsp)\n- Roti (4)\n- Ghee (2 tbsp)\n## Steps\n1. Pressure cook dal with turmeric and salt until soft.\n2. Heat ghee, splutter cumin seeds.\n3. Add garlic and onions, sauté until golden.\n4. Add tomatoes, cook until soft.\n5. Pour tempering into dal, stir and simmer 5 min.\n6. Serve hot dal with fresh roti.\n## Time\nPrep: 5 min · Cook: 25 min`,
+
+  "Chana Masala with Rice": `## Ingredients\n- Chickpeas (400g)\n- White Rice (1 cup)\n- Onions (1)\n- Tomatoes (2)\n- Garam Masala (2 tsp)\n- Ginger (1 inch)\n- Garlic (3 cloves)\n## Steps\n1. Cook rice. Sauté onions until golden.\n2. Add ginger, garlic and tomatoes, cook until oil separates.\n3. Add garam masala and salt.\n4. Add chickpeas with ½ cup water, simmer 15 min.\n5. Mash a few chickpeas to thicken the gravy.\n6. Serve over rice with raw onion and lemon wedge.\n## Time\nPrep: 10 min · Cook: 25 min`,
+
+  // ── Vegan ──
+  "Buddha Bowl": `## Ingredients\n- Quinoa (1 cup)\n- Chickpeas (400g)\n- Avocado (1)\n- Sweet Potato (1, cubed)\n- Spinach (2 cups)\n- Tahini (3 tbsp)\n- Lemons (1)\n- Sesame Seeds (1 tbsp)\n## Steps\n1. Cook quinoa. Roast sweet potato at 200°C 20 min.\n2. Roast chickpeas with cumin and paprika 20 min until crispy.\n3. Whisk tahini with lemon juice and water.\n4. Arrange quinoa, sweet potato, chickpeas and spinach in bowl.\n5. Add sliced avocado.\n6. Drizzle tahini dressing and top with sesame seeds.\n## Time\nPrep: 10 min · Cook: 25 min`,
+
+  "Lentil Soup Vegan": `## Ingredients\n- Lentils (1 cup)\n- Onions (1)\n- Tomatoes (2)\n- Garlic (3 cloves)\n- Cumin Powder (1 tsp)\n- Smoked Paprika (½ tsp)\n- Lemons (1)\n- Spinach (2 cups)\n## Steps\n1. Sauté onion and garlic in olive oil until golden.\n2. Add cumin, paprika and tomatoes, cook 5 min.\n3. Add lentils and 4 cups water, bring to boil.\n4. Simmer 20 min until lentils are tender.\n5. Stir in spinach, cook 2 min.\n6. Season and finish with lemon juice.\n## Time\nPrep: 5 min · Cook: 30 min`,
+
+  "Tofu Scramble": `## Ingredients\n- Tofu (400g, firm)\n- Nutritional Yeast (2 tbsp)\n- Turmeric Powder (½ tsp)\n- Spinach (2 cups)\n- Mushrooms (150g)\n- Garlic (2 cloves)\n- Soy Sauce (2 tbsp)\n## Steps\n1. Press tofu dry, crumble into chunky pieces.\n2. Sauté garlic and mushrooms in olive oil 3 min.\n3. Add crumbled tofu, cook on high heat 3 min.\n4. Add turmeric, nutritional yeast and soy sauce.\n5. Fold in spinach, cook until wilted.\n6. Serve on toast or with rice.\n## Time\nPrep: 5 min · Cook: 12 min`,
+
+  // ── Japanese ──
+  "Chicken Teriyaki Bowl": `## Ingredients\n- Chicken Breast (400g)\n- Soy Sauce (4 tbsp)\n- Mirin (3 tbsp)\n- Sake (2 tbsp)\n- White Rice (1½ cups)\n- Spring Onion (3 stalks)\n- Sesame Seeds (1 tbsp)\n## Steps\n1. Cook rice.\n2. Mix soy sauce, mirin and sake into teriyaki sauce.\n3. Pan-fry chicken 4 min per side on medium-high.\n4. Pour sauce into pan, cook 2 min until chicken is glazed.\n5. Rest 3 min, then slice.\n6. Serve over rice, drizzle pan sauce, top with spring onion and sesame seeds.\n## Time\nPrep: 5 min · Cook: 20 min`,
+
+  "Salmon Teriyaki": `## Ingredients\n- Salmon (4 fillets)\n- Soy Sauce (4 tbsp)\n- Mirin (3 tbsp)\n- Sake (2 tbsp)\n- White Rice (1½ cups)\n- Bok Choy (2 heads)\n- Sesame Seeds (1 tbsp)\n- Sesame Oil (1 tsp)\n## Steps\n1. Cook rice. Mix soy sauce, mirin and sake.\n2. Pan-fry salmon skin-side down 4 min, flip and cook 2 min.\n3. Add sauce, cook 2 min until salmon is glazed.\n4. Steam bok choy 3 min, drizzle sesame oil.\n5. Serve salmon over rice with bok choy.\n6. Scatter sesame seeds over top.\n## Time\nPrep: 5 min · Cook: 20 min`,
+
+  "Chicken Ramen": `## Ingredients\n- Noodles (300g)\n- Chicken Breast (400g)\n- Dashi Stock (1L)\n- Soy Sauce (4 tbsp)\n- Mirin (2 tbsp)\n- Eggs (2)\n- Spring Onion (3 stalks)\n- Mushrooms (150g)\n## Steps\n1. Simmer chicken in dashi with soy sauce and mirin 20 min.\n2. Remove chicken and slice. Add mushrooms to broth.\n3. Soft-boil eggs 6½ min, peel and halve.\n4. Cook noodles until al dente, drain.\n5. Ladle hot broth into bowls over noodles.\n6. Top with chicken, egg, mushrooms and spring onion.\n## Time\nPrep: 10 min · Cook: 30 min`,
+
+  "Miso Soup": `## Ingredients\n- Miso Paste (3 tbsp)\n- Tofu (200g, cubed)\n- Dashi Stock (800ml)\n- Nori Sheets (2, strips)\n- Spring Onion (2 stalks)\n## Steps\n1. Bring dashi to just below boiling, reduce to low.\n2. Never boil after adding miso — it destroys probiotics.\n3. Dissolve miso in a ladle of warm dashi, stir back into pot.\n4. Add tofu cubes, warm 2 min.\n5. Serve in bowls topped with nori strips and sliced spring onion.\n## Time\nPrep: 3 min · Cook: 7 min`,
+
+  // ── East Asian ──
+  "Chicken Fried Rice": `## Ingredients\n- White Rice (2 cups, cooked cold)\n- Chicken Breast (300g, diced)\n- Eggs (2)\n- Spring Onion (3 stalks)\n- Soy Sauce (3 tbsp)\n- Garlic (2 cloves)\n- Sesame Oil (1 tbsp)\n## Steps\n1. Stir-fry garlic and chicken on high heat until cooked, set aside.\n2. Scramble eggs in same wok, set aside.\n3. Add cold rice to wok, press and toss on high heat 2 min.\n4. Add chicken, eggs and soy sauce, toss vigorously.\n5. Drizzle sesame oil and toss once more.\n6. Garnish with spring onion.\n## Time\nPrep: 5 min · Cook: 12 min`,
+
+  "Bibimbap": `## Ingredients\n- White Rice (1½ cups)\n- Spinach (200g)\n- Carrots (1, julienned)\n- Mushrooms (150g)\n- Eggs (2)\n- Gochujang (3 tbsp)\n- Sesame Oil (2 tbsp)\n## Steps\n1. Cook rice.\n2. Blanch spinach, squeeze dry, season with sesame oil.\n3. Sauté carrots and mushrooms separately.\n4. Fry eggs sunny-side up.\n5. Place rice in bowls, arrange veg and egg on top in sections.\n6. Drizzle gochujang and sesame oil, mix everything together to eat.\n## Time\nPrep: 15 min · Cook: 20 min`,
+
+  // ── South East Asian ──
+  "Pad Thai": `## Ingredients\n- Rice Noodles (200g)\n- Eggs (2)\n- Tofu (200g)\n- Fish Sauce (3 tbsp)\n- Limes (1)\n- Peanuts (handful)\n- Bean Sprouts (1 cup)\n- Spring Onion (3 stalks)\n## Steps\n1. Soak rice noodles in cold water 20 min, drain.\n2. Fry tofu cubes until golden, set aside.\n3. Scramble eggs in hot wok, push to side.\n4. Add noodles and fish sauce, toss on high heat 2 min.\n5. Add tofu and bean sprouts, toss 1 min.\n6. Serve with peanuts, spring onion and lime wedges.\n## Time\nPrep: 25 min · Cook: 10 min`,
+
+  "Thai Green Curry": `## Ingredients\n- Chicken Breast (400g, sliced)\n- Thai Green Curry Paste (3 tbsp)\n- Coconut Milk (400ml)\n- Bok Choy (2 heads)\n- Fish Sauce (2 tbsp)\n- Limes (1)\n- Basil (handful)\n## Steps\n1. Fry curry paste in 3 tbsp coconut milk until fragrant, 2 min.\n2. Add chicken, stir-fry until sealed.\n3. Pour in remaining coconut milk and ¼ cup water.\n4. Simmer 12 min on medium heat.\n5. Add bok choy, cook 3 min.\n6. Season with fish sauce, squeeze lime and top with basil.\n## Time\nPrep: 10 min · Cook: 20 min`,
+
+  "Vietnamese Noodle Soup": `## Ingredients\n- Rice Noodles (200g)\n- Chicken Breast (400g)\n- Ginger (2 inch piece)\n- Lemongrass (2 stalks)\n- Fish Sauce (3 tbsp)\n- Spring Onion (4 stalks)\n- Bean Sprouts (1 cup)\n- Basil (handful)\n## Steps\n1. Simmer chicken with ginger and lemongrass in 1.5L water 25 min.\n2. Remove chicken, shred. Strain broth, add fish sauce.\n3. Soak rice noodles in hot water 5 min, drain.\n4. Place noodles in bowls, ladle hot broth over.\n5. Top with shredded chicken and bean sprouts.\n6. Finish with spring onion, basil and a squeeze of lime.\n## Time\nPrep: 10 min · Cook: 30 min`,
+
+  // ── West Asian ──
+  "Shakshuka West Asian": `## Ingredients\n- Eggs (4)\n- Tomatoes (4, chopped)\n- Onions (1)\n- Garlic (3 cloves)\n- Cumin Powder (1 tsp)\n- Smoked Paprika (1 tsp)\n- Harissa (1 tbsp)\n- Olive Oil (2 tbsp)\n## Steps\n1. Sauté onions in olive oil until soft.\n2. Add garlic, cumin and paprika, cook 1 min.\n3. Add harissa and tomatoes, simmer 12 min until sauce thickens.\n4. Make 4 wells, crack an egg into each.\n5. Cover and cook 5–7 min until whites set and yolks are runny.\n6. Serve with pita bread and fresh parsley.\n## Time\nPrep: 5 min · Cook: 25 min`,
+
+  "Falafel Wrap": `## Ingredients\n- Chickpeas (400g, cooked)\n- Pita Bread (4)\n- Cucumber (1)\n- Tomatoes (2)\n- Tahini (4 tbsp)\n- Garlic (2 cloves)\n- Cumin Powder (1 tsp)\n- Parsley (handful)\n## Steps\n1. Blend chickpeas, garlic, cumin, parsley and salt into rough mix.\n2. Shape into balls, refrigerate 15 min.\n3. Shallow-fry falafels 3 min per side until crispy.\n4. Mix tahini with lemon juice and water into smooth sauce.\n5. Warm pita, layer with cucumber, tomatoes and falafels.\n6. Drizzle tahini sauce and serve.\n## Time\nPrep: 25 min · Cook: 10 min`,
+
+  "Tabbouleh": `## Ingredients\n- Bulgur Wheat (1 cup)\n- Parsley (2 bunches)\n- Mint (½ bunch)\n- Tomatoes (3)\n- Onions (½)\n- Lemons (2)\n- Olive Oil (4 tbsp)\n## Steps\n1. Cover bulgur with boiling water, rest 20 min until absorbed.\n2. Finely chop parsley, mint, tomatoes and onion.\n3. Fluff bulgur with fork, cool completely.\n4. Combine all ingredients.\n5. Dress with olive oil and lemon juice, season generously.\n6. Refrigerate 30 min before serving for best flavour.\n## Time\nPrep: 55 min · Cook: 0 min`,
+
+  // ── Mediterranean ──
+  "Chicken Souvlaki": `## Ingredients\n- Chicken Breast (500g)\n- Olive Oil (4 tbsp)\n- Lemons (1)\n- Garlic (3 cloves)\n- Oregano (2 tsp)\n- Pita Bread (4)\n- Yogurt (½ cup)\n- Cucumber (½)\n## Steps\n1. Marinate chicken in olive oil, lemon, garlic and oregano 1 hour.\n2. Thread onto skewers, grill 4 min each side.\n3. Mix yogurt with grated cucumber, garlic and salt for tzatziki.\n4. Warm pita on grill 1 min.\n5. Serve chicken in pita with tzatziki, tomatoes and onion.\n## Time\nPrep: 65 min · Cook: 12 min`,
+
+  "Moussaka Style Bake": `## Ingredients\n- Aubergine (2, sliced)\n- Lentils (1 cup)\n- Tomatoes (3)\n- Onions (1)\n- Garlic (3 cloves)\n- Cinnamon (½ tsp)\n- Olive Oil (4 tbsp)\n## Steps\n1. Salt aubergine slices, rest 10 min, pat dry.\n2. Pan-fry aubergine in olive oil until golden, set aside.\n3. Sauté onion and garlic, add tomatoes, cinnamon and cooked lentils.\n4. Simmer meat sauce 10 min.\n5. Layer aubergine then lentil sauce in baking dish, repeat.\n6. Bake at 180°C for 25 min until bubbling.\n## Time\nPrep: 25 min · Cook: 40 min`,
+
+  "Chickpea Tagine": `## Ingredients\n- Chickpeas (400g)\n- Tomatoes (2)\n- Carrots (2, diced)\n- Zucchini (1, diced)\n- Couscous (1 cup)\n- Cumin Powder (2 tsp)\n- Smoked Paprika (1 tsp)\n- Olive Oil (3 tbsp)\n## Steps\n1. Sauté onion and garlic in olive oil.\n2. Add carrots, cumin and paprika, cook 3 min.\n3. Add tomatoes, zucchini and chickpeas, stir well.\n4. Add ½ cup water, cover and simmer 20 min.\n5. Pour boiling water over couscous, cover and rest 5 min, fluff.\n6. Serve tagine over couscous.\n## Time\nPrep: 10 min · Cook: 30 min`,
+
+  // ── Italian ──
+  "Spaghetti Aglio e Olio": `## Ingredients\n- Spaghetti (300g)\n- Garlic (6 cloves, sliced)\n- Olive Oil (6 tbsp)\n- Pepper Flakes (1 tsp)\n- Parsley (handful)\n- Parmesan (40g, grated)\n## Steps\n1. Cook spaghetti in salted water until al dente, reserve 1 cup pasta water.\n2. Gently fry garlic and pepper flakes in olive oil until golden — do not burn.\n3. Add ½ cup pasta water to the garlic oil, swirl to emulsify.\n4. Toss hot pasta in the sauce, adding more pasta water as needed.\n5. Season and toss in parsley.\n6. Serve with parmesan.\n## Time\nPrep: 5 min · Cook: 15 min`,
+
+  "Mushroom Risotto": `## Ingredients\n- Arborio Rice (300g)\n- Mushrooms (300g, sliced)\n- Parmesan (60g, grated)\n- White Wine (½ cup)\n- Butter (3 tbsp)\n- Onions (1, diced)\n- Garlic (2 cloves)\n## Steps\n1. Sauté onions and garlic in butter until soft.\n2. Add mushrooms, cook until golden.\n3. Add arborio rice, stir 2 min.\n4. Add wine, stir until absorbed.\n5. Add warm stock ladle by ladle over 18–20 min, stirring constantly.\n6. Stir in parmesan and a knob of butter, serve immediately.\n## Time\nPrep: 5 min · Cook: 30 min`,
+
+  "Penne Arrabbiata": `## Ingredients\n- Penne (300g)\n- Tomatoes (400g, crushed)\n- Garlic (4 cloves)\n- Pepper Flakes (2 tsp)\n- Olive Oil (4 tbsp)\n- Basil (handful)\n## Steps\n1. Cook penne until al dente, reserve ½ cup pasta water.\n2. Fry garlic and pepper flakes in olive oil until golden.\n3. Add tomatoes, season and simmer 12 min.\n4. Toss pasta in sauce with a splash of pasta water.\n5. Cook together 2 min until sauce coats pasta.\n6. Serve with fresh basil and parmesan.\n## Time\nPrep: 5 min · Cook: 20 min`,
+
+  // ── French Continental ──
+  "French Onion Soup": `## Ingredients\n- Onions (4, sliced)\n- Butter (3 tbsp)\n- White Wine (½ cup)\n- Gruyere (100g, grated)\n- White Bread (4 slices)\n- Bay Leaves (2)\n- Thyme (3 sprigs)\n## Steps\n1. Cook onions in butter over low heat 40 min until caramelized.\n2. Add wine, cook 3 min until evaporated.\n3. Add 1L water with bay leaves and thyme, simmer 20 min.\n4. Toast bread slices, top with gruyere and grill until bubbling.\n5. Ladle soup into oven-safe bowls, float cheesy toast on top.\n## Time\nPrep: 5 min · Cook: 65 min`,
+
+  "Ratatouille": `## Ingredients\n- Aubergine (1, diced)\n- Zucchini (2, diced)\n- Capsicum (2, diced)\n- Tomatoes (4)\n- Onions (1)\n- Garlic (4 cloves)\n- Olive Oil (4 tbsp)\n- Thyme (4 sprigs)\n## Steps\n1. Sauté onion and garlic in olive oil until soft.\n2. Add capsicum, cook 4 min.\n3. Add tomatoes, cook until pulpy.\n4. Add aubergine, zucchini and thyme.\n5. Cover and simmer 25 min, stirring occasionally.\n6. Season, serve warm with crusty bread.\n## Time\nPrep: 15 min · Cook: 35 min`,
+
+  "Quiche Lorraine": `## Ingredients\n- All-Purpose Flour (150g)\n- Butter (100g, cold)\n- Eggs (4)\n- Fresh Cream (200ml)\n- Bacon (150g)\n- Gruyere (80g, grated)\n## Steps\n1. Rub butter into flour and salt, add 3 tbsp cold water, form pastry. Chill 20 min.\n2. Roll out, line tart tin, blind bake at 190°C for 12 min.\n3. Fry bacon until crispy, scatter over pastry base.\n4. Whisk eggs with cream, season, pour over bacon.\n5. Top with gruyere.\n6. Bake 25 min at 180°C until set and golden.\n## Time\nPrep: 35 min · Cook: 40 min`,
+
+  // ── Mexican ──
+  "Chicken Tacos": `## Ingredients\n- Corn Tortillas (8)\n- Chicken Breast (400g)\n- Onions (½, diced)\n- Coriander (handful)\n- Limes (1)\n- Cumin Seeds (1 tsp)\n- Smoked Paprika (1 tsp)\n## Steps\n1. Season chicken with cumin, paprika and salt.\n2. Grill or pan-fry 5 min per side until cooked through.\n3. Rest 5 min, then slice thinly.\n4. Warm tortillas 30 sec each side in dry pan.\n5. Load each tortilla with chicken, onion and coriander.\n6. Squeeze lime juice over and serve with salsa.\n## Time\nPrep: 10 min · Cook: 15 min`,
+
+  "Mexican Rice Bowl": `## Ingredients\n- White Rice (1½ cups)\n- Black Beans (400g)\n- Corn (1 cup)\n- Tomatoes (2, diced)\n- Coriander (handful)\n- Limes (1)\n- Sour Cream (4 tbsp)\n- Cumin Seeds (1 tsp)\n## Steps\n1. Cook rice.\n2. Warm black beans with cumin seeds and salt.\n3. Mix tomatoes with coriander and lime juice for pico.\n4. Build bowls: rice base, black beans, corn.\n5. Add pico de gallo and sour cream.\n6. Finish with extra lime wedge.\n## Time\nPrep: 10 min · Cook: 20 min`,
+
+  "Chipotle Chicken Bowl": `## Ingredients\n- White Rice (1½ cups)\n- Chicken Breast (400g)\n- Black Beans (400g)\n- Corn (1 cup)\n- Chipotle (1 tbsp)\n- Sour Cream (4 tbsp)\n- Coriander (handful)\n- Limes (1)\n## Steps\n1. Cook rice.\n2. Season chicken with chipotle, salt and cumin, grill 5 min per side.\n3. Slice chicken, warm black beans.\n4. Build bowls: rice, black beans, corn.\n5. Top with chipotle chicken and sour cream.\n6. Finish with coriander and lime.\n## Time\nPrep: 10 min · Cook: 20 min`,
+
+  // ── American ──
+  "Classic Burger": `## Ingredients\n- Mutton (400g, minced)\n- Burger Buns (4)\n- Lettuce (4 leaves)\n- Tomatoes (2, sliced)\n- Cheddar (4 slices)\n- Onions (1, sliced)\n- Mayonnaise (4 tbsp)\n## Steps\n1. Season mince with salt and pepper, form 4 patties.\n2. Grill patties 4 min per side on high heat.\n3. Add cheddar in last minute to melt.\n4. Toast buns cut-side down 1 min.\n5. Spread mayo on buns.\n6. Layer lettuce, tomato, patty and onion, serve hot.\n## Time\nPrep: 10 min · Cook: 12 min`,
+
+  "Mac and Cheese": `## Ingredients\n- Pasta (300g)\n- Cheddar (200g, grated)\n- Milk (300ml)\n- Butter (3 tbsp)\n- All-Purpose Flour (3 tbsp)\n- Mustard Sauce (1 tsp)\n- Black Pepper (½ tsp)\n## Steps\n1. Cook pasta until al dente, drain.\n2. Melt butter, whisk in flour, cook 1 min.\n3. Gradually add milk, stirring until thick.\n4. Remove from heat, add cheddar, mustard and pepper.\n5. Fold in pasta, reheat gently 2 min.\n6. Serve immediately.\n## Time\nPrep: 5 min · Cook: 20 min`,
+
+  "BBQ Chicken": `## Ingredients\n- Chicken Breast (500g)\n- Barbecue Sauce (6 tbsp)\n- Garlic (3 cloves, minced)\n- Smoked Paprika (1 tsp)\n- Onions (1)\n- Butter (2 tbsp)\n## Steps\n1. Mix barbecue sauce, garlic and smoked paprika.\n2. Marinate chicken 30 min.\n3. Grill or pan-fry on medium-high 5 min per side.\n4. Baste with extra sauce in last 2 min of cooking.\n5. Sauté onions in butter until caramelized.\n6. Serve chicken over onions.\n## Time\nPrep: 35 min · Cook: 15 min`,
+
+  // ── South American ──
+  "Feijoada": `## Ingredients\n- Black Beans (400g)\n- Chorizo (200g, sliced)\n- Onions (1)\n- Garlic (4 cloves)\n- Cumin Seeds (1 tsp)\n- Coriander (handful)\n- White Rice (1½ cups)\n- Limes (1)\n## Steps\n1. Cook rice.\n2. Fry chorizo until slightly crispy, remove.\n3. Sauté onion and garlic in chorizo fat.\n4. Add cumin seeds, cook 1 min.\n5. Add black beans and 1 cup water, simmer 20 min with chorizo.\n6. Serve over rice with coriander and lime wedges.\n## Time\nPrep: 10 min · Cook: 35 min`,
+
+  "Fish Ceviche": `## Ingredients\n- Fish Fillet (400g, very fresh)\n- Limes (4, juiced)\n- Onions (½, sliced thin)\n- Coriander (handful)\n- Jalapeños (2, sliced)\n- Capsicum (1, diced)\n- Tomatoes (1, diced)\n## Steps\n1. Cut fish into small cubes, place in glass bowl.\n2. Pour lime juice over fish ensuring all is covered.\n3. Refrigerate 20–30 min until fish turns opaque.\n4. Drain excess lime juice, reserving a little.\n5. Mix in onion, coriander, jalapeño, capsicum and tomato.\n6. Season and serve immediately with corn tortillas.\n## Time\nPrep: 35 min · Cook: 0 min`,
+
+  "Chimichurri Chicken": `## Ingredients\n- Chicken Breast (500g)\n- Coriander (1 bunch)\n- Garlic (4 cloves)\n- Olive Oil (6 tbsp)\n- Limes (1)\n- Smoked Paprika (1 tsp)\n- Onions (1)\n## Steps\n1. Blend coriander, garlic, olive oil, lime juice and salt into chimichurri.\n2. Marinate chicken in half the chimichurri 30 min.\n3. Grill or pan-sear 5–6 min per side.\n4. Sauté onions until golden and caramelized.\n5. Rest chicken 5 min, then slice.\n6. Serve with onions and remaining chimichurri drizzled over.\n## Time\nPrep: 35 min · Cook: 15 min`
+};
+
 const ANTHROPIC_API_KEY = "";
 const EMPTY_DISH = {
   name: "",
@@ -7043,6 +7143,12 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
   async function fetchRecipe(dishName, mealCat) {
     if(!dishName) return;
     if(recipes[dishName]) { setRecipeModal(dishName); return; } // already cached — no AI needed
+    var _static = STATIC_RECIPES[dishName];
+    if(_static) {
+      setRecipes(function(prev){ return Object.assign({}, prev, {[dishName]: _static}); });
+      setRecipeModal(dishName);
+      return;
+    }
     if(!aiEnabled) { setAiGateModal("disabled"); return; }
     if(!(apiKey || geminiKey)) { setAiGateModal("no-key"); return; }
     setRecipeModal(dishName);
@@ -11309,7 +11415,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Select your cuisines — we'll load the right ingredients and dishes automatically."),
       /*#__PURE__*/React.createElement("div", {
         style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }
-      }, ['south_indian', 'north_indian', 'vegetarian', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'american', 'vegan', 'south_american', 'japanese'].map(function(key) {
+      }, ['south_indian', 'north_indian', 'vegetarian', 'vegan', 'japanese', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'south_american', 'american'].map(function(key) {
         var preset = CUISINE_PRESETS[key];
         if(!preset) return null;
         var active = cuisines.includes(key);
@@ -11519,7 +11625,7 @@ Only output the JSON. No markdown.`;
   cuisineModal && (function(){
     // Pick mode: show cuisine grid to select which to add
     if(cuisineModal.mode === "pick"){
-      var unloaded = ['south_indian','north_indian','vegetarian','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','american','vegan','south_american','japanese'].filter(function(k){return !cuisines.includes(k);});
+      var unloaded = ['south_indian','north_indian','vegetarian','vegan','japanese','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','south_american','american'].filter(function(k){return !cuisines.includes(k);});
       if(unloaded.length === 0){
         return /*#__PURE__*/React.createElement("div",{
           onClick:function(){setCuisineModal(null);},
