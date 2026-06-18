@@ -5809,38 +5809,38 @@ function DishTile({
   },
     count > 0 && /*#__PURE__*/React.createElement("div", {
       style:{
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.90)",
-        fontSize:9,fontWeight:700,lineHeight:1,
-        background: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.13)",
-        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
-        borderRadius:4,padding:"2px 4px",pointerEvents:"none"}
+        color: isLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.80)",
+        fontSize:8,fontWeight:700,lineHeight:1,
+        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.10)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.15)"),
+        borderRadius:3,padding:"1px 3px",pointerEvents:"none"}
     }, count),
   ),
   (dish.weekendOnly===true || dish.weekendOnly==="weekday" || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
-    style:{position:"absolute",bottom:5,left:5,display:"flex",gap:3,pointerEvents:"none",zIndex:1}
+    style:{position:"absolute",bottom:5,left:5,display:"flex",gap:2,pointerEvents:"none",zIndex:1}
   },
     dish.weekendOnly===true && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:8,
-        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.11)",
-        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
-        borderRadius:4,padding:"2px 4px",
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)",
+      style:{fontSize:7,
+        background: isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.09)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.15)"),
+        borderRadius:3,padding:"1px 3px",
+        color: isLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.72)",
         fontWeight:700,letterSpacing:0.3}
     }, "WE"),
     dish.weekendOnly==="weekday" && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:8,
-        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.11)",
-        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
-        borderRadius:4,padding:"2px 4px",
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)",
+      style:{fontSize:7,
+        background: isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.09)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.15)"),
+        borderRadius:3,padding:"1px 3px",
+        color: isLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.72)",
         fontWeight:700,letterSpacing:0.3}
     }, "WD"),
     dish.michelinLevel && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:8,
-        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.11)",
-        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
-        borderRadius:4,padding:"2px 4px",
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)",
+      style:{fontSize:7,
+        background: isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.09)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.15)"),
+        borderRadius:3,padding:"1px 3px",
+        color: isLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.72)",
         fontWeight:700}
     }, "G")
   ),
@@ -6675,9 +6675,10 @@ function App() {
   const [recipeModal, setRecipeModal] = useState(null);
   const [recipeFetching, setRecipeFetching] = useState("");
   const [recipeError, setRecipeError] = useState("");
-  const [scanModal, setScanModal] = useState(null); // null | "choose" | "url" | "loading" | "review" | "error"
+  const [scanModal, setScanModal] = useState(null); // null | "photos" | "url" | "loading" | "review" | "confirm-items" | "error"
   const [scanResult, setScanResult] = useState(null);
   const [scanUrl, setScanUrl] = useState("");
+  const [scanPhotos, setScanPhotos] = useState([]); // [{base64,mimeType,dataUrl}] accumulated for multi-photo scan
   const [confirmNewItems, setConfirmNewItems] = useState([]); // [{id,name,cat,include}]
   const [pendingScanData, setPendingScanData] = useState(null); // dish data waiting for ingredient confirmation
   const [pendingNewPantryItems, setPendingNewPantryItems] = useState([]); // new pantry items from scan, deferred until dish is saved
@@ -8105,12 +8106,11 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
   const SCAN_CAT_IDS = "staples|dairy|bakery|flour|protein|grain|veg|herb|fruit|spice|condiment|nuts|beverage|frozen|snack";
   const SCAN_SCHEMA = '{"name":"<dish name>","mealCats":["Breakfast"|"Lunch"|"Dinner"|"Snacks"],"ingredients":[{"name":"<ingredient name>","cat":"' + SCAN_CAT_IDS + '"}],"recipe":"## Ingredients\\n- Ingredient (quantity)\\n## Steps\\n1. Clear concise step (what to do, no explanation of why)\\n2. Next step\\n## Time\\nPrep: X min · Cook: Y min"}';
 
-  async function callGeminiVision({ base64, mimeType, prompt }) {
+  async function callGeminiVision({ photos, prompt }) {
+    var parts = [{ text: prompt }];
+    photos.forEach(function(p){ parts.push({ inline_data: { mime_type: p.mimeType, data: p.base64 } }); });
     var body = JSON.stringify({
-      contents: [{ parts: [
-        { text: prompt },
-        { inline_data: { mime_type: mimeType, data: base64 } }
-      ]}],
+      contents: [{ parts: parts }],
       generationConfig: { maxOutputTokens: 2000 }
     });
     var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + geminiKey;
@@ -8121,14 +8121,10 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     return repairAndParse(text);
   }
 
-  async function callClaudeVision({ base64, mimeType, prompt }) {
-    var body = {
-      model: modelName, max_tokens: 1200,
-      messages: [{ role: "user", content: [
-        { type: "text", text: prompt },
-        { type: "image", source: { type: "base64", media_type: mimeType, data: base64 } }
-      ]}]
-    };
+  async function callClaudeVision({ photos, prompt }) {
+    var content = [{ type: "text", text: prompt }];
+    photos.forEach(function(p){ content.push({ type: "image", source: { type: "base64", media_type: p.mimeType, data: p.base64 } }); });
+    var body = { model: modelName, max_tokens: 1200, messages: [{ role: "user", content: content }] };
     var res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": apiKey,
@@ -8141,10 +8137,14 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     return repairAndParse(text);
   }
 
+  async function scanDishFromImages(photos) {
+    var photoWord = photos.length > 1 ? "these photos" : "this photo";
+    var prompt = SCAN_SYSTEM + "\n\nIdentify the dish in " + photoWord + ". Recipe steps should be clear and concise — just what to do, no explanations of why. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot identify a dish, return {\"error\":\"Could not identify dish\"}.";
+    return geminiKey ? await callGeminiVision({ photos, prompt }) : await callClaudeVision({ photos, prompt });
+  }
+
   async function scanDishFromImage(base64, mimeType) {
-    var prompt = SCAN_SYSTEM + "\n\nIdentify the dish in this photo. Recipe steps should be clear and concise — just what to do, no explanations of why. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot identify a dish, return {\"error\":\"Could not identify dish\"}.";
-    var parsed = geminiKey ? await callGeminiVision({ base64, mimeType, prompt }) : await callClaudeVision({ base64, mimeType, prompt });
-    return parsed;
+    return scanDishFromImages([{ base64, mimeType }]);
   }
 
   async function scanDishFromUrl(url) {
@@ -8167,6 +8167,8 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
       var result;
       if (source.type === "url") {
         result = await scanDishFromUrl(source.url);
+      } else if (source.type === "images") {
+        result = await scanDishFromImages(source.photos);
       } else {
         result = await scanDishFromImage(source.base64, source.mimeType);
       }
@@ -8174,6 +8176,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
         setScanResult({ error: result && result.error ? result.error : "Could not identify dish" });
         setScanModal("error");
       } else {
+        if (result.name) result.name = result.name.slice(0, 30).trimEnd();
         setScanResult(result);
         setScanModal("review");
       }
@@ -8247,6 +8250,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
       setRecipes(function(prev){ return Object.assign({}, prev, { [dishPayload.name]: dishPayload.recipe }); });
     }
     setScanModal(null);
+    setScanPhotos([]);
     setPendingScanData(null);
     setConfirmNewItems([]);
     setAddDishModal(true);
@@ -8260,7 +8264,10 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
       var parts = dataUrl.split(",");
       var base64 = parts[1];
       var mimeType = (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
-      runScan({ type: "image", base64, mimeType });
+      setScanPhotos(function(prev){
+        return prev.concat([{ base64, mimeType, dataUrl }]).slice(0, 3); // max 3
+      });
+      setScanModal("photos");
     };
     reader.readAsDataURL(file);
   }
@@ -12666,6 +12673,46 @@ Only output the JSON. No markdown.`;
   ),
   scanModal && /*#__PURE__*/React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, padding: 24 } },
     /*#__PURE__*/React.createElement("div", { style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 360 } },
+      scanModal === "photos" && /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 4 } }, "Scan dish"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16 } }, scanPhotos.length + " photo" + (scanPhotos.length !== 1 ? "s" : "") + " added" + (scanPhotos.length < 3 ? " · tap + to add more" : " (max 3)")),
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" } },
+          scanPhotos.map(function(p, i){
+            return /*#__PURE__*/React.createElement("div", { key: i, style: { position: "relative", width: 80, height: 80 } },
+              /*#__PURE__*/React.createElement("img", { src: p.dataUrl, style: { width: 80, height: 80, objectFit: "cover", borderRadius: 10, display: "block" } }),
+              /*#__PURE__*/React.createElement("button", {
+                onClick: function(){
+                  haptic("light");
+                  var next = scanPhotos.filter(function(_, idx){ return idx !== i; });
+                  setScanPhotos(next);
+                  if (next.length === 0) setScanModal(null);
+                },
+                style: { position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", background: C.bg, border: "1px solid " + C.border, color: C.text, fontSize: 11, lineHeight: "18px", textAlign: "center", cursor: "pointer", padding: 0 }
+              }, "✕")
+            );
+          }),
+          scanPhotos.length < 3 && /*#__PURE__*/React.createElement(React.Fragment, null,
+            /*#__PURE__*/React.createElement("button", {
+              onClick: function(){ haptic("light"); document.getElementById("scan-camera-input").click(); },
+              style: { width: 80, height: 80, borderRadius: 10, background: "transparent", border: "1px dashed " + C.dim2, color: C.dim, fontSize: 11, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }
+            }, /*#__PURE__*/React.createElement(Icon, { name: "camera", size: 18 }), "Camera"),
+            /*#__PURE__*/React.createElement("button", {
+              onClick: function(){ haptic("light"); document.getElementById("scan-gallery-input").click(); },
+              style: { width: 80, height: 80, borderRadius: 10, background: "transparent", border: "1px dashed " + C.dim2, color: C.dim, fontSize: 11, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }
+            }, /*#__PURE__*/React.createElement(Icon, { name: "image", size: 18 }), "Gallery")
+          )
+        ),
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("medium"); runScan({ type: "images", photos: scanPhotos }); },
+            style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0" })
+          }, "Identify Dish"),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); setScanModal(null); setScanPhotos([]); },
+            style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
+          }, "Cancel")
+        )
+      ),
       scanModal === "url" && /*#__PURE__*/React.createElement(React.Fragment, null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Import from URL"),
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16, lineHeight: 1.5 } }, "Paste a link to a recipe page and AI will extract the dish details."),
@@ -12762,11 +12809,11 @@ Only output the JSON. No markdown.`;
         ),
         /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
           /*#__PURE__*/React.createElement("button", {
-            onClick: function(){ haptic("light"); setScanModal(null); setAddDishModal(true); },
+            onClick: function(){ haptic("light"); setScanModal(null); setScanPhotos([]); setAddDishModal(true); },
             style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0" })
           }, "Add manually"),
           /*#__PURE__*/React.createElement("button", {
-            onClick: function(){ haptic("light"); setScanResult(null); setScanUrl(""); setScanModal("url"); },
+            onClick: function(){ haptic("light"); setScanResult(null); setScanUrl(""); setScanPhotos([]); setScanModal("url"); },
             style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
           }, "Try URL")
         )
