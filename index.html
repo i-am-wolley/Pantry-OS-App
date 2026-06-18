@@ -6661,7 +6661,7 @@ function App() {
   const [mustIncSearch, setMustIncSearch] = useState("");
   const [excludeSearch, setExcludeSearch] = useState("");
   const [genMode, setGenMode] = useState("mixed");
-  const [ignoreStock, setIgnoreStock] = useState(false);
+  const [ignoreStock, setIgnoreStock] = useState(true);
   const [aiDishIngredients, setAiDishIngredients] = useState({}); // {dishName: [ing,...]}
   const [defaultAiSlots, setDefaultAiSlots] = useState({Breakfast: false, Lunch: true, Snacks: false, Dinner: true});
   const [aiSlotSel, setAiSlotSel] = useState({});
@@ -8143,7 +8143,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
 
   async function callClaudeVision({ photos, prompt }) {
     var content = [{ type: "text", text: prompt }];
-    photos.forEach(function(p){ content.push({ type: "image", source: { type: "base64", media_type: p.mimeType, data: p.base64 } }); });
+    photos.forEach(function(p){ content.push(p.mimeType === "application/pdf" ? { type: "document", source: { type: "base64", media_type: p.mimeType, data: p.base64 } } : { type: "image", source: { type: "base64", media_type: p.mimeType, data: p.base64 } }); });
     var body = { model: modelName, max_tokens: 1200, messages: [{ role: "user", content: content }] };
     var res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -8337,11 +8337,6 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
 
   function handleReceiptFile(file) {
     if (!file) return;
-    if (file.type === "application/pdf" && !geminiKey) {
-      setReceiptErrorMsg("PDF upload requires a Gemini API key. Add one in Settings → AI Provider.");
-      setReceiptModal("error");
-      return;
-    }
     var reader = new FileReader();
     reader.onload = function(e) {
       var dataUrl = e.target.result;
@@ -12812,13 +12807,13 @@ Only output the JSON. No markdown.`;
         ),
         /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
           /*#__PURE__*/React.createElement("button", {
-            onClick: function(){ haptic("medium"); runScan({ type: "images", photos: scanPhotos }); },
-            style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0" })
-          }, "Identify Dish"),
-          /*#__PURE__*/React.createElement("button", {
             onClick: function(){ haptic("light"); setScanModal(null); setScanPhotos([]); },
             style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
-          }, "Cancel")
+          }, "Cancel"),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("medium"); runScan({ type: "images", photos: scanPhotos }); },
+            style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0" })
+          }, "Identify Dish")
         )
       ),
       scanModal === "url" && /*#__PURE__*/React.createElement(React.Fragment, null,
@@ -12833,14 +12828,14 @@ Only output the JSON. No markdown.`;
         }),
         /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
           /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); setScanModal(null); },
+            style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
+          }, "Cancel"),
+          /*#__PURE__*/React.createElement("button", {
             onClick: function(){ haptic("medium"); if (scanUrl.trim()) runScan({ type: "url", url: scanUrl.trim() }); },
             disabled: !scanUrl.trim(),
             style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0", opacity: scanUrl.trim() ? 1 : 0.4 })
-          }, "Identify Dish"),
-          /*#__PURE__*/React.createElement("button", {
-            onClick: function(){ haptic("light"); setScanModal(null); },
-            style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
-          }, "Cancel")
+          }, "Identify Dish")
         )
       ),
       scanModal === "loading" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "16px 0" } },
@@ -12949,7 +12944,6 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("button", {
           onClick: function(){
             haptic("light");
-            if (!geminiKey) { setReceiptErrorMsg("PDF upload requires a Gemini API key. Add one in Settings → AI Provider."); setReceiptModal("error"); return; }
             document.getElementById("receipt-pdf-input").click();
           },
           style: Object.assign({}, pill(false), { width: "100%", padding: "11px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", marginBottom: 8 })
