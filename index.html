@@ -10480,11 +10480,16 @@ Only output the JSON. No markdown.`;
   }, "— tap the counts above to filter")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
+      flexDirection: "column",
+      gap: 6,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      gap: 8,
-      marginBottom: 10,
-      flexWrap: "nowrap"
+      gap: 8
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
@@ -10544,11 +10549,7 @@ Only output the JSON. No markdown.`;
       alignItems: "center",
       gap: 4
     }
-  }, /*#__PURE__*/React.createElement(Icon, { name: "receipt", size: 13 }), "Scan receipt"),
-  /*#__PURE__*/React.createElement(SizeSlider, {
-    value: sqSize,
-    onChange: setSqSize
-  }), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement(Icon, { name: "receipt", size: 13 }), "Scan receipt"), /*#__PURE__*/React.createElement("button", {
     onClick: () => { haptic("light"); setAddItemModal(true); },
     style: {
       background: tint("#6F9E80", C.bg === "#f5f0ea" ? 0.12 : 0.14),
@@ -10562,7 +10563,10 @@ Only output the JSON. No markdown.`;
       fontFamily: C.font,
       whiteSpace: "nowrap"
     }
-  }, "+ Add item"))), PANTRY_CATEGORIES.map(pc => {
+  }, "+ Add item"))), /*#__PURE__*/React.createElement(SizeSlider, {
+    value: sqSize,
+    onChange: setSqSize
+  })), PANTRY_CATEGORIES.map(pc => {
     const grpItems = summaryItems.filter(i => i.cat === pc.id || (pc.id === "staples" && i.isStaple && i.cat !== "staples")).filter(i => !pantrySearch || i.name.toLowerCase().includes(pantrySearch.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
     if (!grpItems.length) return null;
     return /*#__PURE__*/React.createElement("div", {
