@@ -6303,8 +6303,6 @@ function DayCardCarousel({
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const dragStart = React.useRef(null);
-  const loginGraceRef = React.useRef(false);
-  const prevUserIdRef = React.useRef(null);
 
   const hasTomorrow = !!(nextMenu ? nextMenu?.plan?.[tomorrow.name] : menu?.plan?.[tomorrow.name]);
   const hasToday = !!(menu?.plan?.[today.name]);
@@ -6626,6 +6624,8 @@ function App() {
   const [sqSize, setSqSize] = useState(88);
   const [aiCount, setAiCount] = useState(3);
   const [loaded, setLoaded] = useState(false);
+  const loginGraceRef = React.useRef(false);
+  const prevUserIdRef = React.useRef(null);
 
   // Summary filter: "all" | "stocked" | "needed"
   const [summaryFilter, setSummaryFilter] = useState("all");
