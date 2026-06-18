@@ -7433,6 +7433,7 @@ function App() {
         "MICHELIN_LUNCH/MICHELIN_DINNER=Gourmet quality dish from pantry.\n"+
         "Use ONLY pantry ingredients listed. Staples: oil,salt,water,sugar,black pepper always available.\n"+
         "Every day needs fruit and vegetable. Respect meal slot appropriateness.\n"+
+        "Dish names must be 30 characters or fewer (including spaces).\n"+
         allergenLine+
         stockConstraintLine+
         (cookTime>0?"Max cook time "+cookTime+"min for weekday meals.\n":"")+
@@ -7703,6 +7704,7 @@ function App() {
           "AI_DISH=creative dish, SNACK=simple max 20min snack, MICHELIN_*=Gourmet quality.\n"+
           (hasFallback?"PANTRY_FALLBACK slots: use ONLY the exact ingredients listed. Zero creativity outside pantry.\n":"")+
           "Use ONLY pantry ingredients listed below. Staples (oil,salt,water,sugar,pepper) always available.\n"+
+          "Dish names must be 30 characters or fewer (including spaces).\n"+
           allergenLine+
           stockConstraintLine+
           "Do NOT use or closely resemble: "+allDishNames.join(", ")+"\n"+
@@ -8104,7 +8106,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
   // ── Scan dish from photo or URL ──
   const SCAN_SYSTEM = "You are a culinary assistant. Identify the dish from the image or URL provided and return ONLY valid JSON, no markdown, no preamble.";
   const SCAN_CAT_IDS = "staples|dairy|bakery|flour|protein|grain|veg|herb|fruit|spice|condiment|nuts|beverage|frozen|snack";
-  const SCAN_SCHEMA = '{"name":"<dish name>","mealCats":["Breakfast"|"Lunch"|"Dinner"|"Snacks"],"ingredients":[{"name":"<ingredient name>","cat":"' + SCAN_CAT_IDS + '"}],"recipe":"## Ingredients\\n- Ingredient (quantity)\\n## Steps\\n1. Clear concise step (what to do, no explanation of why)\\n2. Next step\\n## Time\\nPrep: X min · Cook: Y min"}';
+  const SCAN_SCHEMA = '{"name":"<dish name — max 30 characters including spaces>","mealCats":["Breakfast"|"Lunch"|"Dinner"|"Snacks"],"ingredients":[{"name":"<ingredient name>","cat":"' + SCAN_CAT_IDS + '"}],"recipe":"## Ingredients\\n- Ingredient (quantity)\\n## Steps\\n1. Clear concise step (what to do, no explanation of why)\\n2. Next step\\n## Time\\nPrep: X min · Cook: Y min"}';
 
   async function callGeminiVision({ photos, prompt }) {
     var parts = [{ text: prompt }];
@@ -8139,7 +8141,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
 
   async function scanDishFromImages(photos) {
     var photoWord = photos.length > 1 ? "these photos" : "this photo";
-    var prompt = SCAN_SYSTEM + "\n\nIdentify the dish in " + photoWord + ". Recipe steps should be clear and concise — just what to do, no explanations of why. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot identify a dish, return {\"error\":\"Could not identify dish\"}.";
+    var prompt = SCAN_SYSTEM + "\n\nIdentify the dish in " + photoWord + ". IMPORTANT: the dish name must be 30 characters or fewer (including spaces) — use a concise, natural name. Recipe steps should be clear and concise — just what to do, no explanations of why. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot identify a dish, return {\"error\":\"Could not identify dish\"}.";
     return geminiKey ? await callGeminiVision({ photos, prompt }) : await callClaudeVision({ photos, prompt });
   }
 
@@ -8148,7 +8150,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
   }
 
   async function scanDishFromUrl(url) {
-    var prompt = SCAN_SYSTEM + "\n\nThis URL likely points to a recipe page: " + url + "\nIdentify the dish and provide a full recipe. Steps should be clear and concise — just what to do, no explanations of why. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot determine a recipe from this URL, return {\"error\":\"Could not identify dish\"}.";
+    var prompt = SCAN_SYSTEM + "\n\nThis URL likely points to a recipe page: " + url + "\nIdentify the dish and provide a full recipe. IMPORTANT: the dish name must be 30 characters or fewer (including spaces) — use a concise, natural name. Steps should be clear and concise — just what to do, no explanations of why. Return JSON matching this schema exactly:\n" + SCAN_SCHEMA + "\nIf you cannot determine a recipe from this URL, return {\"error\":\"Could not identify dish\"}.";
     var parsed = (await callAI({ system: SCAN_SYSTEM, prompt, maxTokens: 2000 }));
     return parsed && parsed.json ? parsed.json : parsed;
   }
@@ -8176,7 +8178,6 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
         setScanResult({ error: result && result.error ? result.error : "Could not identify dish" });
         setScanModal("error");
       } else {
-        if (result.name) result.name = result.name.slice(0, 30).trimEnd();
         setScanResult(result);
         setScanModal("review");
       }
