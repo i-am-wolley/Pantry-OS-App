@@ -11579,7 +11579,13 @@ Only output the JSON. No markdown.`;
       fontWeight: 700,
       color: C.white
     }
-  }, "Edit dish"), /*#__PURE__*/React.createElement("button", {
+  }, "Edit dish"), /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
+    recipes[editDishModal.name] && /*#__PURE__*/React.createElement("button", {
+      onClick: function(){ haptic("light"); setRecipeModal(editDishModal.name); },
+      style: { background: "transparent", border: "none", color: C.dim, cursor: "pointer", padding: 4, display: "flex", alignItems: "center" },
+      title: "View recipe"
+    }, /*#__PURE__*/React.createElement(Icon, { name: "recipe", size: 18 })),
+    /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       haptic("light");
       setEditDishModal(null);
@@ -11592,7 +11598,7 @@ Only output the JSON. No markdown.`;
       cursor: "pointer",
       fontSize: 16
     }
-  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+  }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
