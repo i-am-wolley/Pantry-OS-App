@@ -1373,6 +1373,12 @@ function Icon({
     /*#__PURE__*/React.createElement("svg", { viewBox: "0 0 24 24", width: w, height: h, fill: p.fill, stroke: p.stroke, strokeWidth: p.strokeWidth, strokeLinecap: p.strokeLinecap, strokeLinejoin: p.strokeLinejoin },
       /*#__PURE__*/React.createElement("path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }),
       /*#__PURE__*/React.createElement("path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" })));
+  if (name === "receipt") return /*#__PURE__*/React.createElement("span", { style: wrap },
+    /*#__PURE__*/React.createElement("svg", { viewBox: "0 0 24 24", width: w, height: h, fill: p.fill, stroke: p.stroke, strokeWidth: p.strokeWidth, strokeLinecap: p.strokeLinecap, strokeLinejoin: p.strokeLinejoin },
+      /*#__PURE__*/React.createElement("path", { d: "M4 2h16v20l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5Z" }),
+      /*#__PURE__*/React.createElement("line", { x1: "8", y1: "8", x2: "16", y2: "8" }),
+      /*#__PURE__*/React.createElement("line", { x1: "8", y1: "12", x2: "16", y2: "12" }),
+      /*#__PURE__*/React.createElement("line", { x1: "8", y1: "16", x2: "13", y2: "16" })));
   return null;
 }
 const PANTRY_CATEGORIES = [{
@@ -6682,6 +6688,9 @@ function App() {
   const [confirmNewItems, setConfirmNewItems] = useState([]); // [{id,name,cat,include}]
   const [pendingScanData, setPendingScanData] = useState(null); // dish data waiting for ingredient confirmation
   const [pendingNewPantryItems, setPendingNewPantryItems] = useState([]); // new pantry items from scan, deferred until dish is saved
+  const [receiptModal, setReceiptModal] = useState(null); // null | "choose" | "loading" | "review" | "error"
+  const [receiptItems, setReceiptItems] = useState([]); // [{item, checked}] matched from receipt
+  const [receiptErrorMsg, setReceiptErrorMsg] = useState("");
 
   // New features
   const [lockedDays, setLockedDays] = useState({});
@@ -8269,6 +8278,62 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
         return prev.concat([{ base64, mimeType, dataUrl }]).slice(0, 3); // max 3
       });
       setScanModal("photos");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Receipt scan — stock pantry from grocery receipt photo ──
+  async function scanReceiptFromImage(base64, mimeType) {
+    var prompt = "You are a grocery receipt scanner. Extract ALL food and household product names visible on this receipt. Return ONLY valid JSON with this schema: {\"items\":[\"product name\",\"product name\",...]}. Use clean, recognisable names (e.g. 'Milk', 'Eggs', 'Tomatoes', 'Chicken Breast'). If this is not a grocery receipt or no items are found, return {\"error\":\"Not a receipt\"}.";
+    return geminiKey ? await callGeminiVision({ photos: [{ base64, mimeType }], prompt }) : await callClaudeVision({ photos: [{ base64, mimeType }], prompt });
+  }
+
+  async function runReceiptScan(source) {
+    setReceiptModal("loading");
+    setReceiptErrorMsg("");
+    try {
+      var result = await scanReceiptFromImage(source.base64, source.mimeType);
+      if (!result || result.error || !result.items || !result.items.length) {
+        setReceiptErrorMsg((result && result.error) || "No items could be read from this receipt.");
+        setReceiptModal("error");
+        return;
+      }
+      var norm = function(s){ return (s || "").toLowerCase().trim(); };
+      var matched = [];
+      result.items.forEach(function(rName) {
+        var rn = norm(rName);
+        if (rn.length < 2) return;
+        var found = items.find(function(it){ return norm(it.name) === rn; });
+        if (!found) found = items.find(function(it){
+          var a = norm(it.name);
+          return a.length >= 3 && rn.length >= 3 && (a.includes(rn) || rn.includes(a));
+        });
+        if (found && !matched.find(function(m){ return m.item.id === found.id; })) {
+          matched.push({ item: found, checked: true });
+        }
+      });
+      if (matched.length === 0) {
+        setReceiptErrorMsg("None of the items on this receipt matched your pantry list. Add them to your pantry first.");
+        setReceiptModal("error");
+        return;
+      }
+      setReceiptItems(matched);
+      setReceiptModal("review");
+    } catch(e) {
+      setReceiptErrorMsg(e.message || "Something went wrong scanning the receipt.");
+      setReceiptModal("error");
+    }
+  }
+
+  function handleReceiptFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUrl = e.target.result;
+      var parts = dataUrl.split(",");
+      var base64 = parts[1];
+      var mimeType = (parts[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
+      runReceiptScan({ base64, mimeType });
     };
     reader.readAsDataURL(file);
   }
@@ -10441,8 +10506,31 @@ Only output the JSON. No markdown.`;
       flexShrink: 0
     }
   }, items.every(item => item.type === "quantity" ? (stock[item.id] || 0) > 0 : stock[item.id] === true) ? "Clear stock" : "Mark all in stock"), /*#__PURE__*/React.createElement("div", {
-    style: { display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }
-  }, /*#__PURE__*/React.createElement(SizeSlider, {
+    style: { display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      haptic("light");
+      if (!aiEnabled) { setAiGateModal("disabled"); return; }
+      if (!apiKey && !geminiKey) { setAiGateModal("no-key"); return; }
+      setReceiptModal("choose");
+    },
+    style: {
+      background: tint("#E3A14E", C.bg === "#f5f0ea" ? 0.12 : 0.14),
+      border: "none",
+      color: colorMode === "mono" ? C.dim : "#E3A14E",
+      borderRadius: 12,
+      padding: "6px 10px",
+      fontSize: 12,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: C.font,
+      whiteSpace: "nowrap",
+      display: "flex",
+      alignItems: "center",
+      gap: 4
+    }
+  }, /*#__PURE__*/React.createElement(Icon, { name: "receipt", size: 13 }), "Scan receipt"),
+  /*#__PURE__*/React.createElement(SizeSlider, {
     value: sqSize,
     onChange: setSqSize
   }), /*#__PURE__*/React.createElement("button", {
@@ -12817,6 +12905,101 @@ Only output the JSON. No markdown.`;
             onClick: function(){ haptic("light"); setScanResult(null); setScanUrl(""); setScanPhotos([]); setScanModal("url"); },
             style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
           }, "Try URL")
+        )
+      )
+    )
+  ),
+  /*#__PURE__*/React.createElement("input", { type: "file", id: "receipt-camera-input", accept: "image/*", capture: "environment", style: { display: "none" }, onChange: function(e){ if (e.target.files && e.target.files[0]) handleReceiptFile(e.target.files[0]); e.target.value = ""; } }),
+  /*#__PURE__*/React.createElement("input", { type: "file", id: "receipt-gallery-input", accept: "image/*", style: { display: "none" }, onChange: function(e){ if (e.target.files && e.target.files[0]) handleReceiptFile(e.target.files[0]); e.target.value = ""; } }),
+  receiptModal && /*#__PURE__*/React.createElement("div", { onClick: function(){ if (receiptModal !== "loading") { setReceiptModal(null); setReceiptItems([]); } }, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 500, padding: 24 } },
+    /*#__PURE__*/React.createElement("div", { onClick: function(e){ e.stopPropagation(); }, style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 360 } },
+      receiptModal === "choose" && /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Scan grocery receipt"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.5 } }, "Take a photo of your receipt — AI will match items to your pantry and mark them as stocked."),
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12 } },
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); document.getElementById("receipt-camera-input").click(); },
+            style: Object.assign({}, pill(false), { flex: 1, padding: "11px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" })
+          }, /*#__PURE__*/React.createElement(Icon, { name: "camera", size: 15 }), "Camera"),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); document.getElementById("receipt-gallery-input").click(); },
+            style: Object.assign({}, pill(false), { flex: 1, padding: "11px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" })
+          }, /*#__PURE__*/React.createElement(Icon, { name: "image", size: 15 }), "Gallery")
+        ),
+        /*#__PURE__*/React.createElement("button", {
+          onClick: function(){ haptic("light"); setReceiptModal(null); },
+          style: { width: "100%", background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "8px 0" }
+        }, "Cancel")
+      ),
+      receiptModal === "loading" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "16px 0" } },
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 32, marginBottom: 16 } }, "🧾"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 8 } }, "Reading receipt…"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "AI is scanning, this takes a few seconds.")
+      ),
+      receiptModal === "review" && /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 4 } }, receiptItems.length + " item" + (receiptItems.length !== 1 ? "s" : "") + " matched"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16 } }, "Select what to mark as stocked:"),
+        /*#__PURE__*/React.createElement("div", { style: { maxHeight: 260, overflowY: "auto", marginBottom: 16 } },
+          receiptItems.map(function(ri, idx) {
+            var cat = PANTRY_CATEGORIES.find(function(c){ return c.id === ri.item.cat; });
+            return /*#__PURE__*/React.createElement("label", {
+              key: ri.item.id,
+              style: { display: "flex", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: idx < receiptItems.length - 1 ? "1px solid " + C.border : "none", cursor: "pointer" }
+            },
+              /*#__PURE__*/React.createElement("input", {
+                type: "checkbox",
+                checked: ri.checked,
+                onChange: function(){ haptic("light"); setReceiptItems(function(prev){ return prev.map(function(r, i){ return i === idx ? Object.assign({}, r, { checked: !r.checked }) : r; }); }); },
+                style: { width: 18, height: 18, cursor: "pointer", accentColor: C.accent || "#E8A938", flexShrink: 0 }
+              }),
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: C.white } }, ri.item.name),
+                cat && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim, marginTop: 1 } }, cat.label)
+              )
+            );
+          })
+        ),
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){
+              haptic("medium");
+              var toStock = receiptItems.filter(function(ri){ return ri.checked; });
+              if (toStock.length === 0) { setReceiptModal(null); setReceiptItems([]); return; }
+              setStock(function(prev){
+                var next = Object.assign({}, prev);
+                toStock.forEach(function(ri){
+                  if (ri.item.type === "quantity") {
+                    next[ri.item.id] = (prev[ri.item.id] || 0) + 1;
+                  } else {
+                    next[ri.item.id] = true;
+                  }
+                });
+                return next;
+              });
+              setReceiptModal(null);
+              setReceiptItems([]);
+            },
+            disabled: !receiptItems.some(function(ri){ return ri.checked; }),
+            style: Object.assign({}, pill(true), { flex: 1, padding: "11px 0", opacity: receiptItems.some(function(ri){ return ri.checked; }) ? 1 : 0.4 })
+          }, "Update stock (" + receiptItems.filter(function(ri){ return ri.checked; }).length + ")"),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); setReceiptModal(null); setReceiptItems([]); },
+            style: Object.assign({}, pill(false), { padding: "11px 16px" })
+          }, "Cancel")
+        )
+      ),
+      receiptModal === "error" && /*#__PURE__*/React.createElement(React.Fragment, null,
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 8 } }, "Couldn't read receipt"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.dim, marginBottom: 24, lineHeight: 1.6 } }, receiptErrorMsg || "AI couldn't read items from this receipt. Try a clearer photo."),
+        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); setReceiptModal("choose"); },
+            style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0" })
+          }, "Try again"),
+          /*#__PURE__*/React.createElement("button", {
+            onClick: function(){ haptic("light"); setReceiptModal(null); setReceiptItems([]); },
+            style: Object.assign({}, pill(false), { flex: 1, padding: "10px 0" })
+          }, "Close")
         )
       )
     )
