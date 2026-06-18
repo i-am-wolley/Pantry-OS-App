@@ -12959,143 +12959,137 @@ Only output the JSON. No markdown.`;
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "AI is scanning, this takes a few seconds.")
       ),
       receiptModal === "review" && /*#__PURE__*/React.createElement(React.Fragment, null,
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 4 } },
-          receiptItems.length + " matched" + (receiptUnmatched.length > 0 ? " · " + receiptUnmatched.length + " unmatched" : "")
-        ),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 14 } },
-          receiptItems.length > 0 ? "Select what to mark as stocked. Use Change to remap." : "Map receipt items to your pantry:"
-        ),
-        /*#__PURE__*/React.createElement("div", { style: { maxHeight: 340, overflowY: "auto", marginBottom: 14 } },
-          receiptItems.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
-            receiptUnmatched.length > 0 && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 } }, "Matched"),
-            receiptItems.map(function(ri, idx) {
-              var cat = PANTRY_CATEGORIES.find(function(c){ return c.id === ri.item.cat; });
-              var isEditing = receiptEditRow && receiptEditRow.type === "matched" && receiptEditRow.idx === idx;
-              var filteredPantry = isEditing ? items.filter(function(it){
-                return it.name.toLowerCase().includes((receiptEditSearch || "").toLowerCase());
-              }) : [];
-              return /*#__PURE__*/React.createElement("div", { key: ri.item.id },
-                /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: (!isEditing && (idx < receiptItems.length - 1 || receiptUnmatched.length > 0)) ? "1px solid " + C.border : "none" } },
-                  /*#__PURE__*/React.createElement("input", {
-                    type: "checkbox",
-                    checked: ri.checked,
-                    onChange: function(){ haptic("light"); setReceiptItems(function(prev){ return prev.map(function(r, i){ return i === idx ? Object.assign({}, r, { checked: !r.checked }) : r; }); }); },
-                    style: { width: 17, height: 17, cursor: "pointer", accentColor: C.accent || "#E8A938", flexShrink: 0 }
-                  }),
-                  /*#__PURE__*/React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-                    /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: C.white, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, ri.item.name),
-                    ri.receiptName && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, "← " + ri.receiptName),
-                    cat && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim } }, cat.label)
-                  ),
-                  /*#__PURE__*/React.createElement("button", {
-                    onClick: function(){
-                      haptic("light");
-                      if (isEditing) { setReceiptEditRow(null); setReceiptEditSearch(""); }
-                      else { setReceiptEditRow({ type: "matched", idx: idx }); setReceiptEditSearch(""); }
-                    },
-                    style: { background: isEditing ? tint(C.accent || "#E8A938", 0.15) : "transparent", border: "1px solid " + C.dim2, borderRadius: 8, color: C.dim, fontSize: 11, padding: "3px 8px", cursor: "pointer", fontFamily: C.font, whiteSpace: "nowrap", flexShrink: 0 }
-                  }, isEditing ? "Done" : "Change")
-                ),
-                isEditing && /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8, marginLeft: 25 } },
-                  /*#__PURE__*/React.createElement("input", {
-                    autoFocus: true,
-                    value: receiptEditSearch,
-                    onChange: function(e){ setReceiptEditSearch(e.target.value); },
-                    placeholder: "Search pantry…",
-                    style: { width: "100%", background: C.bg, border: "1px solid " + C.border, borderRadius: 8, padding: "6px 10px", color: C.white, fontSize: 13, fontFamily: C.font, boxSizing: "border-box", marginBottom: 4, outline: "none" }
-                  }),
-                  /*#__PURE__*/React.createElement("div", { style: { maxHeight: 120, overflowY: "auto", background: C.bg, borderRadius: 8, border: "1px solid " + C.border, marginBottom: 8 } },
-                    filteredPantry.slice(0, 20).map(function(it){
-                      return /*#__PURE__*/React.createElement("div", {
-                        key: it.id,
-                        onClick: function(){
-                          haptic("light");
-                          setReceiptItems(function(prev){ return prev.map(function(r, i){ return i === idx ? Object.assign({}, r, { item: it }) : r; }); });
-                          setReceiptEditRow(null); setReceiptEditSearch("");
-                        },
-                        style: { padding: "7px 10px", fontSize: 13, color: C.white, cursor: "pointer", borderBottom: "1px solid " + C.border }
-                      }, it.name);
-                    }),
-                    filteredPantry.length === 0 && /*#__PURE__*/React.createElement("div", { style: { padding: "10px", fontSize: 13, color: C.dim, textAlign: "center" } }, "No pantry items found")
+        receiptEditRow
+          ? /*#__PURE__*/React.createElement(React.Fragment, null,
+              /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 14 } },
+                /*#__PURE__*/React.createElement("button", {
+                  onClick: function(){ haptic("light"); setReceiptEditRow(null); setReceiptEditSearch(""); },
+                  style: { background: "transparent", border: "none", color: C.white, fontSize: 22, cursor: "pointer", padding: 0, fontFamily: C.font, lineHeight: 1, flexShrink: 0 }
+                }, "←"),
+                /*#__PURE__*/React.createElement("div", null,
+                  /*#__PURE__*/React.createElement("div", { style: { fontSize: 15, fontWeight: 700, color: C.white } }, "Select pantry item"),
+                  /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 2 } },
+                    receiptEditRow.type === "matched"
+                      ? "Remapping: " + (receiptItems[receiptEditRow.idx] ? receiptItems[receiptEditRow.idx].receiptName : "")
+                      : "Mapping: " + (receiptUnmatched[receiptEditRow.idx] ? receiptUnmatched[receiptEditRow.idx].receiptName : "")
                   )
                 )
-              );
-            })
-          ),
-          receiptUnmatched.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
-            /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: 0.5, marginTop: receiptItems.length > 0 ? 10 : 0, marginBottom: 6 } }, "Not matched"),
-            receiptUnmatched.map(function(um, idx) {
-              var isEditing = receiptEditRow && receiptEditRow.type === "unmatched" && receiptEditRow.idx === idx;
-              var filteredPantry = isEditing ? items.filter(function(it){
-                return it.name.toLowerCase().includes((receiptEditSearch || "").toLowerCase());
-              }) : [];
-              return /*#__PURE__*/React.createElement("div", { key: idx },
-                /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: (!isEditing && idx < receiptUnmatched.length - 1) ? "1px solid " + C.border : "none" } },
-                  /*#__PURE__*/React.createElement("div", { style: { flex: 1, fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, um.receiptName),
-                  /*#__PURE__*/React.createElement("button", {
-                    onClick: function(){
-                      haptic("light");
-                      if (isEditing) { setReceiptEditRow(null); setReceiptEditSearch(""); }
-                      else { setReceiptEditRow({ type: "unmatched", idx: idx }); setReceiptEditSearch(""); }
+              ),
+              /*#__PURE__*/React.createElement("input", {
+                autoFocus: true,
+                value: receiptEditSearch,
+                onChange: function(e){ setReceiptEditSearch(e.target.value); },
+                placeholder: "Search pantry…",
+                style: { width: "100%", background: C.bg, border: "1px solid " + C.border, borderRadius: 10, padding: "9px 12px", color: C.white, fontSize: 14, fontFamily: C.font, boxSizing: "border-box", marginBottom: 10, outline: "none" }
+              }),
+              /*#__PURE__*/React.createElement("div", { style: { maxHeight: 290, overflowY: "auto" } },
+                (function(){
+                  var rowIdx = receiptEditRow.idx;
+                  var rowType = receiptEditRow.type;
+                  var filtered = items.filter(function(it){
+                    return it.name.toLowerCase().includes((receiptEditSearch || "").toLowerCase());
+                  });
+                  if (filtered.length === 0) return /*#__PURE__*/React.createElement("div", { style: { padding: "20px 0", textAlign: "center", color: C.dim, fontSize: 13 } }, "No pantry items found");
+                  return filtered.map(function(it){
+                    var iCat = PANTRY_CATEGORIES.find(function(c){ return c.id === it.cat; });
+                    return /*#__PURE__*/React.createElement("div", {
+                      key: it.id,
+                      onClick: function(){
+                        haptic("light");
+                        if (rowType === "matched") {
+                          setReceiptItems(function(prev){ return prev.map(function(r, i){ return i === rowIdx ? Object.assign({}, r, { item: it }) : r; }); });
+                        } else {
+                          var umEntry = receiptUnmatched[rowIdx];
+                          setReceiptItems(function(prev){ return prev.concat([{ item: it, checked: true, receiptName: umEntry.receiptName }]); });
+                          setReceiptUnmatched(function(prev){ return prev.filter(function(_, i){ return i !== rowIdx; }); });
+                        }
+                        setReceiptEditRow(null); setReceiptEditSearch("");
+                      },
+                      style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 4px", borderBottom: "1px solid " + C.border, cursor: "pointer" }
                     },
-                    style: { background: isEditing ? tint(C.accent || "#E8A938", 0.15) : "transparent", border: "1px solid " + C.dim2, borderRadius: 8, color: C.dim, fontSize: 11, padding: "3px 8px", cursor: "pointer", fontFamily: C.font, whiteSpace: "nowrap", flexShrink: 0 }
-                  }, isEditing ? "Done" : "Map →")
+                      /*#__PURE__*/React.createElement("div", null,
+                        /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.white, fontWeight: 500 } }, it.name),
+                        iCat && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim } }, iCat.label)
+                      )
+                    );
+                  });
+                })()
+              )
+            )
+          : /*#__PURE__*/React.createElement(React.Fragment, null,
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 4 } },
+                receiptItems.length + " matched" + (receiptUnmatched.length > 0 ? " · " + receiptUnmatched.length + " unmatched" : "")
+              ),
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 14 } },
+                receiptItems.length > 0 ? "Select what to mark as stocked. Tap Change to remap." : "Map receipt items to your pantry:"
+              ),
+              /*#__PURE__*/React.createElement("div", { style: { maxHeight: 340, overflowY: "auto", marginBottom: 14 } },
+                receiptItems.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
+                  receiptUnmatched.length > 0 && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 } }, "Matched"),
+                  receiptItems.map(function(ri, idx) {
+                    var cat = PANTRY_CATEGORIES.find(function(c){ return c.id === ri.item.cat; });
+                    return /*#__PURE__*/React.createElement("div", {
+                      key: ri.item.id,
+                      style: { display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: (idx < receiptItems.length - 1 || receiptUnmatched.length > 0) ? "1px solid " + C.border : "none" }
+                    },
+                      /*#__PURE__*/React.createElement("input", {
+                        type: "checkbox", checked: ri.checked,
+                        onChange: function(){ haptic("light"); setReceiptItems(function(prev){ return prev.map(function(r, i){ return i === idx ? Object.assign({}, r, { checked: !r.checked }) : r; }); }); },
+                        style: { width: 17, height: 17, cursor: "pointer", accentColor: C.accent || "#E8A938", flexShrink: 0 }
+                      }),
+                      /*#__PURE__*/React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: C.white, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, ri.item.name),
+                        ri.receiptName && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, "← " + ri.receiptName),
+                        cat && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim } }, cat.label)
+                      ),
+                      /*#__PURE__*/React.createElement("button", {
+                        onClick: function(){ haptic("light"); setReceiptEditRow({ type: "matched", idx: idx }); setReceiptEditSearch(""); },
+                        style: { background: "transparent", border: "1px solid " + C.dim2, borderRadius: 8, color: C.dim, fontSize: 11, padding: "3px 8px", cursor: "pointer", fontFamily: C.font, whiteSpace: "nowrap", flexShrink: 0 }
+                      }, "Change")
+                    );
+                  })
                 ),
-                isEditing && /*#__PURE__*/React.createElement("div", { style: { marginBottom: 8 } },
-                  /*#__PURE__*/React.createElement("input", {
-                    autoFocus: true,
-                    value: receiptEditSearch,
-                    onChange: function(e){ setReceiptEditSearch(e.target.value); },
-                    placeholder: "Search pantry…",
-                    style: { width: "100%", background: C.bg, border: "1px solid " + C.border, borderRadius: 8, padding: "6px 10px", color: C.white, fontSize: 13, fontFamily: C.font, boxSizing: "border-box", marginBottom: 4, outline: "none" }
-                  }),
-                  /*#__PURE__*/React.createElement("div", { style: { maxHeight: 120, overflowY: "auto", background: C.bg, borderRadius: 8, border: "1px solid " + C.border, marginBottom: 8 } },
-                    filteredPantry.slice(0, 20).map(function(it){
-                      return /*#__PURE__*/React.createElement("div", {
-                        key: it.id,
-                        onClick: function(){
-                          haptic("light");
-                          setReceiptItems(function(prev){ return prev.concat([{ item: it, checked: true, receiptName: um.receiptName }]); });
-                          setReceiptUnmatched(function(prev){ return prev.filter(function(_, i){ return i !== idx; }); });
-                          setReceiptEditRow(null); setReceiptEditSearch("");
-                        },
-                        style: { padding: "7px 10px", fontSize: 13, color: C.white, cursor: "pointer", borderBottom: "1px solid " + C.border }
-                      }, it.name);
-                    }),
-                    filteredPantry.length === 0 && /*#__PURE__*/React.createElement("div", { style: { padding: "10px", fontSize: 13, color: C.dim, textAlign: "center" } }, "No pantry items found")
-                  )
+                receiptUnmatched.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null,
+                  /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: C.dim, textTransform: "uppercase", letterSpacing: 0.5, marginTop: receiptItems.length > 0 ? 10 : 0, marginBottom: 6 } }, "Not matched"),
+                  receiptUnmatched.map(function(um, idx) {
+                    return /*#__PURE__*/React.createElement("div", {
+                      key: idx,
+                      style: { display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: idx < receiptUnmatched.length - 1 ? "1px solid " + C.border : "none" }
+                    },
+                      /*#__PURE__*/React.createElement("div", { style: { flex: 1, fontSize: 13, color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, um.receiptName),
+                      /*#__PURE__*/React.createElement("button", {
+                        onClick: function(){ haptic("light"); setReceiptEditRow({ type: "unmatched", idx: idx }); setReceiptEditSearch(""); },
+                        style: { background: "transparent", border: "1px solid " + C.dim2, borderRadius: 8, color: C.dim, fontSize: 11, padding: "3px 8px", cursor: "pointer", fontFamily: C.font, whiteSpace: "nowrap", flexShrink: 0 }
+                      }, "Map →")
+                    );
+                  })
                 )
-              );
-            })
-          )
-        ),
-        /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
-          /*#__PURE__*/React.createElement("button", {
-            onClick: function(){
-              haptic("medium");
-              var toStock = receiptItems.filter(function(ri){ return ri.checked; });
-              if (toStock.length === 0) { setReceiptModal(null); setReceiptItems([]); setReceiptUnmatched([]); setReceiptEditRow(null); setReceiptEditSearch(""); return; }
-              setStock(function(prev){
-                var next = Object.assign({}, prev);
-                toStock.forEach(function(ri){
-                  if (ri.item.type === "quantity") {
-                    next[ri.item.id] = (prev[ri.item.id] || 0) + 1;
-                  } else {
-                    next[ri.item.id] = true;
-                  }
-                });
-                return next;
-              });
-              setReceiptModal(null); setReceiptItems([]); setReceiptUnmatched([]); setReceiptEditRow(null); setReceiptEditSearch("");
-            },
-            disabled: !receiptItems.some(function(ri){ return ri.checked; }),
-            style: Object.assign({}, pill(true), { flex: 1, padding: "11px 0", opacity: receiptItems.some(function(ri){ return ri.checked; }) ? 1 : 0.4 })
-          }, "Update stock (" + receiptItems.filter(function(ri){ return ri.checked; }).length + ")"),
-          /*#__PURE__*/React.createElement("button", {
-            onClick: function(){ haptic("light"); setReceiptModal(null); setReceiptItems([]); setReceiptUnmatched([]); setReceiptEditRow(null); setReceiptEditSearch(""); },
-            style: Object.assign({}, pill(false), { padding: "11px 16px" })
-          }, "Cancel")
-        )
+              ),
+              /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
+                /*#__PURE__*/React.createElement("button", {
+                  onClick: function(){
+                    haptic("medium");
+                    var toStock = receiptItems.filter(function(ri){ return ri.checked; });
+                    if (toStock.length === 0) { setReceiptModal(null); setReceiptItems([]); setReceiptUnmatched([]); setReceiptEditRow(null); setReceiptEditSearch(""); return; }
+                    setStock(function(prev){
+                      var next = Object.assign({}, prev);
+                      toStock.forEach(function(ri){
+                        if (ri.item.type === "quantity") { next[ri.item.id] = (prev[ri.item.id] || 0) + 1; }
+                        else { next[ri.item.id] = true; }
+                      });
+                      return next;
+                    });
+                    setReceiptModal(null); setReceiptItems([]); setReceiptUnmatched([]); setReceiptEditRow(null); setReceiptEditSearch("");
+                  },
+                  disabled: !receiptItems.some(function(ri){ return ri.checked; }),
+                  style: Object.assign({}, pill(true), { flex: 1, padding: "11px 0", opacity: receiptItems.some(function(ri){ return ri.checked; }) ? 1 : 0.4 })
+                }, "Update stock (" + receiptItems.filter(function(ri){ return ri.checked; }).length + ")"),
+                /*#__PURE__*/React.createElement("button", {
+                  onClick: function(){ haptic("light"); setReceiptModal(null); setReceiptItems([]); setReceiptUnmatched([]); setReceiptEditRow(null); setReceiptEditSearch(""); },
+                  style: Object.assign({}, pill(false), { padding: "11px 16px" })
+                }, "Cancel")
+              )
+            )
       ),
       receiptModal === "error" && /*#__PURE__*/React.createElement(React.Fragment, null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 8 } }, "Couldn't read receipt"),
