@@ -5805,34 +5805,42 @@ function DishTile({
     }, cats.map(function(c){return c[0];}).join("/"))
   ),
   /*#__PURE__*/React.createElement("div", {
-    style:{position:"absolute",top:4,right:4,height:14,display:"flex",alignItems:"center",gap:3,zIndex:2,pointerEvents:"none"}
+    style:{position:"absolute",top:5,right:5,height:16,display:"flex",alignItems:"center",gap:3,zIndex:2,pointerEvents:"none"}
   },
     count > 0 && /*#__PURE__*/React.createElement("div", {
       style:{
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.55)",
-        fontSize:10,fontWeight:700,lineHeight:1,
-        background:"transparent",pointerEvents:"none"}
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.90)",
+        fontSize:9,fontWeight:700,lineHeight:1,
+        background: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.13)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
+        borderRadius:4,padding:"2px 4px",pointerEvents:"none"}
     }, count),
   ),
   (dish.weekendOnly===true || dish.weekendOnly==="weekday" || dish.michelinLevel===true) && /*#__PURE__*/React.createElement("div", {
-    style:{position:"absolute",bottom:4,left:4,display:"flex",gap:2,pointerEvents:"none",zIndex:1}
+    style:{position:"absolute",bottom:5,left:5,display:"flex",gap:3,pointerEvents:"none",zIndex:1}
   },
     dish.weekendOnly===true && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,
-        background:"transparent",
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
+      style:{fontSize:8,
+        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.11)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
+        borderRadius:4,padding:"2px 4px",
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)",
         fontWeight:700,letterSpacing:0.3}
     }, "WE"),
     dish.weekendOnly==="weekday" && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,
-        background:"transparent",
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
+      style:{fontSize:8,
+        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.11)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
+        borderRadius:4,padding:"2px 4px",
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)",
         fontWeight:700,letterSpacing:0.3}
     }, "WD"),
     dish.michelinLevel && /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:9,
-        background:"transparent",
-        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.60)",
+      style:{fontSize:8,
+        background: isLight ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.11)",
+        border: "1px solid " + (isLight ? "rgba(0,0,0,0.13)" : "rgba(255,255,255,0.18)"),
+        borderRadius:4,padding:"2px 4px",
+        color: isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)",
         fontWeight:700}
     }, "G")
   ),
@@ -6295,6 +6303,8 @@ function DayCardCarousel({
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const dragStart = React.useRef(null);
+  const loginGraceRef = React.useRef(false);
+  const prevUserIdRef = React.useRef(null);
 
   const hasTomorrow = !!(nextMenu ? nextMenu?.plan?.[tomorrow.name] : menu?.plan?.[tomorrow.name]);
   const hasToday = !!(menu?.plan?.[today.name]);
@@ -6670,6 +6680,7 @@ function App() {
   const [scanUrl, setScanUrl] = useState("");
   const [confirmNewItems, setConfirmNewItems] = useState([]); // [{id,name,cat,include}]
   const [pendingScanData, setPendingScanData] = useState(null); // dish data waiting for ingredient confirmation
+  const [pendingNewPantryItems, setPendingNewPantryItems] = useState([]); // new pantry items from scan, deferred until dish is saved
 
   // New features
   const [lockedDays, setLockedDays] = useState({});
@@ -6908,6 +6919,18 @@ function App() {
     } catch(e) {}
   }, [loaded, focusTick]);
 
+  // Track user sign-in to suppress satGenPrompt briefly after login
+  useEffect(() => {
+    var uid = user ? user.uid : null;
+    if (uid && uid !== prevUserIdRef.current) {
+      loginGraceRef.current = true;
+      var t = setTimeout(function(){ loginGraceRef.current = false; }, 10000);
+      prevUserIdRef.current = uid;
+      return function(){ clearTimeout(t); };
+    }
+    prevUserIdRef.current = uid;
+  }, [user]);
+
   // ── Saturday auto-gen missed: prompt user on next open ──
   // Fires both for "menu is current week but next week wasn't generated" (normal
   // missed-Saturday case) AND "menu itself is stale from a previous week" (app
@@ -6915,6 +6938,7 @@ function App() {
   // guard entirely because it required menu.weekKey === getWeekKey().
   useEffect(() => {
     if (!loaded) return;
+    if (loginGraceRef.current) return; // suppress during first 10s after sign-in
     var today = new Date().getDay(); // 0=Sun..6=Sat
     if (today === 6) return; // it's Saturday — normal auto-gen path handles it
     if (nextMenu) return; // already have next week's plan
@@ -7175,6 +7199,7 @@ function App() {
   function closeAllModals() {
     setAddItemModal(false);
     setAddDishModal(false);
+    setPendingNewPantryItems([]);
     setEditDishModal(null);
     setAddMealCatModal(false);
     setEditItemModal(null);
@@ -7249,6 +7274,10 @@ function App() {
       id: Date.now(),
       ...d
     }]);
+    if (pendingNewPantryItems.length > 0) {
+      setItems(function(p){ return p.concat(pendingNewPantryItems); });
+      setPendingNewPantryItems([]);
+    }
     setDishData({
       ...EMPTY_DISH
     });
@@ -8206,9 +8235,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
   }
 
   function applyScanData(dishPayload, approvedItems) {
-    if (approvedItems.length > 0) {
-      setItems(function(prev){ return prev.concat(approvedItems); });
-    }
+    setPendingNewPantryItems(approvedItems);
     setDishData(function(d) {
       return Object.assign({}, d, {
         name: dishPayload.name || d.name,
@@ -10915,7 +10942,7 @@ Only output the JSON. No markdown.`;
     )
   ), addDishModal && /*#__PURE__*/React.createElement("div", {
     onPointerDown: (e) => {
-      if(e.target===e.currentTarget){ setAddDishModal(false); setDishAdvanced(false); }
+      if(e.target===e.currentTarget){ setAddDishModal(false); setDishAdvanced(false); setPendingNewPantryItems([]); }
     },
     style: {
       position: "fixed",
@@ -10965,6 +10992,7 @@ Only output the JSON. No markdown.`;
       haptic("light");
       setAddDishModal(false);
       setDishAdvanced(false);
+      setPendingNewPantryItems([]);
     },
     style: {
       background: "none",
@@ -10979,15 +11007,15 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("button", {
       onClick: () => { haptic("light"); if (!aiEnabled) { setAiGateModal("disabled"); return; } if (!apiKey && !geminiKey) { setAiGateModal("no-key"); return; } document.getElementById("scan-camera-input").click(); },
-      style: { flex: 1, background: C.bg2, border: "1px solid " + C.border, borderRadius: 10, padding: "9px 0", color: C.text, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+      style: Object.assign({}, pill(false), { flex: 1, padding: "9px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" })
     }, /*#__PURE__*/React.createElement(Icon, { name: "camera", size: 15 }), "Photo"),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => { haptic("light"); if (!aiEnabled) { setAiGateModal("disabled"); return; } if (!apiKey && !geminiKey) { setAiGateModal("no-key"); return; } document.getElementById("scan-gallery-input").click(); },
-      style: { flex: 1, background: C.bg2, border: "1px solid " + C.border, borderRadius: 10, padding: "9px 0", color: C.text, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+      style: Object.assign({}, pill(false), { flex: 1, padding: "9px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" })
     }, /*#__PURE__*/React.createElement(Icon, { name: "image", size: 15 }), "Gallery"),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => { haptic("light"); if (!aiEnabled) { setAiGateModal("disabled"); return; } if (!apiKey && !geminiKey) { setAiGateModal("no-key"); return; } setScanResult(null); setScanUrl(""); setScanModal("url"); },
-      style: { flex: 1, background: C.bg2, border: "1px solid " + C.border, borderRadius: 10, padding: "9px 0", color: C.text, fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }
+      style: Object.assign({}, pill(false), { flex: 1, padding: "9px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer" })
     }, /*#__PURE__*/React.createElement(Icon, { name: "link", size: 15 }), "URL")
   ),
   /*#__PURE__*/React.createElement("input", { type: "file", id: "scan-camera-input", accept: "image/*", capture: "environment", style: { display: "none" }, onChange: e => { if (e.target.files && e.target.files[0]) handleImageFile(e.target.files[0]); e.target.value = ""; } }),
@@ -11380,6 +11408,7 @@ Only output the JSON. No markdown.`;
       haptic("light");
       setAddDishModal(false);
       setDishAdvanced(false);
+      setPendingNewPantryItems([]);
     },
     style: {
       ...pill(false),
@@ -12488,7 +12517,7 @@ Only output the JSON. No markdown.`;
           ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
         /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(0); }, style: Object.assign({}, pill(false), { flex: "0 0 auto", padding: "10px 16px", fontSize: 14 }) }, "Back"),
-        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); localStorage.setItem('_pantryos_onboarded','1'); setOnboarded(true); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
+        /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setOnboardStep(3); }, style: { flex: 1, background: "transparent", border: "none", color: C.dim, fontSize: 14, cursor: "pointer", fontFamily: C.font, padding: "10px 0" } }, "Skip for now")
       )
     ),
     onboardStep === 2 && /*#__PURE__*/React.createElement("div", null,
@@ -12672,7 +12701,7 @@ Only output the JSON. No markdown.`;
         ),
         scanResult.ingredients && scanResult.ingredients.length > 0 && /*#__PURE__*/React.createElement("div", { style: { background: C.bg2, borderRadius: 10, padding: "10px 12px", marginBottom: 16, fontSize: 13, color: C.dim, lineHeight: 1.7 } },
           /*#__PURE__*/React.createElement("div", { style: { fontWeight: 600, color: C.text, marginBottom: 4 } }, "Ingredients"),
-          scanResult.ingredients.slice(0, 8).join(", ") + (scanResult.ingredients.length > 8 ? "…" : "")
+          scanResult.ingredients.slice(0, 8).map(function(i){ return typeof i === "string" ? i : (i.name || ""); }).join(", ") + (scanResult.ingredients.length > 8 ? "…" : "")
         ),
         scanResult.recipe && /*#__PURE__*/React.createElement("div", { style: { background: C.bg2, borderRadius: 10, padding: "10px 12px", marginBottom: 16, fontSize: 12, color: C.dim, lineHeight: 1.6, maxHeight: 120, overflowY: "auto" } },
           /*#__PURE__*/React.createElement("div", { style: { fontWeight: 600, color: C.text, marginBottom: 4 } }, "Recipe preview"),
@@ -12756,7 +12785,7 @@ Only output the JSON. No markdown.`;
       ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
         /*#__PURE__*/React.createElement("button", {
-          onClick: function(){ haptic("light"); setAiGateModal(null); setAddDishModal(false); setShowSettings(true); },
+          onClick: function(){ haptic("light"); setAiGateModal(null); setAddDishModal(false); setPendingNewPantryItems([]); setShowSettings(true); },
           style: Object.assign({}, pill(true), { flex: 1, padding: "10px 0" })
         }, "Open Settings"),
         /*#__PURE__*/React.createElement("button", {
