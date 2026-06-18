@@ -10434,12 +10434,7 @@ Only output the JSON. No markdown.`;
           color:isP?(pSt?(iLM?C.dim:C.dim2):pNd?(iLM?"rgba(0,0,0,0.4)":C.dim2):C.dim2):C.dim2}},s.sub)
       );
     }));
-  })(), /*#__PURE__*/React.createElement("input", {
-    value: pantrySearch,
-    onChange: function(e){ setPantrySearch(e.target.value); },
-    placeholder: "Search pantry…",
-    style: Object.assign({}, inp, { marginBottom: 14, fontSize: 14 })
-  }), summaryFilter !== "all" && /*#__PURE__*/React.createElement("div", {
+  })(), summaryFilter !== "all" && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -10563,9 +10558,14 @@ Only output the JSON. No markdown.`;
       fontFamily: C.font,
       whiteSpace: "nowrap"
     }
-  }, "+ Add item"))), /*#__PURE__*/React.createElement(SizeSlider, {
+  }, "+ Add item"), /*#__PURE__*/React.createElement(SizeSlider, {
     value: sqSize,
     onChange: setSqSize
+  }))), /*#__PURE__*/React.createElement("input", {
+    value: pantrySearch,
+    onChange: function(e){ setPantrySearch(e.target.value); },
+    placeholder: "Search pantry…",
+    style: Object.assign({}, inp, { fontSize: 14 })
   })), PANTRY_CATEGORIES.map(pc => {
     const grpItems = summaryItems.filter(i => i.cat === pc.id || (pc.id === "staples" && i.isStaple && i.cat !== "staples")).filter(i => !pantrySearch || i.name.toLowerCase().includes(pantrySearch.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
     if (!grpItems.length) return null;
