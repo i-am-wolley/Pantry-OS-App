@@ -8483,11 +8483,18 @@ Only output the JSON. No markdown.`;
       const thisWeekSun = new Date(now);
       thisWeekSun.setDate(now.getDate() - todayIdx); // always rolls back to this week's Sunday
       const thisWeekKey = `${thisWeekSun.getFullYear()}-${thisWeekSun.getMonth()+1}-${thisWeekSun.getDate()}`;
+      // On Sunday: if last week's menu still active (not yet promoted), treat Saturday as a past day too
+      const lastWeekSun = new Date(now);
+      lastWeekSun.setDate(now.getDate() - 7);
+      const lastWeekKey = `${lastWeekSun.getFullYear()}-${lastWeekSun.getMonth()+1}-${lastWeekSun.getDate()}`;
+      const useLastWeek = todayIdx === 0 && activeMenu && activeMenu.weekKey === lastWeekKey;
+      const weekKeyMatch = activeMenu && activeMenu.plan && (activeMenu.weekKey === thisWeekKey || useLastWeek);
+      const pastThreshold = useLastWeek ? 7 : todayIdx;
       console.log("[Scheduler] day="+todayIdx+" thisWeekKey="+thisWeekKey+" menuKey="+(activeMenu&&activeMenu.weekKey)+" confirmedDays="+JSON.stringify(confirmedDays));
-      if (activeMenu && activeMenu.plan && activeMenu.weekKey === thisWeekKey) {
-        // Only confirm from CURRENT week's menu — weekKey must match today's week
+      if (weekKeyMatch) {
         DAYS.forEach(function(dayName, idx) {
-          if (idx >= todayIdx) return; // only past days
+          if (useLastWeek && idx === 0) return; // don't confirm Sunday on Sunday
+          if (idx >= pastThreshold) return; // only past days
           if (confirmedDays && confirmedDays[dayName]) return; // already confirmed
           if (!activeMenu.plan[dayName] || Object.keys(activeMenu.plan[dayName]).length === 0) { console.log("[Scheduler] no plan for "+dayName); return; }
           const dayPlan = activeMenu.plan[dayName];
@@ -8498,17 +8505,6 @@ Only output the JSON. No markdown.`;
         });
       } else {
         console.log("[Scheduler] weekKey mismatch or no menu — skipping auto-confirm");
-      }
-      // Saturday gap: Saturday is never "past" (idx >= todayIdx on Sat).
-      // Confirm it after 9pm Saturday — meals are done by then.
-      if (todayIdx === 6 && now.getHours() >= 21 && activeMenu && activeMenu.plan && activeMenu.weekKey === thisWeekKey) {
-        var satName = "Saturday";
-        var satHasPlan = activeMenu.plan[satName] && Object.keys(activeMenu.plan[satName]).length > 0;
-        var satNotConfirmed = !(confirmedDays && confirmedDays[satName]);
-        var satNotAllDineOut = satHasPlan && !Object.values(activeMenu.plan[satName]).every(function(d){ return d && d.indexOf("Dine Out") >= 0; });
-        if (satHasPlan && satNotConfirmed && satNotAllDineOut) {
-          confirmDay(satName, true);
-        }
       }
       
       // ── Check 2: Saturday midnight auto-generation ──
