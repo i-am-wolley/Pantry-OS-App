@@ -5647,7 +5647,7 @@ function TouchInput({
 const PREP_BADGE = {
   soaking:    { label: "SOAK", color: "#4A90D9" },
   thawing:    { label: "THAW", color: "#7EC8E3" },
-  marinating: { label: "MARI", color: "#B8882A" }
+  marinating: { label: "MARINATE", color: "#B8882A" }
 };
 const PREP_INSTRUCTION = {
   soaking:    "Soak overnight",
@@ -8906,16 +8906,12 @@ Only output the JSON. No markdown.`;
     try {
       var H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics;
       if (H) {
-        if (style === "heavy" || style === "medium") {
-          H.impact({ style: "LIGHT" });
-        } else {
-          H.selectionChanged();
-        }
+        H.selectionChanged();
         return;
       }
     } catch(e) {}
     if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(8);
+      window.navigator.vibrate(4);
     }
   }
 
