@@ -8499,15 +8499,21 @@ Only output the JSON. No markdown.`;
       } else {
         console.log("[Scheduler] weekKey mismatch or no menu — skipping auto-confirm");
       }
-      // Saturday gap: Saturday is never "past" during the week (idx>=todayIdx on Sat).
-      // Confirm it on Saturday itself at any point in the day.
-      if (todayIdx === 6 && activeMenu && activeMenu.plan && activeMenu.weekKey === thisWeekKey) {
-        var satName = "Saturday";
-        var satHasPlan = activeMenu.plan[satName] && Object.keys(activeMenu.plan[satName]).length > 0;
-        var satNotConfirmed = !(confirmedDays && confirmedDays[satName]);
-        var satNotAllDineOut = satHasPlan && !Object.values(activeMenu.plan[satName]).every(function(d){ return d && d.indexOf("Dine Out") >= 0; });
-        if (satHasPlan && satNotConfirmed && satNotAllDineOut) {
-          confirmDay(satName, true);
+      // Saturday gap: Saturday is never "past" on Saturday (idx>=todayIdx).
+      // Confirm it on Sunday before 00:30, using LAST week's key (not getWeekKey()
+      // which returns THIS week on Sunday).
+      if (todayIdx === 0 && now.getHours() === 0 && now.getMinutes() < 30) {
+        var lastWeekSun = new Date(now);
+        lastWeekSun.setDate(now.getDate() - 7);
+        var lastWeekKey = lastWeekSun.getFullYear()+"-"+(lastWeekSun.getMonth()+1)+"-"+lastWeekSun.getDate();
+        if (activeMenu && activeMenu.plan && activeMenu.weekKey === lastWeekKey) {
+          var satName = "Saturday";
+          var satHasPlan = activeMenu.plan[satName] && Object.keys(activeMenu.plan[satName]).length > 0;
+          var satNotConfirmed = !(confirmedDays && confirmedDays[satName]);
+          var satNotAllDineOut = satHasPlan && !Object.values(activeMenu.plan[satName]).every(function(d){ return d && d.indexOf("Dine Out") >= 0; });
+          if (satHasPlan && satNotConfirmed && satNotAllDineOut) {
+            confirmDay(satName, true);
+          }
         }
       }
       
