@@ -592,7 +592,10 @@ async function _pushLocalToFirestore(code) {
         hasData = true;
       }
     });
-    if (hasData) await batch.commit();
+    var cd = localStorage.getItem("pantryos-confirmeddays");
+    console.log("[push] confirmedDays in localStorage:", cd);
+    if (hasData) { await batch.commit(); console.log("[push] batch committed"); }
+    else console.log("[push] nothing to push");
   } catch(e) { console.warn("[Miso] push to Firestore failed:", e.message); }
 }
 
@@ -7104,8 +7107,8 @@ function App() {
     if (loaded) storage.set(SK.lockedDays, JSON.stringify(lockedDays));
   }, [lockedDays, loaded]);
   useEffect(() => {
-    if (loaded) storage.set(SK.confirmedDays, JSON.stringify(confirmedDays));
-  }, [confirmedDays, loaded]);
+    if (loaded && authReady) storage.set(SK.confirmedDays, JSON.stringify(confirmedDays));
+  }, [confirmedDays, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.autoBackup, JSON.stringify(autoBackup));
   }, [autoBackup, loaded]);
