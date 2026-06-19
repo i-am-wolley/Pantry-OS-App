@@ -3338,7 +3338,11 @@ const storage = {
   get: localStorage.getItem.bind(localStorage),
   set: function(key, value) {
     localStorage.setItem(key, value);
-    if (_fsWriteEnabled && _householdCode && _syncKeySet.has(key)) _fsDoc(key).set({ v: value }).catch(function(){});
+    if (_fsWriteEnabled && _householdCode && _syncKeySet.has(key)) {
+      _fsDoc(key).set({ v: value }).catch(function(e){ console.warn("[storage.set] Firestore write failed for",key,e.message); });
+    } else if (_syncKeySet.has(key) && (!_fsWriteEnabled || !_householdCode)) {
+      console.log("[storage.set] skipped Firestore for",key,"fsWriteEnabled="+_fsWriteEnabled,"householdCode="+!!_householdCode);
+    }
   },
   remove: function(key) {
     localStorage.removeItem(key);
@@ -7021,8 +7025,8 @@ function App() {
     if (loaded && authReady) storage.set(SK.items, JSON.stringify(items));
   }, [items, loaded, authReady]);
   useEffect(() => {
-    if (loaded && authReady) storage.set(SK.stock, JSON.stringify(stock));
-  }, [stock, loaded, authReady]);
+    if (loaded) storage.set(SK.stock, JSON.stringify(stock));
+  }, [stock, loaded]);
   useEffect(() => {
     if (loaded) storage.set(SK.dishes, JSON.stringify(dishes));
   }, [dishes, loaded]);
