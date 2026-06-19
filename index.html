@@ -6413,20 +6413,6 @@ function DayCardCarousel({
         hasToday && /*#__PURE__*/React.createElement("div", {
           style: { minWidth: "100%", userSelect: "none" }
         },
-          // Nav label row — ABOVE the card, no overlap
-          /*#__PURE__*/React.createElement("div", {
-            style: { display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 6, minHeight: 18 }
-          },
-            hasTomorrow && carouselIdx === 0 && /*#__PURE__*/React.createElement("button", {
-              onClick: () => { haptic("light"); setCarouselIdx(1); },
-              style: {
-                background: "transparent", border: "none", padding: 0,
-                fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
-                color: AMBER, textTransform: "uppercase", cursor: "pointer",
-                fontFamily: C.font, opacity: 0.8
-              }
-            }, "Tomorrow →")
-          ),
           /*#__PURE__*/React.createElement(DayCard, {
             day: today.name,
             dayMenu: menu && menu.plan ? menu.plan[today.name] : {},
@@ -6451,20 +6437,6 @@ function DayCardCarousel({
         hasTomorrow && /*#__PURE__*/React.createElement("div", {
           style: { minWidth: "100%", userSelect: "none" }
         },
-          // Nav label row — ABOVE the card, no overlap
-          /*#__PURE__*/React.createElement("div", {
-            style: { display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: 6, minHeight: 18 }
-          },
-            carouselIdx === 1 && /*#__PURE__*/React.createElement("button", {
-              onClick: () => { haptic("light"); setCarouselIdx(0); },
-              style: {
-                background: "transparent", border: "none", padding: 0,
-                fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
-                color: AMBER, textTransform: "uppercase", cursor: "pointer",
-                fontFamily: C.font, opacity: 0.8
-              }
-            }, "← Today")
-          ),
           /*#__PURE__*/React.createElement(DayCard, {
             day: tomorrow.name,
             dayMenu: nextMenu ? (nextMenu.plan?.[tomorrow.name] || {}) : (menu && menu.plan ? menu.plan[tomorrow.name] : {}),
@@ -6486,9 +6458,22 @@ function DayCardCarousel({
         )
       )
     ),
+    // Nav buttons — below card, right-aligned
+    hasTomorrow && /*#__PURE__*/React.createElement("div", {
+      style: { display: "flex", justifyContent: "flex-end", alignItems: "center", marginTop: 8, minHeight: 18 }
+    },
+      carouselIdx === 0 && /*#__PURE__*/React.createElement("button", {
+        onClick: () => { haptic("light"); setCarouselIdx(1); },
+        style: { background: "transparent", border: "none", padding: 0, fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: AMBER, textTransform: "uppercase", cursor: "pointer", fontFamily: C.font, opacity: 0.8 }
+      }, "Tomorrow →"),
+      carouselIdx === 1 && /*#__PURE__*/React.createElement("button", {
+        onClick: () => { haptic("light"); setCarouselIdx(0); },
+        style: { background: "transparent", border: "none", padding: 0, fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: AMBER, textTransform: "uppercase", cursor: "pointer", fontFamily: C.font, opacity: 0.8 }
+      }, "← Today")
+    ),
     // Dot indicators
     totalCards > 1 && /*#__PURE__*/React.createElement("div", {
-      style: { display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 10 }
+      style: { display: "flex", justifyContent: "center", alignItems: "center", gap: 6, marginTop: 6 }
     },
       cards.map((c, i) => /*#__PURE__*/React.createElement("div", {
         key: i,
