@@ -11491,7 +11491,7 @@ Only output the JSON. No markdown.`;
       onClick: function(){ haptic("light"); setRecipeModal(editDishModal.name); },
       style: { background: "transparent", border: "none", color: colorMode === "mono" ? C.dim : C.accent, cursor: "pointer", padding: 4, display: "flex", alignItems: "center" },
       title: "View recipe"
-    }, /*#__PURE__*/React.createElement(Icon, { name: "recipe", size: 18 })),
+    }, /*#__PURE__*/React.createElement(Icon, { name: "recipe", size: 18, style: { color: colorMode === "mono" ? C.dim : C.accent } })),
     /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       haptic("light");
