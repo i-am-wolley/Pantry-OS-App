@@ -5722,7 +5722,7 @@ function PantryTile({
     }
   },  /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: Math.max(6, (size - 10) * 0.103),
+      fontSize: Math.max(8, (size - 10) * 0.125),
       fontWeight: 600,
       fontFamily: C.font,
       fontVariant: "small-caps",
@@ -9777,9 +9777,6 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("div", {
         style: { fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic", fontWeight: 400, fontSize: 26, color: C.white, lineHeight: 1.2, marginBottom: 3 }
       }, firstName ? greeting + ", " + firstName : greeting),
-      /*#__PURE__*/React.createElement("div", {
-        style: { fontSize: 11, fontWeight: 700, letterSpacing: 1.8, color: colorMode === "mono" ? C.dim : C.accent, textTransform: "uppercase" }
-      }, today.name + " \xb7 " + today.date)
     );
   })(),  /*#__PURE__*/React.createElement(DayCardCarousel, {
     today: today, tomorrow: tomorrow, menu: menu, nextMenu: nextMenu,
@@ -10071,7 +10068,7 @@ Only output the JSON. No markdown.`;
         );
       })),
       unknownAI.length>0 && /*#__PURE__*/React.createElement("div", {
-        style:{fontSize:12,color:C.dim2,marginTop:4,fontStyle:"italic"}
+        style:{fontSize:12,color:C.dim2,marginTop:4}
       }, "Fetching ingredients for: ", unknownAI.join(", "), "\u2026")
     );
   })())), !showSettings && tab === "menu" && /*#__PURE__*/React.createElement("div", {
