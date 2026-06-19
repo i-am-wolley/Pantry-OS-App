@@ -5629,16 +5629,19 @@ function TouchInput({
   placeholder,
   style: extraStyle = {}
 }) {
-  return /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: value,
-    onChange: e => onChange(e.target.value),
-    placeholder: placeholder,
-    style: {
-      ...mkInp(C),
-      ...extraStyle
-    }
-  });
+  return /*#__PURE__*/React.createElement("div", { style: { position: "relative" } },
+    /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: value,
+      onChange: e => onChange(e.target.value),
+      placeholder: placeholder,
+      style: { ...mkInp(C), ...extraStyle, ...(value ? { paddingRight: 30 } : {}) }
+    }),
+    value ? /*#__PURE__*/React.createElement("button", {
+      onPointerDown: function(e){ e.preventDefault(); onChange(""); },
+      style: { position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: C.dim2, cursor: "pointer", padding: "2px 4px", fontSize: 15, lineHeight: 1 }
+    }, "✕") : null
+  );
 }
 
 const PREP_BADGE = {
@@ -10521,11 +10524,11 @@ Only output the JSON. No markdown.`;
   }, "+ Add item"))), /*#__PURE__*/React.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /*#__PURE__*/React.createElement(SizeSlider, {
     value: sqSize,
     onChange: setSqSize
-  })), /*#__PURE__*/React.createElement("input", {
+  })), /*#__PURE__*/React.createElement(TouchInput, {
     value: pantrySearch,
-    onChange: function(e){ setPantrySearch(e.target.value); },
+    onChange: setPantrySearch,
     placeholder: "Search pantry…",
-    style: Object.assign({}, inp, { fontSize: 14 })
+    style: { fontSize: 14 }
   })), PANTRY_CATEGORIES.map(pc => {
     const grpItems = summaryItems.filter(i => i.cat === pc.id || (pc.id === "staples" && i.isStaple && i.cat !== "staples")).filter(i => !pantrySearch || i.name.toLowerCase().includes(pantrySearch.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
     if (!grpItems.length) return null;
@@ -10675,11 +10678,11 @@ Only output the JSON. No markdown.`;
       whiteSpace: "nowrap"
     }
   }, "+ Dish"))),
-  /*#__PURE__*/React.createElement("input", {
+  /*#__PURE__*/React.createElement(TouchInput, {
     value: dishSearch,
-    onChange: function(e){setDishSearch(e.target.value);},
+    onChange: setDishSearch,
     placeholder: "Search dishes…",
-    style: Object.assign({},inp,{marginBottom:10,fontSize:14})
+    style: {marginBottom:10,fontSize:14}
   }),
   mealCats.map(mc => {
     const catDishes = dishes.filter(d => {
@@ -11292,11 +11295,11 @@ Only output the JSON. No markdown.`;
         style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, name+" ✕");
     })),
-    /*#__PURE__*/React.createElement("input", {
+    /*#__PURE__*/React.createElement(TouchInput, {
       value: mustIncSearch,
-      onChange: function(e){setMustIncSearch(e.target.value);},
+      onChange: setMustIncSearch,
       placeholder: "Search pantry items…",
-      style: Object.assign({},inp,{marginBottom:6,fontSize:14})
+      style: {marginBottom:6,fontSize:14}
     }),
     /*#__PURE__*/React.createElement("div", {
       style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:90,overflowY:"auto"}
@@ -11362,7 +11365,7 @@ Only output the JSON. No markdown.`;
       (dishData.excludeWith||[]).map(function(p){ return /*#__PURE__*/React.createElement("span", {key:p,onClick:function(){haptic("light");setDishData(function(prev){return Object.assign({},prev,{excludeWith:(prev.excludeWith||[]).filter(function(x){return x!==p;})});});},style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}}, p+" \u2715"); })
     ),
     excludePickerOpen && /*#__PURE__*/React.createElement("div", null,
-      /*#__PURE__*/React.createElement("input", {value:excludeSearch,onChange:function(e){setExcludeSearch(e.target.value);},placeholder:"Search dishes\u2026",style:Object.assign({},inp,{marginBottom:6,fontSize:13})}),
+      /*#__PURE__*/React.createElement(TouchInput, {value:excludeSearch,onChange:setExcludeSearch,placeholder:"Search dishes\u2026",style:{marginBottom:6,fontSize:13}}),
       /*#__PURE__*/React.createElement("div", {style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:100,overflowY:"auto",border:"1px solid "+C.border,borderRadius:6,padding:8,background:C.bg}},
         dishes.filter(function(d){return d.name!==(dishData.name||"")&&!(dishData.excludeWith||[]).includes(d.name)&&(!excludeSearch||d.name.toLowerCase().includes(excludeSearch.toLowerCase()));}).map(function(d){
           return /*#__PURE__*/React.createElement("span", {key:d.id,onClick:function(){haptic("light");setDishData(function(prev){return Object.assign({},prev,{excludeWith:[...(prev.excludeWith||[]),d.name]});});},style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}}, d.name);
@@ -11697,11 +11700,11 @@ Only output the JSON. No markdown.`;
         style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}
       }, name+" ✕");
     })),
-    /*#__PURE__*/React.createElement("input", {
+    /*#__PURE__*/React.createElement(TouchInput, {
       value: editMustIncSearch,
-      onChange: function(e){setEditMustIncSearch(e.target.value);},
+      onChange: setEditMustIncSearch,
       placeholder: "Search pantry items…",
-      style: Object.assign({},inp,{marginBottom:6,fontSize:14})
+      style: {marginBottom:6,fontSize:14}
     }),
     /*#__PURE__*/React.createElement("div", {
       style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:90,overflowY:"auto"}
@@ -11767,7 +11770,7 @@ Only output the JSON. No markdown.`;
       (editDishModal.excludeWith||[]).map(function(p){return /*#__PURE__*/React.createElement("span", {key:p,onClick:function(){setEditDishModal(function(prev){return Object.assign({},prev,{excludeWith:(prev.excludeWith||[]).filter(function(x){return x!==p;})});});},style:{background:C.white,color:C.bg,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer",fontWeight:700}}, p+" \u2715");})
     ),
     editExclOpen && /*#__PURE__*/React.createElement("div", null,
-      /*#__PURE__*/React.createElement("input", {value:editExclSearch,onChange:function(e){setEditExclSearch(e.target.value);},placeholder:"Search dishes\u2026",style:Object.assign({},inp,{marginBottom:6,fontSize:13})}),
+      /*#__PURE__*/React.createElement(TouchInput, {value:editExclSearch,onChange:setEditExclSearch,placeholder:"Search dishes\u2026",style:{marginBottom:6,fontSize:13}}),
       /*#__PURE__*/React.createElement("div", {style:{display:"flex",flexWrap:"wrap",gap:4,maxHeight:100,overflowY:"auto",border:"1px solid "+C.border,borderRadius:6,padding:8,background:C.bg}},
         dishes.filter(function(d){return d.name!==(editDishModal.name||"")&&!(editDishModal.excludeWith||[]).includes(d.name)&&(!editExclSearch||d.name.toLowerCase().includes(editExclSearch.toLowerCase()));}).map(function(d){
           return /*#__PURE__*/React.createElement("span", {key:d.id,onClick:function(){setEditDishModal(function(prev){return Object.assign({},prev,{excludeWith:[...(prev.excludeWith||[]),d.name]});});},style:{background:C.card,color:C.dim,border:"1px solid "+C.border2,borderRadius:3,padding:"3px 7px",fontSize:12,cursor:"pointer"}}, d.name);
@@ -12809,13 +12812,19 @@ Only output the JSON. No markdown.`;
                   )
                 )
               ),
-              /*#__PURE__*/React.createElement("input", {
-                autoFocus: true,
-                value: receiptEditSearch,
-                onChange: function(e){ setReceiptEditSearch(e.target.value); },
-                placeholder: "Search pantry…",
-                style: { width: "100%", background: C.bg, border: "1px solid " + C.border, borderRadius: 10, padding: "9px 12px", color: C.white, fontSize: 14, fontFamily: C.font, boxSizing: "border-box", marginBottom: 10, outline: "none" }
-              }),
+              /*#__PURE__*/React.createElement("div", { style: { position: "relative" } },
+                /*#__PURE__*/React.createElement("input", {
+                  autoFocus: true,
+                  value: receiptEditSearch,
+                  onChange: function(e){ setReceiptEditSearch(e.target.value); },
+                  placeholder: "Search pantry…",
+                  style: { width: "100%", background: C.bg, border: "1px solid " + C.border, borderRadius: 10, padding: "9px 12px", paddingRight: receiptEditSearch ? 30 : 12, color: C.white, fontSize: 14, fontFamily: C.font, boxSizing: "border-box", marginBottom: 10, outline: "none" }
+                }),
+                receiptEditSearch ? /*#__PURE__*/React.createElement("button", {
+                  onPointerDown: function(e){ e.preventDefault(); setReceiptEditSearch(""); },
+                  style: { position: "absolute", right: 8, top: "calc(50% - 5px)", transform: "translateY(-50%)", background: "none", border: "none", color: C.dim2, cursor: "pointer", padding: "2px 4px", fontSize: 15, lineHeight: 1 }
+                }, "✕") : null
+              ),
               /*#__PURE__*/React.createElement("div", { style: { maxHeight: 290, overflowY: "auto" } },
                 (function(){
                   var rowIdx = receiptEditRow.idx;
