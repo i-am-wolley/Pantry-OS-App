@@ -7024,8 +7024,8 @@ function App() {
     if (loaded && authReady) storage.set(SK.stock, JSON.stringify(stock));
   }, [stock, loaded, authReady]);
   useEffect(() => {
-    if (loaded && authReady) storage.set(SK.dishes, JSON.stringify(dishes));
-  }, [dishes, loaded, authReady]);
+    if (loaded) storage.set(SK.dishes, JSON.stringify(dishes));
+  }, [dishes, loaded]);
   useEffect(() => {
     if (loaded && authReady && menu) storage.set(SK.menu, JSON.stringify(menu));
   }, [menu, loaded, authReady]);
