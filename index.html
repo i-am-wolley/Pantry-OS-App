@@ -5803,6 +5803,7 @@ function DishTile({
   size,
   onRemove,
   onEdit,
+  haptic,
   inCurrentMenu,
   onToggleLock,
   missingIngredients,
@@ -5818,7 +5819,7 @@ function DishTile({
     longPressed.current = false;
     pressTimer.current = setTimeout(function() {
       longPressed.current = true;
-      if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(20);
+      if (haptic) haptic("light");
       onEdit && onEdit();
     }, 550);
   };
@@ -10726,6 +10727,7 @@ Only output the JSON. No markdown.`;
           return x.id===d.id?Object.assign({},x,{lockedForMenu:!x.lockedForMenu}):x;
         });});
       },
+      haptic: haptic,
       onRemove: () => removeDish(d.id),
       onEdit: function() {
         setEditDishModal(Object.assign({}, d));
