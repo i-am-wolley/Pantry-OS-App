@@ -8462,7 +8462,7 @@ Only output the JSON. No markdown.`;
 
   // ── Auto-scheduler: confirm past days + Saturday auto-generation ──
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !authReady) return;
     const DAYS_ORDER = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     
     function runScheduler() {
@@ -8540,7 +8540,7 @@ Only output the JSON. No markdown.`;
     runScheduler();
     const interval = setInterval(runScheduler, 60000);
     return () => clearInterval(interval);
-  }, [loaded, menu, nextMenu, confirmedDays, lastAutoGen, apiKey, dishes]);
+  }, [loaded, authReady, menu, nextMenu, confirmedDays, lastAutoGen, apiKey, dishes]);
 
   // ── Auto-reset menu at Sunday 00:30 AM (gives scheduler time to confirm Saturday) ──
   useEffect(() => {
