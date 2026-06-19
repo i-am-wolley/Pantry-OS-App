@@ -6646,6 +6646,7 @@ function App() {
   const [loaded, setLoaded] = useState(false);
   const loginGraceRef = React.useRef(false);
   const prevUserIdRef = React.useRef(null);
+  const autoGenInFlightRef = React.useRef(false);
 
   // Summary filter: "all" | "stocked" | "needed"
   const [summaryFilter, setSummaryFilter] = useState("all");
@@ -8503,8 +8504,8 @@ Only output the JSON. No markdown.`;
         const hasDishes = dishes && dishes.length >= 5;
         const noNextMenu = !nextMenu;
         
-        if (!alreadyGenerated && hasApiKey && hasDishes && noNextMenu) {
-          setLastAutoGen(nextWeekKey);
+        if (!alreadyGenerated && hasApiKey && hasDishes && noNextMenu && !autoGenInFlightRef.current) {
+          autoGenInFlightRef.current = true;
           // Clear current week locks before generating next week
           setLockedDays({});
           storage.remove(SK.lockedDays);
@@ -8513,7 +8514,11 @@ Only output the JSON. No markdown.`;
           showToast(isNightWindow
             ? "Auto-generating next week’s menu…"
             : "Preparing next week’s menu…", "success");
-          generateMenu({genMode: "mixed", ignoreStock: true});
+          // NOTE: stamp is set inside generateMenu on success (line ~7826) so Firestore
+          // only receives the key after generation actually completes. The ref prevents
+          // the 60s interval from double-firing while the async call is in-flight.
+          Promise.resolve(generateMenu({genMode: "mixed", ignoreStock: true}))
+            .finally(function(){ autoGenInFlightRef.current = false; });
         }
       }
     }
