@@ -5725,7 +5725,7 @@ function PantryTile({
       fontSize: Math.max(8, (size - 10) * 0.125),
       fontWeight: 600,
       fontFamily: C.font,
-      fontVariant: "small-caps",
+      textTransform: "uppercase",
       textAlign: "center",
       color: active ? C.accent : C.dim,
       letterSpacing: 0.5,
@@ -9111,7 +9111,7 @@ Only output the JSON. No markdown.`;
     }
   },
     /*#__PURE__*/React.createElement("div", {
-      style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 14 }
+      style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 14 }
     }, "Account"),
     user
       ? /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12 } },
@@ -9133,7 +9133,7 @@ Only output the JSON. No markdown.`;
   ), /*#__PURE__*/React.createElement("div", {
     style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "14px", marginBottom: 12 }
   },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 14 } }, "Family"),
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 14 } }, "Family"),
     !user
       ? /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, lineHeight: 1.6 } }, "Sign in with Google to set up family sharing.")
       : /*#__PURE__*/React.createElement("div", null,
@@ -9146,7 +9146,7 @@ Only output the JSON. No markdown.`;
               /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
             ),
             householdMembers.length > 0 && /*#__PURE__*/React.createElement("div", null,
-              /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 } }, "Members"),
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8 } }, "Members"),
               householdMembers.map(function(m) {
                 return /*#__PURE__*/React.createElement("div", { key: m.uid, style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0" } },
                   /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.white } }, m.name + (m.uid === (user && user.uid) ? " (you)" : "")),
@@ -9159,7 +9159,7 @@ Only output the JSON. No markdown.`;
               })
             )
           ),
-          /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 } }, "Join a Household"),
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8 } }, "Join a Household"),
           /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 6 } },
             /*#__PURE__*/React.createElement("input", { type: "text", value: joinCode, onChange: function(e){ setJoinCode(e.target.value.toUpperCase()); setJoinError(""); }, placeholder: "ABC123", maxLength: 6, style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 16, letterSpacing: 4, flex: 1, textAlign: "center" }) }),
             /*#__PURE__*/React.createElement("button", {
@@ -9178,7 +9178,7 @@ Only output the JSON. No markdown.`;
   ), /*#__PURE__*/React.createElement("div", {
     style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "18px", marginBottom: 10, boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none" }
   },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 14 } }, "AI Provider"),
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 14 } }, "AI Provider"),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid " + C.border } },
       /*#__PURE__*/React.createElement("div", null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: C.white, marginBottom: 2 } }, "AI Features"),
@@ -9215,7 +9215,7 @@ Only output the JSON. No markdown.`;
       ),
       apiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved"),
       /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, paddingTop: 16, borderTop: "1px solid " + C.border } },
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 } }, "Model"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8 } }, "Model"),
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 10, lineHeight: 1.5 } }, "The Claude model for all AI features. Find names at console.anthropic.com."),
         /*#__PURE__*/React.createElement("input", { type: "text", value: modelName, onChange: function(e){ setModelName(e.target.value); }, placeholder: "claude-haiku-4-5-20251001", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12 }) }),
         modelName && modelName !== "claude-haiku-4-5-20251001" && /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 } },
@@ -9227,7 +9227,7 @@ Only output the JSON. No markdown.`;
   ), /*#__PURE__*/React.createElement("div", {
     style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "18px", marginBottom: 10, boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none" }
   },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 14 } }, "Notifications"),
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 14 } }, "Notifications"),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
       /*#__PURE__*/React.createElement("div", null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: C.white, marginBottom: 2 } }, "Morning reminders"),
@@ -9241,7 +9241,7 @@ Only output the JSON. No markdown.`;
   ), /*#__PURE__*/React.createElement("div", {
     style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "18px", marginBottom: 10, boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none" }
   },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 } }, "Allergens"),
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8 } }, "Allergens"),
     /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 14, lineHeight: 1.5 } },
       activeAllergens.length === 0
         ? "No allergens set — all dishes included in planning"
@@ -9285,7 +9285,7 @@ Only output the JSON. No markdown.`;
     }
   },
     /*#__PURE__*/React.createElement("div", {
-      style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 12 }
+      style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 12 }
     }, "Cuisine Packs"),
     cuisines.length === 0
       ? /*#__PURE__*/React.createElement("div", {
@@ -9311,7 +9311,7 @@ Only output the JSON. No markdown.`;
       style: Object.assign({}, pill(false), { padding: "7px 14px", fontSize: 13, width: "100%" })
     }, "+ Add Cuisine Pack")
   ), /*#__PURE__*/React.createElement("div", {
-    style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 14, marginTop: 4 }
+    style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 14, marginTop: 4 }
   }, "Appearance"), [{
     key: "haptics",
     val: haptics,
@@ -9490,7 +9490,7 @@ Only output the JSON. No markdown.`;
       fontSize: 12
     }
   }, t === 0 ? "Any" : t + "m"))))), /*#__PURE__*/React.createElement("div", {
-      style:{ fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 8, marginTop: 20 }
+      style:{ fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8, marginTop: 20 }
     }, "Default AI Slots"),
     /*#__PURE__*/React.createElement("div", {
       style:{fontSize:12,color:C.dim2,marginBottom:12}
@@ -9562,7 +9562,7 @@ Only output the JSON. No markdown.`;
       marginBottom: 10,
       boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
-  }, /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 12 } }, "Data Health"), (() => {
+  }, /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 12 } }, "Data Health"), (() => {
     const stockedCount = Object.keys(stock).filter(k => stock[k] === true || (stock[k] || 0) > 0).length;
     const orphaned = Object.keys(stock).filter(k => !items.find(i => String(i.id) === k)).length;
     const noIng = dishes.filter(d => !d.ingredients || d.ingredients.length === 0).length;
@@ -9647,7 +9647,7 @@ Only output the JSON. No markdown.`;
       boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
-    style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 12 }
+    style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 12 }
   }, "API Usage"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -9714,7 +9714,7 @@ Only output the JSON. No markdown.`;
       marginBottom: 10,
       boxShadow: C.bg === "#f5f0ea" ? "0 1px 6px rgba(0,0,0,0.07)" : "none"
     }
-  }, /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 600, letterSpacing: 0.5, marginBottom: 12 } }, "Data Safety"), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 12 } }, "Data Safety"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: C.dim,
@@ -9744,7 +9744,7 @@ Only output the JSON. No markdown.`;
   user && /*#__PURE__*/React.createElement("div", {
     style: { marginTop: 32, paddingTop: 18, borderTop: "1px solid rgba(192,57,43,0.25)" }
   },
-    /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, fontVariant: "small-caps", color: "rgba(192,57,43,0.65)", fontWeight: 600, letterSpacing: 0.5, marginBottom: 12 } }, "Danger Zone"),
+    /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: "rgba(192,57,43,0.65)", fontWeight: 800, letterSpacing: 1.5, marginBottom: 12 } }, "Danger Zone"),
     /*#__PURE__*/React.createElement("div", {
       style: { background: C.card, border: "1px solid rgba(192,57,43,0.18)", borderRadius: 12, padding: "0 16px" }
     },
@@ -9866,7 +9866,7 @@ Only output the JSON. No markdown.`;
     style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
       display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"nowrap",whiteSpace:"nowrap"}
   },
-    /*#__PURE__*/React.createElement("span", { style: { fontVariant: "small-caps", letterSpacing: 1, color: colorMode === "mono" ? C.dim : C.accent } }, "Shopping list for the week"),
+    /*#__PURE__*/React.createElement("span", { style: { fontSize: 10, textTransform: "uppercase", fontWeight: 800, letterSpacing: 1.5, color: colorMode === "mono" ? C.dim : C.accent } }, "Shopping list for the week"),
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,alignItems:"center"}},
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){
@@ -10585,12 +10585,12 @@ Only output the JSON. No markdown.`;
       }
     })), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: 13,
+        fontSize: 10,
         color: colorMode === "mono" ? C.dim : C.accent,
-        letterSpacing: 1,
-        fontWeight: 700,
+        letterSpacing: 1.5,
+        fontWeight: 800,
         flex: 1,
-        fontVariant: "small-caps"
+        textTransform: "uppercase"
       }
     }, pc.label), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
