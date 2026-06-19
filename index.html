@@ -5979,14 +5979,6 @@ function DayCard({
         }, dayDate)
       ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
-        badge && /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 11, fontWeight: 700, letterSpacing: 0.3,
-            color: isToday ? AMBER : C.dim,
-            background: isToday ? tint(AMBER, isLight ? 0.10 : 0.12) : "transparent",
-            borderRadius: 20, padding: isToday ? "5px 12px" : "0"
-          }
-        }, badge),
         onToggleLock && dayMenu && /*#__PURE__*/React.createElement("button", {
           onClick: onToggleLock,
           style: {
@@ -6107,7 +6099,16 @@ function DayCard({
         ) : null
       );
     })()
-    ) : /*#__PURE__*/React.createElement("div", { style: { color: C.dim2, fontSize: 14 } }, "—")
+    ) : /*#__PURE__*/React.createElement("div", { style: { color: C.dim2, fontSize: 14 } }, "—"),
+    badge && /*#__PURE__*/React.createElement("span", {
+      style: {
+        position: "absolute", bottom: 14, right: 16,
+        fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase",
+        color: isToday ? (isLight ? "#3A6B32" : "#6F9E80") : C.dim,
+        background: isToday ? (isLight ? "rgba(58,107,50,0.10)" : "rgba(111,158,128,0.14)") : "transparent",
+        borderRadius: 20, padding: isToday ? "4px 10px" : "0"
+      }
+    }, badge)
   );
 }
 
