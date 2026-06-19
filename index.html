@@ -11487,7 +11487,7 @@ Only output the JSON. No markdown.`;
       color: C.white
     }
   }, "Edit dish"), /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } },
-    recipes[editDishModal.name] && /*#__PURE__*/React.createElement("button", {
+    (recipes[editDishModal.name] || !!STATIC_RECIPES[editDishModal.name]) && /*#__PURE__*/React.createElement("button", {
       onClick: function(){ haptic("light"); setRecipeModal(editDishModal.name); },
       style: { background: "transparent", border: "none", color: colorMode === "mono" ? C.dim : C.accent, cursor: "pointer", padding: 4, display: "flex", alignItems: "center" },
       title: "View recipe"
