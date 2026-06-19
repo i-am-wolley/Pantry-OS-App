@@ -7018,27 +7018,27 @@ function App() {
     }).catch(function(){});
   }, [householdCode, memberRefreshKey]);
   useEffect(() => {
-    if (loaded) storage.set(SK.items, JSON.stringify(items));
-  }, [items, loaded]);
+    if (loaded && authReady) storage.set(SK.items, JSON.stringify(items));
+  }, [items, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.stock, JSON.stringify(stock));
-  }, [stock, loaded]);
+    if (loaded && authReady) storage.set(SK.stock, JSON.stringify(stock));
+  }, [stock, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.dishes, JSON.stringify(dishes));
-  }, [dishes, loaded]);
+    if (loaded && authReady) storage.set(SK.dishes, JSON.stringify(dishes));
+  }, [dishes, loaded, authReady]);
   useEffect(() => {
-    if (loaded && menu) storage.set(SK.menu, JSON.stringify(menu));
-  }, [menu, loaded]);
+    if (loaded && authReady && menu) storage.set(SK.menu, JSON.stringify(menu));
+  }, [menu, loaded, authReady]);
   useEffect(() => {
-    if (loaded) {
+    if (loaded && authReady) {
       if (nextMenu) storage.set(SK.nextMenu, JSON.stringify(nextMenu));
       else storage.remove(SK.nextMenu);
     }
-  }, [nextMenu, loaded]);
+  }, [nextMenu, loaded, authReady]);
   useEffect(() => {
-    if (loaded && Object.keys(aiDishIngredients).length > 0)
+    if (loaded && authReady && Object.keys(aiDishIngredients).length > 0)
       storage.set(SK.aiDishIng, JSON.stringify(aiDishIngredients));
-  }, [aiDishIngredients, loaded]);
+  }, [aiDishIngredients, loaded, authReady]);
   // Background retry: fetch ingredients for AI dishes that were never fetched
   // (catches failed initial fetch during generation). Intentionally excludes
   // aiDishIngredients from deps to avoid loop — uses snapshot at fire time.
@@ -7086,8 +7086,8 @@ function App() {
     });
   }, [loaded, menu, nextMenu, apiKey, geminiKey]); // eslint-disable-line
   useEffect(() => {
-    if (loaded) storage.set(SK.mealCats, JSON.stringify(mealCats));
-  }, [mealCats, loaded]);
+    if (loaded && authReady) storage.set(SK.mealCats, JSON.stringify(mealCats));
+  }, [mealCats, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.sqSize, String(sqSize));
   }, [sqSize, loaded]);
@@ -7095,26 +7095,26 @@ function App() {
     if (loaded) storage.set(SK.aiCount, String(aiCount));
   }, [aiCount, loaded]);
   useEffect(() => {
-    if (loaded) storage.set(SK.recipes, JSON.stringify(recipes));
-  }, [recipes, loaded]);
+    if (loaded && authReady) storage.set(SK.recipes, JSON.stringify(recipes));
+  }, [recipes, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.apiKey, apiKey);
-  }, [apiKey, loaded]);
+    if (loaded && authReady) storage.set(SK.apiKey, apiKey);
+  }, [apiKey, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.geminiKey, geminiKey);
-  }, [geminiKey, loaded]);
+    if (loaded && authReady) storage.set(SK.geminiKey, geminiKey);
+  }, [geminiKey, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.lockedDays, JSON.stringify(lockedDays));
-  }, [lockedDays, loaded]);
+    if (loaded && authReady) storage.set(SK.lockedDays, JSON.stringify(lockedDays));
+  }, [lockedDays, loaded, authReady]);
   useEffect(() => {
     if (loaded && authReady) storage.set(SK.confirmedDays, JSON.stringify(confirmedDays));
   }, [confirmedDays, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.autoBackup, JSON.stringify(autoBackup));
-  }, [autoBackup, loaded]);
+    if (loaded && authReady) storage.set(SK.autoBackup, JSON.stringify(autoBackup));
+  }, [autoBackup, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.autoNutrition, JSON.stringify(autoNutrition));
-  }, [autoNutrition, loaded]);
+    if (loaded && authReady) storage.set(SK.autoNutrition, JSON.stringify(autoNutrition));
+  }, [autoNutrition, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.haptics, JSON.stringify(haptics));
   }, [haptics, loaded]);
@@ -7122,17 +7122,17 @@ function App() {
     if (loaded) storage.set(SK.notifications, JSON.stringify(notificationsEnabled));
   }, [notificationsEnabled, loaded]);
   useEffect(() => {
-    if (loaded) storage.set(SK.aiEnabled, JSON.stringify(aiEnabled));
-  }, [aiEnabled, loaded]);
+    if (loaded && authReady) storage.set(SK.aiEnabled, JSON.stringify(aiEnabled));
+  }, [aiEnabled, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.activeAllergens, JSON.stringify(activeAllergens));
-  }, [activeAllergens, loaded]);
+    if (loaded && authReady) storage.set(SK.activeAllergens, JSON.stringify(activeAllergens));
+  }, [activeAllergens, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.theme, JSON.stringify(theme));
-  }, [theme, loaded]);
+    if (loaded && authReady) storage.set(SK.theme, JSON.stringify(theme));
+  }, [theme, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.colorMode, JSON.stringify(colorMode));
-  }, [colorMode, loaded]);
+    if (loaded && authReady) storage.set(SK.colorMode, JSON.stringify(colorMode));
+  }, [colorMode, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.screensaverOn, JSON.stringify(screensaverOn));
     window.__ssEnabled = screensaverOn;
@@ -7145,8 +7145,8 @@ function App() {
     if (window.__ssResetTimer) window.__ssResetTimer();
   }, [screensaverMins, loaded]);
   useEffect(() => {
-    if (loaded) storage.set(SK.cookTime, JSON.stringify(cookTime));
-  }, [cookTime, loaded]);
+    if (loaded && authReady) storage.set(SK.cookTime, JSON.stringify(cookTime));
+  }, [cookTime, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.modelName, modelName);
   }, [modelName, loaded]);
@@ -7154,23 +7154,23 @@ function App() {
     if (loaded) storage.set(SK.apiCost, String(apiCost));
   }, [apiCost, loaded]);
   useEffect(() => {
-    if (loaded) storage.set(SK.defaultAiSlots, JSON.stringify(defaultAiSlots));
-  }, [defaultAiSlots, loaded]);
+    if (loaded && authReady) storage.set(SK.defaultAiSlots, JSON.stringify(defaultAiSlots));
+  }, [defaultAiSlots, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.michelinWeekend, JSON.stringify(michelinWeekend));
-  }, [michelinWeekend, loaded]);
+    if (loaded && authReady) storage.set(SK.michelinWeekend, JSON.stringify(michelinWeekend));
+  }, [michelinWeekend, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.showCookNow, JSON.stringify(showCookNow));
-  }, [showCookNow, loaded]);
+    if (loaded && authReady) storage.set(SK.showCookNow, JSON.stringify(showCookNow));
+  }, [showCookNow, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.cuisines, JSON.stringify(cuisines));
-  }, [cuisines, loaded]);
+    if (loaded && authReady) storage.set(SK.cuisines, JSON.stringify(cuisines));
+  }, [cuisines, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.lastAutoGen, lastAutoGen);
-  }, [lastAutoGen, loaded]);
+    if (loaded && authReady) storage.set(SK.lastAutoGen, lastAutoGen);
+  }, [lastAutoGen, loaded, authReady]);
   useEffect(() => {
-    if (loaded) storage.set(SK.dietary, JSON.stringify(dietary));
-  }, [dietary, loaded]);
+    if (loaded && authReady) storage.set(SK.dietary, JSON.stringify(dietary));
+  }, [dietary, loaded, authReady]);
   // Expose today's menu plan to screensaver via window
   useEffect(() => {
     if (!menu || !menu.plan) { window.__pantryOSMenu = {}; return; }
