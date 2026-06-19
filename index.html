@@ -12074,9 +12074,9 @@ Only output the JSON. No markdown.`;
       padding: "3px 8px",
       fontSize: 12
     }
-  }, "Retry")), recipes[recipeModal] && recipeFetching !== recipeModal && /*#__PURE__*/React.createElement(React.Fragment, null,
+  }, "Retry")), (recipes[recipeModal] || STATIC_RECIPES[recipeModal]) && recipeFetching !== recipeModal && /*#__PURE__*/React.createElement(React.Fragment, null,
     (() => {
-      var parsed = parseRecipeMD(recipes[recipeModal]);
+      var parsed = parseRecipeMD(recipes[recipeModal] || STATIC_RECIPES[recipeModal]);
       var isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
       var GLD = colorMode === "mono" ? C.dim : "#B8882A";
       var GRN = colorMode === "mono" ? C.dim2 : "#3A6B32";
