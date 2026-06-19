@@ -9764,7 +9764,13 @@ Only output the JSON. No markdown.`;
         style: { fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic", fontWeight: 400, fontSize: 26, color: C.white, lineHeight: 1.2, marginBottom: 3 }
       }, firstName ? greeting + ", " + firstName : greeting),
     );
-  })(),  /*#__PURE__*/React.createElement(DayCardCarousel, {
+  })(), showCookNow && /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", justifyContent: "flex-end", marginBottom: 10 }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => { haptic("light"); setCookNowModal(true); if (cookNowResults.length === 0) cookNow(); },
+    style: { background: tint("#6F9E80", C.bg === "#f5f0ea" ? 0.12 : 0.14), border: "none", color: colorMode === "mono" ? C.dim : "#6F9E80", borderRadius: 20, padding: "8px 14px", cursor: "pointer", fontFamily: C.font, fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }
+  }, /*#__PURE__*/React.createElement(Icon, { name: "leaf", size: 16, style: { color: colorMode === "mono" ? C.dim : "#6F9E80" } }), "What can I cook now?")),
+  /*#__PURE__*/React.createElement(DayCardCarousel, {
     today: today, tomorrow: tomorrow, menu: menu, nextMenu: nextMenu,
     mealCats: mealCats, WEEKEND: WEEKEND, lockedDays: lockedDays,
     swapLoading: swapLoading, confirmedDays: confirmedDays,
@@ -9824,29 +9830,7 @@ Only output the JSON. No markdown.`;
       todayEntries.length > 0 && !prepTodayDismissed && renderCard(todayEntries, "Today’s prep", function(){ setPrepTodayDismissed(true); }),
       tomEntries.length > 0 && !prepTomDismissed && renderCard(tomEntries, "Tomorrow’s prep", function(){ setPrepTomDismissed(true); })
     );
-  })(), showCookNow && /*#__PURE__*/React.createElement("div", {
-    style: { display: "flex", justifyContent: "flex-end", marginBottom: 14 }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      haptic("light");
-      setCookNowModal(true);
-      if (cookNowResults.length === 0) cookNow();
-    },
-    style: {
-      background: tint("#6F9E80", C.bg === "#f5f0ea" ? 0.12 : 0.14),
-      border: "none",
-      color: colorMode === "mono" ? C.dim : "#6F9E80",
-      borderRadius: 20,
-      padding: "8px 14px",
-      cursor: "pointer",
-      fontFamily: C.font,
-      fontSize: 13,
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      gap: 6
-    }
-  }, /*#__PURE__*/React.createElement(Icon, { name: "leaf", size: 16, style: { color: colorMode === "mono" ? C.dim : "#6F9E80" } }), "What can I cook now?")), (nextMenu||menu) && (nextMenu||menu).plan && /*#__PURE__*/React.createElement("div", {
+  })(), (nextMenu||menu) && (nextMenu||menu).plan && /*#__PURE__*/React.createElement("div", {
     style: {marginBottom:16}
   }, /*#__PURE__*/React.createElement("div", {
     style:{fontSize:12,color:C.dim,letterSpacing:2,fontWeight:700,marginBottom:8,
