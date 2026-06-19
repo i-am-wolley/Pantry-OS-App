@@ -8470,23 +8470,27 @@ Only output the JSON. No markdown.`;
       const todayIdx = now.getDay(); // 0=Sun, 6=Sat
       const todayName = DAYS_ORDER[todayIdx];
       const activeMenu = menu; // always current week only — never nextMenu
-      
+
       // ── Check 1: Auto-confirm past days ──
       // Use a weekKey that never advances on Saturday (getWeekKey() returns NEXT week on Sat)
       const thisWeekSun = new Date(now);
       thisWeekSun.setDate(now.getDate() - todayIdx); // always rolls back to this week's Sunday
       const thisWeekKey = `${thisWeekSun.getFullYear()}-${thisWeekSun.getMonth()+1}-${thisWeekSun.getDate()}`;
+      console.log("[Scheduler] day="+todayIdx+" thisWeekKey="+thisWeekKey+" menuKey="+(activeMenu&&activeMenu.weekKey)+" confirmedDays="+JSON.stringify(confirmedDays));
       if (activeMenu && activeMenu.plan && activeMenu.weekKey === thisWeekKey) {
         // Only confirm from CURRENT week's menu — weekKey must match today's week
         DAYS.forEach(function(dayName, idx) {
           if (idx >= todayIdx) return; // only past days
           if (confirmedDays && confirmedDays[dayName]) return; // already confirmed
-          if (!activeMenu.plan[dayName] || Object.keys(activeMenu.plan[dayName]).length === 0) return;
+          if (!activeMenu.plan[dayName] || Object.keys(activeMenu.plan[dayName]).length === 0) { console.log("[Scheduler] no plan for "+dayName); return; }
           const dayPlan = activeMenu.plan[dayName];
           const allDineOut = Object.values(dayPlan).every(function(d) { return d && d.indexOf("Dine Out") >= 0; });
           if (allDineOut) return;
+          console.log("[Scheduler] confirming "+dayName);
           confirmDay(dayName, true); // silent — no toast for auto-confirm
         });
+      } else {
+        console.log("[Scheduler] weekKey mismatch or no menu — skipping auto-confirm");
       }
       // Saturday gap: Saturday is never "past" during the week (idx>=todayIdx on Sat).
       // Confirm it on Saturday itself at any point in the day.
@@ -8838,7 +8842,11 @@ Only output the JSON. No markdown.`;
       return d;
     });
     setDishes(updated);
-    setConfirmedDays(function(prev){ return Object.assign({},prev,{[dayName]:true}); });
+    setConfirmedDays(function(prev){
+      var next = Object.assign({},prev,{[dayName]:true});
+      console.log("[confirmDay] "+dayName+" → confirmedDays now:", JSON.stringify(next));
+      return next;
+    });
     if (!silent) showToast("Day confirmed!", "success");
   }
   const TABS = [{
