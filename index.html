@@ -6976,7 +6976,7 @@ function App() {
     var today = new Date().getDay(); // 0=Sun..6=Sat
     if (today === 6) return; // it's Saturday — normal auto-gen path handles it
     if (nextMenu) return; // already have next week's plan
-    if (!(apiKey || geminiKey) || !dishes || dishes.length < 5) return;
+    if (!dishes || dishes.length < 5) return;
     if (!menu) return; // nothing to base/replace yet
     var wk = getWeekKey();
     if (lastAutoGen === wk) return; // Saturday's auto-gen for this week already succeeded
@@ -7764,6 +7764,13 @@ function App() {
           aiSlotsNeeded.forEach(function(s){ plan[s.day][s.mc]=pickFromInventory(s.day,s.mc); });
         }
       }
+
+      // Fill any slots still null — covers no-API-key, AI disabled, or empty inventory
+      remainingDays.forEach(function(d){
+        mealCats.forEach(function(mc){
+          if(plan[d][mc]===null) plan[d][mc]=pickFromInventory(d,mc)||"";
+        });
+      });
     }
 
     // ── Fetch ingredients for AI-generated dishes (batch call) ──
@@ -8500,11 +8507,17 @@ Only output the JSON. No markdown.`;
       if (isSaturday) {
         const nextWeekKey = getWeekKey();
         const alreadyGenerated = lastAutoGen === nextWeekKey;
-        const hasApiKey = !!(apiKey || geminiKey);
         const hasDishes = dishes && dishes.length >= 5;
         const noNextMenu = !nextMenu;
-        
-        if (!alreadyGenerated && hasApiKey && hasDishes && noNextMenu && !autoGenInFlightRef.current) {
+
+        // Recovery: stamp exists but nextMenu is missing — previous attempt was killed
+        // mid-generation. Clear the stale stamp so the scheduler can retry.
+        if (alreadyGenerated && noNextMenu && hasDishes) {
+          setLastAutoGen("");
+          return; // state change re-triggers this effect
+        }
+
+        if (!alreadyGenerated && hasDishes && noNextMenu && !autoGenInFlightRef.current) {
           autoGenInFlightRef.current = true;
           // Clear current week locks before generating next week
           setLockedDays({});
