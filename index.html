@@ -3346,7 +3346,7 @@ const storage = {
 // ─────────────────────────────────────────────────────────────────────────────
 //  VERSION & MIGRATION SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
-const CURRENT_VERSION = 11;
+const CURRENT_VERSION = 12;
 const VERSION_KEY = "pantryos-version";
 function runMigrations(storedVersion) {
   var data = {
@@ -3592,6 +3592,17 @@ const MIGRATIONS = {
       });
     }
     return data;
+  },
+  // v11 → v12: backfill prepCondition on existing items from PREP_CONDITION_SEED
+  11: function(data) {
+    if (data.items && Array.isArray(data.items)) {
+      data.items = data.items.map(function(item) {
+        if (item.prepCondition !== undefined) return item; // user already set — don't touch
+        var pc = PREP_CONDITION_SEED[(item.name||"").toLowerCase().trim()];
+        return pc ? Object.assign({}, item, { prepCondition: pc }) : item;
+      });
+    }
+    return data;
   }
 };
 
@@ -3689,6 +3700,30 @@ const ITEM_ALLERGEN_SEED = {
 DEFAULT_ITEMS.forEach(function(item) {
   var als = ITEM_ALLERGEN_SEED[item.name.toLowerCase().trim()];
   if (als && als.length) item.allergens = als;
+});
+
+// prepCondition: null | "soaking" | "marinating" | "thawing"
+const PREP_CONDITION_SEED = {
+  // Soaking — hard legumes/beans needing overnight soak
+  "chickpeas": "soaking",
+  "rajma": "soaking",
+  "kidney beans": "soaking",
+  "black beans": "soaking",
+  "urad dal": "soaking",
+  "chana dal": "soaking",
+  // Thawing — frozen proteins
+  "frozen fish": "thawing",
+  "frozen chicken": "thawing",
+  "frozen prawns": "thawing",
+  // Marinating — proteins that benefit from an overnight marinade
+  "chicken breast": "marinating",
+  "mutton": "marinating",
+};
+
+// Stamp prepCondition onto DEFAULT_ITEMS
+DEFAULT_ITEMS.forEach(function(item) {
+  var pc = PREP_CONDITION_SEED[item.name.toLowerCase().trim()];
+  if (pc) item.prepCondition = pc;
 });
 
 var CUISINE_PRESETS = {
@@ -5606,6 +5641,17 @@ function TouchInput({
   });
 }
 
+const PREP_BADGE = {
+  soaking:    { label: "SOAK", color: "#4A90D9" },
+  thawing:    { label: "THAW", color: "#7EC8E3" },
+  marinating: { label: "MARI", color: "#B8882A" }
+};
+const PREP_INSTRUCTION = {
+  soaking:    "Soak overnight",
+  thawing:    "Thaw in fridge",
+  marinating: "Marinate before cooking"
+};
+
 // Pantry item: simple chip/label style – just name + delete
 // Interactive summary tile – toggle binary or increment/decrement quantity
 function PantryTile({
@@ -5748,7 +5794,11 @@ function PantryTile({
       justifyContent: "center",
       fontWeight: 700
     }
-  }, "+"))));
+  }, "+")), item.prepCondition && React.createElement("div", {
+    style: { position: "absolute", bottom: 4, left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none" }
+  }, React.createElement("span", {
+    style: { fontSize: Math.max(7, size * 0.083), fontWeight: 800, letterSpacing: 0.6, lineHeight: 1, color: (PREP_BADGE[item.prepCondition]||{}).color || "#888" }
+  }, (PREP_BADGE[item.prepCondition]||{}).label || ""))));
 }
 function DishTile({
   dish,
@@ -6713,6 +6763,8 @@ function App() {
   const [haptics, setHaptics] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [pantryGapBanner, setPantryGapBanner] = useState(false);
+  const [prepTodayDismissed, setPrepTodayDismissed] = useState(false);
+  const [prepTomDismissed, setPrepTomDismissed] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(true);
   const [aiGateModal, setAiGateModal] = useState(null);
   const [menuGapModal, setMenuGapModal] = useState(null); // null | { count, reasons:[] }
@@ -9846,7 +9898,59 @@ Only output the JSON. No markdown.`;
     setSwapModal: setSwapModal, setDishes: setDishes,
     haptic: haptic, C: C, colorMode: colorMode,
     items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock
-  }), showCookNow && /*#__PURE__*/React.createElement("div", {
+  }), (function(){
+    // Build prep entries for a given day name from the active menu
+    function getPrepEntries(dayName) {
+      var activeMenu = nextMenu || menu;
+      if (!activeMenu || !activeMenu.plan || !activeMenu.plan[dayName]) return [];
+      var dayDishes = Object.values(activeMenu.plan[dayName]).filter(function(n){ return n && n !== "🍽 Dine Out"; });
+      var seen = new Set();
+      var entries = [];
+      dayDishes.forEach(function(dishName) {
+        var dish = dishes.find(function(d){ return d.name === dishName; });
+        var ings = dish ? (dish.ingredients || []) : [];
+        if (!dish) {
+          (aiDishIngredients[dishName] || []).forEach(function(ing) {
+            var pi;
+            var ingId = Number(ing);
+            if (!isNaN(ingId) && ingId > 0) pi = items.find(function(it){ return it.id === ingId; });
+            else pi = items.find(function(it){ return it.name.toLowerCase().trim() === String(ing).toLowerCase().trim(); });
+            if (pi && pi.prepCondition && !seen.has(pi.id)) { seen.add(pi.id); entries.push({ item: pi, dishName: dishName }); }
+          });
+          return;
+        }
+        ings.forEach(function(ingName) {
+          var k = ingName.toLowerCase().trim();
+          var pi = items.find(function(it){ return it.name.toLowerCase().trim() === k; });
+          if (pi && pi.prepCondition && !seen.has(pi.id)) { seen.add(pi.id); entries.push({ item: pi, dishName: dishName }); }
+        });
+      });
+      return entries;
+    }
+    var todayEntries = getPrepEntries(today.name);
+    var tomEntries = getPrepEntries(tomorrow.name);
+    if (todayEntries.length === 0 && tomEntries.length === 0) return null;
+    var cardStyle = { background: "rgba(184,136,42,0.08)", border: "1px solid rgba(184,136,42,0.22)", borderRadius: 12, padding: "12px 14px", marginBottom: 10, position: "relative" };
+    function renderCard(entries, label, onDismiss) {
+      return React.createElement("div", { style: cardStyle },
+        React.createElement("button", { onClick: function(){ haptic("light"); onDismiss(); }, style: { position: "absolute", top: 8, right: 10, background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, fontFamily: C.font } }, "\xd7"),
+        React.createElement("div", { style: { fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "#B8882A", textTransform: "uppercase", marginBottom: 8 } }, label),
+        React.createElement("div", null, entries.map(function(e) {
+          var badge = PREP_BADGE[e.item.prepCondition];
+          var instr = PREP_INSTRUCTION[e.item.prepCondition] || e.item.prepCondition;
+          return React.createElement("div", { key: e.item.id, style: { display: "flex", alignItems: "baseline", gap: 5, marginBottom: 3, flexWrap: "wrap" } },
+            badge && React.createElement("span", { style: { fontSize: 9, fontWeight: 900, letterSpacing: 0.7, color: badge.color, flexShrink: 0 } }, badge.label),
+            React.createElement("span", { style: { fontSize: 13, color: C.white, fontWeight: 600 } }, e.item.name),
+            React.createElement("span", { style: { fontSize: 12, color: C.dim } }, "— " + instr + " \xb7 " + e.dishName)
+          );
+        }))
+      );
+    }
+    return React.createElement(React.Fragment, null,
+      todayEntries.length > 0 && !prepTodayDismissed && renderCard(todayEntries, "Today’s prep", function(){ setPrepTodayDismissed(true); }),
+      tomEntries.length > 0 && !prepTomDismissed && renderCard(tomEntries, "Tomorrow’s prep", function(){ setPrepTomDismissed(true); })
+    );
+  })(), showCookNow && /*#__PURE__*/React.createElement("div", {
     style: { display: "flex", justifyContent: "flex-end", marginBottom: 14 }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
@@ -12451,6 +12555,27 @@ Only output the JSON. No markdown.`;
         transition: "all 0.12s", padding: "5px 9px"
       }
     }, al.label);
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: { marginBottom: 16 }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 12, color: C.dim, letterSpacing: 1, marginBottom: 6 }
+  }, "PREP CONDITION"), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", gap: 6, flexWrap: "wrap" }
+  }, [null, "soaking", "marinating", "thawing"].map(function(pc) {
+    var badge = pc ? PREP_BADGE[pc] : null;
+    var isActive = (editItemModal.prepCondition || null) === pc;
+    return /*#__PURE__*/React.createElement("button", {
+      key: pc || "none",
+      onClick: function(){ haptic("light"); setEditItemModal(function(p){ return Object.assign({}, p, { prepCondition: pc }); }); },
+      style: {
+        background: isActive ? (badge ? badge.color + "22" : C.card) : "transparent",
+        color: isActive ? (badge ? badge.color : C.white) : C.dim,
+        border: "1px solid " + (isActive ? (badge ? badge.color : C.border) : C.dim2),
+        borderRadius: 5, cursor: "pointer", fontFamily: C.font,
+        fontSize: 12, fontWeight: 600, letterSpacing: 0.5,
+        transition: "all 0.12s", padding: "5px 11px"
+      }
+    }, pc ? (pc.charAt(0).toUpperCase() + pc.slice(1)) : "None");
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
