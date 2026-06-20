@@ -3215,6 +3215,10 @@ const DEFAULT_ITEMS = [
   id: 2051, name: "Yuca", type: "binary", cat: "veg"
 }, {
   id: 2052, name: "Aji Amarillo Paste", type: "binary", cat: "condiment"
+}, {
+  id: 2053, name: "Black-Eyed Peas", type: "binary", cat: "protein"
+}, {
+  id: 2054, name: "Yam", type: "binary", cat: "veg"
 }
 ];
 const DEFAULT_MEAL_CATS = ["Breakfast", "Lunch", "Snacks", "Dinner"];
@@ -4317,7 +4321,7 @@ var CUISINE_PRESETS = {
   "african": {
     label: "African", emoji: "🌍",
     desc: "Jollof Rice · Tagine · Peri-Peri",
-    items: ["Avocado","Bananas","Bay Leaves","Black-Eyed Peas","Butter","Capsicum","Cardamom","Carrots","Chicken Breast","Chickpeas","Chilli Flakes","Cinnamon","Coconut Milk","Coriander","Corn Flour","Cucumber","Cumin Powder","Cumin Seeds","Dates","Dried Apricots","Eggs","Fish Fillet","Garlic","Ginger","Green Chilli","Honey","Kidney Beans","Lemons","Lentils","Limes","Mint","Mutton","Nutmeg","Olive Oil","Onions","Paprika","Peanut Butter","Peanuts","Plantain","Potatoes","Prawns","Pumpkin","Raisins","Salmon","Salt","Sesame Seeds","Smoked Paprika","Spinach","Spring Onion","Sugar","Sweet Potato","Tomato Paste","Tomatoes","Turmeric Powder","Vinegar","White Bread","White Rice","Yam","Yogurt","Mustard Sauce","Sunflower Oil","All-Purpose Flour","Milk","Dried Cranberry"],
+    items: ["Avocado","Bananas","Bay Leaves","Black-Eyed Peas","Butter","Capsicum","Cardamom","Carrots","Chicken Breast","Chickpeas","Pepper Flakes","Cinnamon","Coconut Milk","Coriander","Corn Flour","Cucumber","Cumin Powder","Cumin Seeds","Dates","Apricots","Eggs","Fish Fillet","Garlic","Ginger","Green Chilli","Honey","Kidney Beans","Lemons","Lentils","Limes","Mango","Mint","Mutton","Nutmeg","Olive Oil","Onions","Paprika","Peanut Butter","Peanuts","Plantain","Potatoes","Prawns","Pumpkin","Raisins","Salmon","Salt","Semolina","Sesame Seeds","Smoked Paprika","Spinach","Spring Onion","Sugar","Sweet Potato","Tomato Paste","Tomatoes","Turmeric Powder","Vinegar","White Bread","White Rice","Yam","Yogurt","Mustard Sauce","Sunflower Oil","All-Purpose Flour","Milk","Dried Cranberry"],
     dishes: [
       {name:"Shakshuka",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Capsicum","Onions","Garlic","Cumin Seeds","Paprika","Olive Oil"]},
       {name:"Ful Medames",mealCats:["Breakfast"],ingredients:["Lentils","Garlic","Lemons","Cumin Powder","Olive Oil","Coriander","Tomatoes"]},
@@ -4326,37 +4330,37 @@ var CUISINE_PRESETS = {
       {name:"Coconut Rice Porridge",mealCats:["Breakfast"],ingredients:["White Rice","Coconut Milk","Sugar","Cardamom","Raisins"]},
       {name:"Harissa Baked Eggs",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Paprika","Garlic","Onions","Olive Oil","Coriander"]},
       {name:"Moroccan Msemen",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Butter","Honey","Eggs","Semolina","Salt"]},
-      {name:"Avocado Egg Toast African",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Eggs","Lemons","Chilli Flakes","Coriander"]},
+      {name:"Avocado Egg Toast African",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Eggs","Lemons","Pepper Flakes","Coriander"]},
       {name:"Akara Fritters",mealCats:["Breakfast","Snacks"],ingredients:["Black-Eyed Peas","Onions","Garlic","Green Chilli","Eggs","Sunflower Oil"]},
-      {name:"Peanut Porridge",mealCats:["Breakfast"],ingredients:["Corn Flour","Peanut Butter","Milk","Honey","Banana"]},
+      {name:"Peanut Porridge",mealCats:["Breakfast"],ingredients:["Corn Flour","Peanut Butter","Milk","Honey","Bananas"]},
       {name:"Jollof Rice",mealCats:["Lunch"],ingredients:["White Rice","Chicken Breast","Tomatoes","Capsicum","Onions","Tomato Paste","Garlic","Ginger","Bay Leaves","Paprika"]},
-      {name:"Moroccan Chicken Tagine",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Onions","Dried Apricots","Chickpeas","Cinnamon","Cumin Powder","Ginger","Garlic","Olive Oil","Lemon"]},
+      {name:"Moroccan Chicken Tagine",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Onions","Apricots","Chickpeas","Cinnamon","Cumin Powder","Ginger","Garlic","Olive Oil","Lemons"]},
       {name:"Harira Soup",mealCats:["Lunch"],ingredients:["Lentils","Chickpeas","Tomatoes","Onions","Coriander","Ginger","Lemons","Turmeric Powder","Cumin Seeds"]},
       {name:"Peri-Peri Chicken",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Garlic","Lemons","Green Chilli","Paprika","Smoked Paprika","Olive Oil","Vinegar"]},
       {name:"Chakalaka",mealCats:["Lunch","Snacks"],ingredients:["Carrots","Onions","Capsicum","Tomatoes","Kidney Beans","Cumin Powder","Turmeric Powder","Garlic","Ginger"]},
-      {name:"Koshari",mealCats:["Lunch","Dinner"],ingredients:["White Rice","Lentils","Onions","Garlic","Tomato Paste","Cumin Seeds","Vinegar","Chilli Flakes"]},
+      {name:"Koshari",mealCats:["Lunch","Dinner"],ingredients:["White Rice","Lentils","Onions","Garlic","Tomato Paste","Cumin Seeds","Vinegar","Pepper Flakes"]},
       {name:"Mafé Peanut Stew",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Peanut Butter","Tomatoes","Onions","Sweet Potato","Garlic","Ginger","Tomato Paste"]},
       {name:"Moroccan Spiced Chickpeas",mealCats:["Lunch"],ingredients:["Chickpeas","Onions","Garlic","Cumin Seeds","Paprika","Spinach","Tomatoes","Olive Oil","Lemons"]},
       {name:"East African Bean Stew",mealCats:["Lunch"],ingredients:["Kidney Beans","Tomatoes","Onions","Garlic","Spinach","Coriander","Turmeric Powder","Coconut Milk"]},
       {name:"Cape Malay Fish Curry",mealCats:["Lunch","Dinner"],ingredients:["Fish Fillet","Onions","Garlic","Cumin Seeds","Turmeric Powder","Coconut Milk","Tomatoes","Ginger","Coriander"]},
-      {name:"Suya Skewers",mealCats:["Snacks","Dinner"],ingredients:["Chicken Breast","Peanuts","Garlic","Ginger","Cumin Powder","Smoked Paprika","Chilli Flakes","Sunflower Oil"]},
+      {name:"Suya Skewers",mealCats:["Snacks","Dinner"],ingredients:["Chicken Breast","Peanuts","Garlic","Ginger","Cumin Powder","Smoked Paprika","Pepper Flakes","Sunflower Oil"]},
       {name:"Kelewele",mealCats:["Snacks"],ingredients:["Plantain","Ginger","Green Chilli","Nutmeg","Sunflower Oil","Salt"]},
       {name:"African Samosas",mealCats:["Snacks"],ingredients:["All-Purpose Flour","Potatoes","Onions","Cumin Seeds","Green Chilli","Coriander","Butter"]},
-      {name:"Spiced Roasted Peanuts",mealCats:["Snacks"],ingredients:["Peanuts","Chilli Flakes","Cumin Powder","Salt","Sunflower Oil"]},
+      {name:"Spiced Roasted Peanuts",mealCats:["Snacks"],ingredients:["Peanuts","Pepper Flakes","Cumin Powder","Salt","Sunflower Oil"]},
       {name:"Fattoush Salad",mealCats:["Snacks","Lunch"],ingredients:["White Bread","Tomatoes","Cucumber","Mint","Lemons","Olive Oil","Garlic","Spring Onion"]},
       {name:"Mango Avocado Salad",mealCats:["Snacks","Lunch"],ingredients:["Avocado","Mango","Limes","Coriander","Green Chilli","Sesame Seeds","Olive Oil"]},
-      {name:"Baked Sweet Potato Groundnut",mealCats:["Snacks"],ingredients:["Sweet Potato","Peanut Butter","Honey","Chilli Flakes","Garlic","Coriander"]},
+      {name:"Baked Sweet Potato Groundnut",mealCats:["Snacks"],ingredients:["Sweet Potato","Peanut Butter","Honey","Pepper Flakes","Garlic","Coriander"]},
       {name:"North African Yogurt Dip",mealCats:["Snacks"],ingredients:["Yogurt","Cucumber","Garlic","Mint","Lemons","Olive Oil","Cumin Powder"]},
       {name:"Stuffed Dates",mealCats:["Snacks"],ingredients:["Dates","Peanut Butter","Sesame Seeds","Honey","Cardamom"]},
-      {name:"Plantain Chips",mealCats:["Snacks"],ingredients:["Plantain","Sunflower Oil","Salt","Paprika","Chilli Flakes"]},
+      {name:"Plantain Chips",mealCats:["Snacks"],ingredients:["Plantain","Sunflower Oil","Salt","Paprika","Pepper Flakes"]},
       {name:"Chicken Yassa",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Lemons","Mustard Sauce","Garlic","Olive Oil","Green Chilli","Coriander"]},
-      {name:"Lamb Tagine",mealCats:["Dinner"],ingredients:["Mutton","Chickpeas","Onions","Cinnamon","Cumin Powder","Dried Apricots","Raisins","Garlic","Ginger","Olive Oil"]},
-      {name:"Bobotie Style Bake",mealCats:["Dinner"],ingredients:["Mutton","Eggs","Milk","Onions","Cumin Powder","Turmeric Powder","Dried Apricots","Raisins","Garlic"]},
+      {name:"Lamb Tagine",mealCats:["Dinner"],ingredients:["Mutton","Chickpeas","Onions","Cinnamon","Cumin Powder","Apricots","Raisins","Garlic","Ginger","Olive Oil"]},
+      {name:"Bobotie Style Bake",mealCats:["Dinner"],ingredients:["Mutton","Eggs","Milk","Onions","Cumin Powder","Turmeric Powder","Apricots","Raisins","Garlic"]},
       {name:"African Pepper Soup",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Garlic","Ginger","Coriander","Green Chilli","Bay Leaves","Spring Onion"]},
       {name:"Jollof Rice and Chicken",mealCats:["Dinner"],ingredients:["White Rice","Chicken Breast","Tomato Paste","Tomatoes","Capsicum","Onions","Garlic","Bay Leaves","Paprika","Butter"]},
-      {name:"Chermoula Salmon",mealCats:["Dinner"],ingredients:["Salmon","Garlic","Cumin Powder","Coriander","Lemons","Olive Oil","Smoked Paprika","Chilli Flakes"]},
+      {name:"Chermoula Salmon",mealCats:["Dinner"],ingredients:["Salmon","Garlic","Cumin Powder","Coriander","Lemons","Olive Oil","Smoked Paprika","Pepper Flakes"]},
       {name:"Peri-Peri Prawns",mealCats:["Dinner"],ingredients:["Prawns","Garlic","Lemons","Green Chilli","Paprika","Butter","Coriander","Olive Oil"]},
-      {name:"Doro Wat Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Garlic","Ginger","Paprika","Chilli Flakes","Butter","Eggs","Tomato Paste"]},
+      {name:"Doro Wat Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Garlic","Ginger","Paprika","Pepper Flakes","Butter","Eggs","Tomato Paste"]},
       {name:"Coconut Fish Curry African",mealCats:["Dinner"],ingredients:["Fish Fillet","Coconut Milk","Tomatoes","Garlic","Ginger","Turmeric Powder","Lemons","Coriander","Onions"]},
       {name:"Beef and Groundnut Stew",mealCats:["Dinner"],ingredients:["Mutton","Peanut Butter","Tomatoes","Onions","Sweet Potato","Garlic","Ginger","Tomato Paste","Coriander"]},
       {name:"Sadza with Beef Stew",mealCats:["Dinner"],ingredients:["Corn Flour","Mutton","Tomatoes","Onions","Garlic","Carrots","Paprika","Bay Leaves"]},
