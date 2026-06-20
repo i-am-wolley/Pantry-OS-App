@@ -5959,6 +5959,7 @@ function DishTile({
   onEdit,
   haptic,
   inCurrentMenu,
+  inNextMenu,
   onToggleLock,
   missingIngredients,
   colorMode,
@@ -5992,8 +5993,16 @@ function DishTile({
     style: {
       width:"100%", height:"100%",
       userSelect:"none", WebkitUserSelect:"none", WebkitTouchCallout:"none",
-      background: C.card,
-      border: missingIngredients ? "1px solid transparent" : "1px solid " + C.border,
+      background: inCurrentMenu
+        ? (isLight ? "rgba(180,130,40,0.14)" : "rgba(212,162,85,0.17)")
+        : inNextMenu
+          ? (isLight ? "rgba(40,160,180,0.10)" : "rgba(60,190,210,0.14)")
+          : C.card,
+      border: inCurrentMenu
+        ? "1.5px solid " + (isLight ? "rgba(180,130,40,0.50)" : "rgba(212,162,85,0.42)")
+        : inNextMenu
+          ? "1.5px solid " + (isLight ? "rgba(40,160,180,0.42)" : "rgba(60,190,210,0.36)")
+          : missingIngredients ? "1px solid transparent" : "1px solid " + C.border,
       borderRadius: 18,
       boxShadow: missingIngredients ? "none" : "inset 0 0 0 1px rgba(184,147,90,0.18)",
       display:"flex", flexDirection:"column",
@@ -6031,15 +6040,7 @@ function DishTile({
       style:{fontSize:7,background:isLight?"rgba(0,0,0,0.06)":"rgba(255,255,255,0.09)",border:"1px solid "+(isLight?"rgba(0,0,0,0.10)":"rgba(255,255,255,0.15)"),borderRadius:3,padding:"1px 3px",color:isLight?"rgba(0,0,0,0.65)":"rgba(255,255,255,0.72)",fontWeight:700}
     }, "G")
   ),
-  /*#__PURE__*/React.createElement("div", {
-    style:{position:"absolute",top:4,left:4,height:14,display:"flex",alignItems:"center",zIndex:2,pointerEvents:"none"}
-  }, /*#__PURE__*/React.createElement("div", {
-    style:{width:8,height:8,
-      borderRadius:"50%",border:"none",padding:0,
-      background: dish.lockedForMenu
-        ? (isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.80)")
-        : "transparent"}
-  })));
+  );
 }
 
 // ── Compute pantry availability for a day's menu ──
@@ -6203,8 +6204,8 @@ function DayCard({
             ),
             /*#__PURE__*/React.createElement("div", {
               style: dishNameFont === "bold"
-                ? { fontSize: 15, fontWeight: 700, color: C.white, lineHeight: 1.35, fontFamily: C.font, fontStyle: "normal", letterSpacing: -0.2 }
-                : { fontSize: 15, fontWeight: 400, color: C.white, lineHeight: 1.35, fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic" }
+                ? { fontSize: 13, fontWeight: 700, color: C.white, lineHeight: 1.35, fontFamily: C.font, fontStyle: "normal", letterSpacing: -0.2 }
+                : { fontSize: 13, fontWeight: 400, color: C.white, lineHeight: 1.35, fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic" }
             }, dishName)
           ),
           // Inline actions: swap · save · recipe
@@ -9411,11 +9412,11 @@ Only output the JSON. No markdown.`;
         style: { width:44,height:26,borderRadius:13,background:aiEnabled?(colorMode==="mono"?C.dim:C.accent):"rgba(255,255,255,0.12)",position:"relative",transition:"background 0.18s",flexShrink:0,cursor:"pointer" }
       }, /*#__PURE__*/React.createElement("div", { style: { position:"absolute",top:3,left:aiEnabled?21:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)" } }))
     ),
-    /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 18 } },
+    aiEnabled && /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 18 } },
       /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setAiProviderTab("gemini"); }, style: Object.assign({}, pill(aiProviderTab === "gemini"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Google Gemini"),
       /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setAiProviderTab("anthropic"); }, style: Object.assign({}, pill(aiProviderTab === "anthropic"), { flex: 1, padding: "7px 0", fontSize: 13 }) }, "Anthropic Claude")
     ),
-    aiProviderTab === "gemini" && /*#__PURE__*/React.createElement("div", null,
+    aiEnabled && aiProviderTab === "gemini" && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#c97b2a" } }, "Free tier allows 15 requests/min \u2014 rapid AI calls may fail"),
         /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal("gemini"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
@@ -9426,7 +9427,7 @@ Only output the JSON. No markdown.`;
       ),
       geminiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved")
     ),
-    aiProviderTab === "anthropic" && /*#__PURE__*/React.createElement("div", null,
+    aiEnabled && aiProviderTab === "anthropic" && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Paid API \u2014 add credits at console.anthropic.com"),
         /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal("anthropic"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
@@ -10965,6 +10966,9 @@ Only output the JSON. No markdown.`;
       colorMode: colorMode,
       dishNameFont: dishNameFont,
       inCurrentMenu: !!(menu && menu.plan && Object.values(menu.plan).some(function(dm) {
+        try { return dm && typeof dm === "object" && Object.values(dm).includes(d.name); } catch(_) { return false; }
+      })),
+      inNextMenu: !!(nextMenu && nextMenu.plan && Object.values(nextMenu.plan).some(function(dm) {
         try { return dm && typeof dm === "object" && Object.values(dm).includes(d.name); } catch(_) { return false; }
       })),
       missingIngredients: !!(d.ingredients && d.ingredients.length > 0 && d.ingredients.some(function(ing){
