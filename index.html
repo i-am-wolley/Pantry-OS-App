@@ -7726,8 +7726,9 @@ function App() {
         }
 
         // ── 2. MUST-INCLUDE with mutual-exclusion cluster awareness ──
-        // Skipped entirely in ignore-stock mode (don't force any dish in)
-        if(!ignoreStock){
+        // Skipped in ignore-stock mode — auto-gen uses ignoreStock:true override so must-include
+        // is suppressed there, but manual Saturday generation respects the user's own setting.
+        if(!_ignoreStock){
         // Step A: collect ALL eligible must-include candidates
         var mustCandidates=dishesForGen.filter(function(d){
           if(!d.mustInclude) return false;
@@ -8195,6 +8196,11 @@ function App() {
   async function swapDish(day, mealCat, current, forceAI) {
     setSwapLoading(true);
     setSwapError("");
+    // Determine which menu owns this slot — on Saturday nextMenu exists but current week's
+    // Saturday is still in menu, not nextMenu. Check by matching the actual dish value.
+    var targetIsNextMenu = !!(nextMenu && nextMenu.plan && nextMenu.plan[day] && nextMenu.plan[day][mealCat] === current);
+    var setTargetMenu = targetIsNextMenu ? setNextMenu : setMenu;
+    var targetMenuData = targetIsNextMenu ? nextMenu : menu;
     // Determine if this is an inventory slot or AI slot
     var currentDishInInventory = dishes.some(function(d){ return d.name===current; });
     var slotWasAI = !currentDishInInventory;
@@ -8220,7 +8226,7 @@ function App() {
       });
       var excludeMap_s={};
       dishes.forEach(function(d){if(d.excludeWith&&d.excludeWith.length)excludeMap_s[d.name]=d.excludeWith;});
-      var alreadyPlaced=menu&&menu.plan&&menu.plan[day]?Object.values(menu.plan[day]).filter(function(v){return v&&v!==current;}):[];
+      var alreadyPlaced=targetMenuData&&targetMenuData.plan&&targetMenuData.plan[day]?Object.values(targetMenuData.plan[day]).filter(function(v){return v&&v!==current;}):[];
       var eligible_s=dishes.filter(function(d){
         var cats=Array.isArray(d.mealCats)?d.mealCats:[d.mealCat||"Dinner"];
         if(!cats.includes(mealCat)) return false;
@@ -8240,9 +8246,7 @@ function App() {
       var poolB_s=eligible_s.filter(function(d){return lastMenuNames_s.has(d.name);}).sort(function(a,b){return (a.suggestedCount||0)-(b.suggestedCount||0)||Math.random()-0.5;});
       var picked_s=(poolA_s.length?poolA_s:poolB_s)[0];
       if(picked_s){
-        (nextMenu
-          ? setNextMenu(function(prev){return Object.assign({},prev,{plan:Object.assign({},prev.plan,{[day]:Object.assign({},prev.plan[day],{[mealCat]:picked_s.name})})});})
-          : setMenu(function(prev){return Object.assign({},prev,{plan:Object.assign({},prev.plan,{[day]:Object.assign({},prev.plan[day],{[mealCat]:picked_s.name})})});}));
+        setTargetMenu(function(prev){return Object.assign({},prev,{plan:Object.assign({},prev.plan,{[day]:Object.assign({},prev.plan[day],{[mealCat]:picked_s.name})})});});
         setSwapModal(null);
         setSwapLoading(false);
         return;
@@ -8269,7 +8273,7 @@ function App() {
     const stockDesc = Object.entries(stockByCat).map(([k, v]) => `${k}: ${v.join(", ")}`).join("; ");
     const myDishes = dishes.map(d => d.name).join(", ") || "none";
     const isWeekend = WEEKEND.includes(day);
-    var activePlanForSwap=(nextMenu||menu); const weekContext = Object.entries((activePlanForSwap&&activePlanForSwap.plan)||{}).map(([d, meals]) => Object.entries(meals||{}).map(([mc, dish]) => `${d} ${mc}: ${dish}`).join(", ")).join(" | ");
+    var activePlanForSwap=targetMenuData; const weekContext = Object.entries((activePlanForSwap&&activePlanForSwap.plan)||{}).map(([d, meals]) => Object.entries(meals||{}).map(([mc, dish]) => `${d} ${mc}: ${dish}`).join(", ")).join(" | ");
     const cookTimeStr = cookTime > 0 ? " Must be cookable within " + cookTime + " minutes." : "";
     const isForceAI = !!forceAI;
     const prompt = `You are a Gourmet chef and meal planner. Suggest ONE single replacement dish.
@@ -8284,7 +8288,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
       const { text: _swapText } = await callAI({ prompt, maxTokens: 50 });
       const newDish = _swapText.replace(/['"]/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim();
       if (newDish) {
-        (nextMenu ? setNextMenu : setMenu)(prev => {
+        setTargetMenu(prev => {
           const updated = {
             ...prev,
             plan: {
@@ -10004,7 +10008,7 @@ Only output the JSON. No markdown.`;
   }, (function(){
     var h = new Date().getHours();
     var greeting = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-    var firstName = user && user.displayName ? user.displayName.split(" ")[0] : null;
+    var firstName = user && user.displayName ? user.displayName : null;
     return /*#__PURE__*/React.createElement("div", { style: { marginBottom: 22 } },
       /*#__PURE__*/React.createElement("div", {
         style: { fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic", fontWeight: 400, fontSize: 26, color: C.white, lineHeight: 1.2, marginBottom: 3 }
@@ -12180,7 +12184,10 @@ Only output the JSON. No markdown.`;
       },"Done")
     )
   )),
-  swapModal && /*#__PURE__*/React.createElement("div", {
+  swapModal && (function(){
+    var _swapTargetIsNext = !!(nextMenu && nextMenu.plan && nextMenu.plan[swapModal.day] && nextMenu.plan[swapModal.day][swapModal.mealCat] === swapModal.current);
+    var _setSwapTarget = _swapTargetIsNext ? setNextMenu : setMenu;
+    return /*#__PURE__*/React.createElement("div", {
     onPointerDown: function(e){if(e.target===e.currentTarget)setSwapModal(null);},
     style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",
       alignItems:"center",justifyContent:"center",zIndex:280,padding:16}
@@ -12217,7 +12224,7 @@ Only output the JSON. No markdown.`;
                     key:d.name,
                     onClick:function(){
                       haptic("medium");
-                      (nextMenu?setNextMenu:setMenu)(function(prev){
+                      _setSwapTarget(function(prev){
                         return Object.assign({},prev,{plan:Object.assign({},prev.plan,
                           {[swapModal.day]:Object.assign({},prev.plan[swapModal.day],{[swapModal.mealCat]:d.name})})});
                       });
@@ -12233,7 +12240,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("button",{
         onClick:function(){
           haptic("medium");
-          (nextMenu?setNextMenu:setMenu)(function(prev){
+          _setSwapTarget(function(prev){
             return Object.assign({},prev,{plan:Object.assign({},prev.plan,
               {[swapModal.day]:Object.assign({},prev.plan[swapModal.day],{[swapModal.mealCat]:"🍽 Dine Out"})})});
           });
@@ -12255,7 +12262,8 @@ Only output the JSON. No markdown.`;
       onClick:function(){haptic("light");setSwapModal(null);setSwapError("");},
       style:{...pill(false),width:"100%",padding:"8px 0",fontSize:13}
     },"Cancel")
-  )),
+  ));
+  })(),
   recipeModal && /*#__PURE__*/React.createElement("div", {
     onClick: () => { haptic("light"); setRecipeModal(null); },
     style: {
