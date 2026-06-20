@@ -6353,14 +6353,14 @@ function BackupPanel({
       fontWeight: 700,
       marginBottom: 12
     }
-  }, "Data backup"), /*#__PURE__*/React.createElement("div", {
+  }, "Backup & Restore"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: C.dim,
       marginBottom: 10,
       lineHeight: 1.6
     }
-  }, "Export your pantry, dishes, menu & recipes as a JSON file. Import it back anytime from Files app."), /*#__PURE__*/React.createElement("div", {
+  }, "Save a copy of your pantry, dishes and menus to your device. You can restore it anytime from your Files app."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -9422,7 +9422,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid " + C.border } },
       /*#__PURE__*/React.createElement("div", null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: C.white, marginBottom: 2 } }, "AI Features"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, aiEnabled ? "On — AI planning active" : "Off — pantry-only planning")
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, aiEnabled ? "On — AI picks your meals" : "Off — I'll use my own dishes")
       ),
       /*#__PURE__*/React.createElement("div", {
         onClick: function(){ haptic("light"); setAiEnabled(function(v){ return !v; }); },
@@ -9435,7 +9435,7 @@ Only output the JSON. No markdown.`;
     ),
     aiEnabled && aiProviderTab === "gemini" && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#c97b2a" } }, "Free tier allows 15 requests/min \u2014 rapid AI calls may fail"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: "#c97b2a" } }, "Free to use \u2014 limited to 15 requests per minute. If it fails, just wait a moment and try again."),
         /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal("gemini"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
       ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } },
@@ -9446,7 +9446,7 @@ Only output the JSON. No markdown.`;
     ),
     aiEnabled && aiProviderTab === "anthropic" && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Paid API \u2014 add credits at console.anthropic.com"),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Paid service \u2014 add credit at console.anthropic.com before use."),
         /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setApiHelpModal("anthropic"); }, style: { background: "none", border: "1px solid " + C.border2, color: C.dim, borderRadius: "50%", width: 22, height: 22, cursor: "pointer", fontFamily: C.font, fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, "?")
       ),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center" } },
@@ -9456,10 +9456,10 @@ Only output the JSON. No markdown.`;
       apiKey && /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginTop: 6 } }, "\u2713 Key saved"),
       /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, paddingTop: 16, borderTop: "1px solid " + C.border } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8 } }, "Model"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 10, lineHeight: 1.5 } }, "The Claude model for all AI features. Find names at console.anthropic.com."),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 10, lineHeight: 1.5 } }, "The Claude model used for all AI features. You can find model names at console.anthropic.com."),
         /*#__PURE__*/React.createElement("input", { type: "text", value: modelName, onChange: function(e){ setModelName(e.target.value); }, placeholder: "claude-haiku-4-5-20251001", style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 12 }) }),
         modelName && modelName !== "claude-haiku-4-5-20251001" && /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 } },
-          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "\u270E Custom model active"),
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "\u270E Using a custom model"),
           /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); setModelName("claude-haiku-4-5-20251001"); }, style: { background: "none", border: "none", color: C.dim, cursor: "pointer", fontSize: 12, fontFamily: C.font } }, "Reset to default")
         )
       )
@@ -9471,7 +9471,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
       /*#__PURE__*/React.createElement("div", null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: C.white, marginBottom: 2 } }, "Morning reminders"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Daily 8am alert if pantry gaps exist this week")
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Get a morning reminder if any ingredients are missing for the week.")
       ),
       /*#__PURE__*/React.createElement("div", {
         onClick: function(){ haptic("light"); var next=!notificationsEnabled; setNotificationsEnabled(next); if(next) scheduleNotification(); else cancelNotification(); },
@@ -9484,8 +9484,8 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8 } }, "Allergens"),
     /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 14, lineHeight: 1.5 } },
       activeAllergens.length === 0
-        ? "No allergens set — all dishes included in planning"
-        : activeAllergens.length + " allergen" + (activeAllergens.length>1?"s":"") + " active · matching dishes excluded from generation"
+        ? "No allergens set — all dishes are included."
+        : activeAllergens.length + " allergen" + (activeAllergens.length>1?"s":"") + " active — matching dishes are excluded from your menu."
     ),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
       ALLERGENS.map(function(al){
@@ -9557,13 +9557,13 @@ Only output the JSON. No markdown.`;
     val: haptics,
     set: setHaptics,
     label: "Haptic Feedback",
-    desc: "Subtle vibration on toggles, deletes and interactions (iOS only)."
+    desc: "Light vibration when tapping buttons and making changes."
   }, {
     key: "showCookNow",
     val: showCookNow,
     set: setShowCookNow,
     label: "Show What Can I Cook?",
-    desc: "Shows the \"◎ What Can I Cook?\" button on the Summary page — suggests dishes you can make entirely from currently stocked ingredients."
+    desc: "Shows a 'What can I cook?' button on your home screen. It suggests dishes you can make right now with what you have in stock."
   }].map(item => /*#__PURE__*/React.createElement("div", {
     key: item.key,
     style: {
@@ -9601,7 +9601,7 @@ Only output the JSON. No markdown.`;
     }
   }, "Dark Mode"), /*#__PURE__*/React.createElement("div", {
     style: { fontSize: 13, color: C.dim, lineHeight: 1.5 }
-  }, "Switch app appearance")), /*#__PURE__*/React.createElement("div", {
+  }, "Switch between light and dark mode")), /*#__PURE__*/React.createElement("div", {
     onClick: function(){ haptic("light"); setTheme(function(t){ return t === "dark" ? "light" : "dark"; }); },
     style: { width:44,height:26,borderRadius:13,background:theme==="dark"?(colorMode==="mono"?C.dim:C.accent):"rgba(255,255,255,0.12)",position:"relative",transition:"background 0.18s",flexShrink:0,cursor:"pointer" }
   }, /*#__PURE__*/React.createElement("div", { style: { position:"absolute",top:3,left:theme==="dark"?21:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)" } }))), /*#__PURE__*/React.createElement("div", {
@@ -9610,7 +9610,7 @@ Only output the JSON. No markdown.`;
     style: { fontSize: 14, color: C.white, fontWeight: 600, marginBottom: 3 }
   }, "Color Icons"), /*#__PURE__*/React.createElement("div", {
     style: { fontSize: 13, color: C.dim, lineHeight: 1.5 }
-  }, "Meal icons in soft category colors, or plain outlines")), /*#__PURE__*/React.createElement("div", {
+  }, "Show meal icons in colour, or keep them plain.")), /*#__PURE__*/React.createElement("div", {
     onClick: function(){ haptic("light"); setColorMode(function(m){ return m === "color" ? "mono" : "color"; }); },
     style: { width:44,height:26,borderRadius:13,background:colorMode==="color"?(colorMode==="mono"?C.dim:C.accent):"rgba(255,255,255,0.12)",position:"relative",transition:"background 0.18s",flexShrink:0,cursor:"pointer" }
   }, /*#__PURE__*/React.createElement("div", { style: { position:"absolute",top:3,left:colorMode==="color"?21:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)" } }))),
@@ -9673,7 +9673,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       lineHeight: 1.5
     }
-  }, cookTime === 0 ? "No limit — AI picks freely" : "Dishes must take ≤ " + cookTime + " mins")), /*#__PURE__*/React.createElement("div", {
+  }, cookTime === 0 ? "No limit — AI can suggest any dish" : "Dishes must take " + cookTime + " minutes or less")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -9745,10 +9745,10 @@ Only output the JSON. No markdown.`;
     }
   }, t === 0 ? "Any" : t + "m"))))), /*#__PURE__*/React.createElement("div", {
       style:{ fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 8, marginTop: 20 }
-    }, "Default AI Slots"),
+    }, "Default AI Days"),
     /*#__PURE__*/React.createElement("div", {
       style:{fontSize:12,color:C.dim2,marginBottom:12}
-    }, "Default AI cells when opening Mixed mode. Tap any cell to toggle."),
+    }, "Set which days use AI-suggested dishes by default in Mixed mode. Tap a day to toggle."),
     (function(){
       var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
       var abbr={"Sunday":"Sun","Monday":"Mon","Tuesday":"Tue","Wednesday":"Wed","Thursday":"Thu","Friday":"Fri","Saturday":"Sat"};
@@ -9845,14 +9845,14 @@ Only output the JSON. No markdown.`;
       l: "Recipes cached",
       v: Object.keys(recipes).length
     }, {
-      l: "Orphaned stock",
+      l: "Unlinked stock entries",
       v: orphaned + " entries",
       warn: orphaned > 0
     }, {
       l: "Storage used",
       v: lsKb + " KB"
     }, {
-      l: "Data version",
+      l: "App version",
       v: "v" + CURRENT_VERSION
     }].map(function (row, i) {
       return /*#__PURE__*/React.createElement("div", {
@@ -9890,7 +9890,7 @@ Only output the JSON. No markdown.`;
         fontSize: 12,
         marginTop: 4
       }
-    }, "Clean Up Stock Data"));
+    }, "Fix stock data"));
   })()), /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.card,
@@ -9922,7 +9922,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       marginTop: 2
     }
-  }, (geminiKey && !apiKey) ? "Gemini 2.0 Flash  ·  $0.10/M in  ·  $0.40/M out" : "Haiku 4.5  ·  $0.80/M in  ·  $4.00/M out")), /*#__PURE__*/React.createElement("button", {
+  }, (geminiKey && !apiKey) ? "Gemini 2.0 Flash — $0.10 per million tokens in · $0.40 out" : "Claude Haiku 4.5 — $0.80 per million tokens in · $4.00 out")), /*#__PURE__*/React.createElement("button", {
     onClick: () => { haptic("light"); setApiCost(0); },
     style: {
       background: "transparent",
@@ -9936,13 +9936,13 @@ Only output the JSON. No markdown.`;
       letterSpacing: 0.5
     }
   }, "RESET")), [{
-    l: "Menu generation (Full AI)",
+    l: "Full AI menu",
     est: "~$0.006 each"
   }, {
-    l: "Menu generation (Mixed)",
+    l: "Mixed menu (AI + your dishes)",
     est: "~$0.003 each"
   }, {
-    l: "Recipe fetch",
+    l: "Recipe lookup",
     est: "~$0.003 each"
   }, {
     l: "AI Swap / Surprise Me",
@@ -9957,7 +9957,7 @@ Only output the JSON. No markdown.`;
     l: "Nutrition lookup",
     est: "~$0.001 each"
   }, {
-    l: "Pantry suggestions",
+    l: "Pantry check & suggestions",
     est: "~$0.001 each"
   }].map((row, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -9987,7 +9987,7 @@ Only output the JSON. No markdown.`;
       marginBottom: 10,
       lineHeight: 1.5
     }
-  }, "Clears pantry items, stock, dishes, menu and recipes. Keeps API key, theme and preferences. Export a backup first."), /*#__PURE__*/React.createElement("button", {
+  }, "Clears your pantry, dishes, menus and recipes. Your AI key, theme and other preferences are kept. Save a backup first."), /*#__PURE__*/React.createElement("button", {
     onClick: function(){ haptic("light"); setResetModal(1); },
     style: {
       background: "transparent",
@@ -10006,7 +10006,7 @@ Only output the JSON. No markdown.`;
     style: { marginTop: 8, padding: "12px 0 4px" }
   }, /*#__PURE__*/React.createElement("div", {
     style: { fontSize: 12, color: C.dim, lineHeight: 1.9 }
-  }, "\u2713 All data saved to localStorage \u2014 survives app close & reboots", /*#__PURE__*/React.createElement("br", null), "\u2713 Export backup before clearing browser data", /*#__PURE__*/React.createElement("br", null), "\u2713 Your API key never leaves your device")) ),
+  }, "\u2713 Your data is saved on this device \u2014 it stays safe when you close the app or restart your phone.", /*#__PURE__*/React.createElement("br", null), "\u2713 Save a backup before clearing app data.", /*#__PURE__*/React.createElement("br", null), "\u2713 Your AI key is only stored on this device \u2014 it's never shared.")) ),
   user && /*#__PURE__*/React.createElement("div", {
     style: { marginTop: 32, paddingTop: 18, borderTop: "1px solid rgba(192,57,43,0.25)" }
   },
@@ -10019,7 +10019,7 @@ Only output the JSON. No markdown.`;
       },
         /*#__PURE__*/React.createElement("div", null,
           /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: "#c0392b", fontWeight: 600, marginBottom: 2 } }, "Delete account and data"),
-          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Permanently removes your account, household and all app data")
+          /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Permanently removes your account and all your data. This can't be undone.")
         ),
         /*#__PURE__*/React.createElement("button", {
           onClick: function(){ haptic("light"); setDeleteAccountAlsoHousehold(false); setDeleteAccountModal(true); },
@@ -10337,7 +10337,7 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: C.white, marginBottom: 1 } }, "Pantry top-up needed"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Some ingredients for this week are missing")
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim } }, "Some ingredients for this week aren't in stock yet.")
     ),
     /*#__PURE__*/React.createElement("button", {
       onClick: function(){ haptic("light"); setPantryGapBanner(false); },
@@ -11073,7 +11073,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       marginTop: 4
     }
-  }, "Tip: enter multiple items separated by commas \u2014 they all get the same type & category.")), /*#__PURE__*/React.createElement("div", {
+  }, "Tip: you can enter several items at once, separated by commas \u2014 they'll all get the same category.")), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
@@ -11084,7 +11084,7 @@ Only output the JSON. No markdown.`;
       letterSpacing: 1,
       marginBottom: 6
     }
-  }, "Tracking type"), /*#__PURE__*/React.createElement("div", {
+  }, "Stock tracking"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -11103,7 +11103,7 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.white, fontWeight: 600, marginBottom: 3 } }, "Also a staple"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, lineHeight: 1.4, maxWidth: 220 } }, "Shows this item under Staples too, in addition to its category.")
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, lineHeight: 1.4, maxWidth: 220 } }, "Appears under Staples as well as its main category.")
     ),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => setNewIsStaple(v => !v),
@@ -11231,7 +11231,7 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", {
       style: { fontSize: 14, color: C.dim, lineHeight: 1.6, marginBottom: 16 }
-    }, "It's a new week. A quick pantry update keeps your menu accurate and AI suggestions on point."),
+    }, "It's a new week! A quick pantry check keeps your menu accurate and suggestions spot on."),
     /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8 } },
       /*#__PURE__*/React.createElement("button", {
         onClick: () => { haptic("light"); storage.set(SK.pantryCheckWeek, getPantryCheckKey()); setPantryCheckReminder(false); },
@@ -11574,7 +11574,7 @@ Only output the JSON. No markdown.`;
       fontSize: 12,
       color: C.dim
     }
-  }, "Force into week when a key ingredient is stocked")), /*#__PURE__*/React.createElement("button", {
+  }, "Automatically add this dish to the week when a key ingredient is in stock.")), /*#__PURE__*/React.createElement("button", {
     onClick: () => { haptic("light"); setDishData(d => ({
       ...d,
       mustInclude: !d.mustInclude,
@@ -11638,7 +11638,7 @@ Only output the JSON. No markdown.`;
       fontSize: 12,
       color: C.dim
     }
-  }, "0 = no constraint \xB7 1\u20137 = exact times per week")), /*#__PURE__*/React.createElement(Stepper, {
+  }, "0 means no limit. 1\u20137 sets how often this dish appears per week.")), /*#__PURE__*/React.createElement(Stepper, {
     value: dishData.timesPerWeek || 0,
     min: 0,
     max: 7,
@@ -11655,7 +11655,7 @@ Only output the JSON. No markdown.`;
       style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:(excludePickerOpen||(dishData.excludeWith||[]).length>0)?8:4,cursor:"pointer"}
     },
       /*#__PURE__*/React.createElement("div", null,
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white}}, "Exclusion Rule"),
+        /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white}}, "Don't pair with"),
         /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim2,marginTop:2}},
           (dishData.excludeWith||[]).length>0 ? (dishData.excludeWith||[]).length+" dish"+(((dishData.excludeWith||[]).length>1)?"es":"")+" excluded" : "If included, block other dishes"
         )
@@ -11979,7 +11979,7 @@ Only output the JSON. No markdown.`;
       fontSize: 12,
       color: C.dim
     }
-  }, "Force into week when a key ingredient is stocked")), /*#__PURE__*/React.createElement("button", {
+  }, "Automatically add this dish to the week when a key ingredient is in stock.")), /*#__PURE__*/React.createElement("button", {
     onClick: () => { haptic("light"); setEditDishModal(d => ({
       ...d,
       mustInclude: !d.mustInclude,
@@ -12043,7 +12043,7 @@ Only output the JSON. No markdown.`;
       fontSize: 12,
       color: C.dim
     }
-  }, "0 = no constraint \xB7 1\u20137 = exact times per week")), /*#__PURE__*/React.createElement(Stepper, {
+  }, "0 means no limit. 1\u20137 sets how often this dish appears per week.")), /*#__PURE__*/React.createElement(Stepper, {
     value: editDishModal.timesPerWeek || 0,
     min: 0,
     max: 7,
@@ -12060,7 +12060,7 @@ Only output the JSON. No markdown.`;
       style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:(editExclOpen||(editDishModal.excludeWith||[]).length>0)?8:4,cursor:"pointer"}
     },
       /*#__PURE__*/React.createElement("div", null,
-        /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white}}, "Exclusion Rule"),
+        /*#__PURE__*/React.createElement("div", {style:{fontSize:13,fontWeight:700,color:C.white}}, "Don't pair with"),
         /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim2,marginTop:2}},
           (editDishModal.excludeWith||[]).length>0 ? (editDishModal.excludeWith||[]).length+" dish"+(((editDishModal.excludeWith||[]).length>1)?"es":"")+" excluded" : "If included, block other dishes"
         )
@@ -12510,7 +12510,7 @@ Only output the JSON. No markdown.`;
       letterSpacing: 1,
       marginBottom: 6
     }
-  }, "Tracking type"), /*#__PURE__*/React.createElement("div", {
+  }, "Stock tracking"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -12532,7 +12532,7 @@ Only output the JSON. No markdown.`;
   },
     /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.white, fontWeight: 600, marginBottom: 3 } }, "Also a Staple"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, lineHeight: 1.4, maxWidth: 220 } }, "Shows this item under Staples too, in addition to its category.")
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, lineHeight: 1.4, maxWidth: 220 } }, "Appears under Staples as well as its main category.")
     ),
     /*#__PURE__*/React.createElement("button", {
       onClick: () => { haptic("light"); setEditItemModal(p => ({ ...p, isStaple: !p.isStaple })); },
@@ -12755,8 +12755,8 @@ Only output the JSON. No markdown.`;
       }, "Set up my kitchen")
     ),
     onboardStep === 1 && /*#__PURE__*/React.createElement("div", null,
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Sign in to sync"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 24, lineHeight: 1.6 } }, "Your pantry, dishes and menus stay in sync across all your devices."),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Let's set up your kitchen"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 24, lineHeight: 1.6 } }, "Your pantry, dishes and weekly menu stay up to date across all your devices."),
       user
         ? /*#__PURE__*/React.createElement("div", { style: { fontSize: 14, color: C.dim, background: C.bg, borderRadius: 12, padding: "14px 16px", marginBottom: 16 } },
             "Signed in as ", /*#__PURE__*/React.createElement("strong", { style: { color: C.white } }, user.displayName || user.email), ". Setting up your account…")
@@ -12784,9 +12784,9 @@ Only output the JSON. No markdown.`;
               ),
               /*#__PURE__*/React.createElement("button", { onClick: function(){ haptic("light"); navigator.clipboard.writeText(householdCode).catch(function(){}); }, style: Object.assign({}, pill(false), { padding: "5px 14px", fontSize: 12 }) }, "Copy")
             ),
-            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.6 } }, "Share this code with family. They enter it during their setup or in Settings → Family."),
+            /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.6 } }, "Share this code with family. They'll enter it when they first open the app, or later in Settings → Family."),
             /*#__PURE__*/React.createElement("div", { style: { marginBottom: 16 } },
-              /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 8 } }, "JOINING SOMEONE ELSE'S HOUSEHOLD?"),
+              /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, fontWeight: 700, marginBottom: 8 } }, "Joining a partner or family member's kitchen?"),
               /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 6 } },
                 /*#__PURE__*/React.createElement("input", { type: "text", value: joinCode, onChange: function(e){ setJoinCode(e.target.value.toUpperCase()); setJoinError(""); }, placeholder: "ABC123", maxLength: 6, style: Object.assign({}, mkInp(C), { fontFamily: "monospace", fontSize: 16, letterSpacing: 4, flex: 1, textAlign: "center" }) }),
                 /*#__PURE__*/React.createElement("button", {
@@ -12811,7 +12811,7 @@ Only output the JSON. No markdown.`;
     ),
     onboardStep === 3 && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "How do you cook at home?"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Select your cuisines — we'll load the right ingredients and dishes automatically."),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Pick your favourite cuisines — we'll add the right dishes and ingredients to get you started."),
       /*#__PURE__*/React.createElement("div", {
         style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }
       }, ['south_indian', 'north_indian', 'vegetarian', 'vegan', 'japanese', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'south_american', 'american', 'african'].map(function(key) {
@@ -12854,7 +12854,7 @@ Only output the JSON. No markdown.`;
     ),
     onboardStep === 4 && /*#__PURE__*/React.createElement("div", null,
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Any food allergies?"),
-      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Select allergens and we'll automatically exclude those dishes and ingredients from your plan. You can change this anytime in Settings."),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Tap anything that applies — we'll keep those ingredients out of your meals. You can always change this later in Settings."),
       /*#__PURE__*/React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } },
         ALLERGENS.map(function(al){
           var on = activeAllergens.includes(al.id);
@@ -12960,7 +12960,7 @@ Only output the JSON. No markdown.`;
       ),
       scanModal === "url" && /*#__PURE__*/React.createElement(React.Fragment, null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Import from URL"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16, lineHeight: 1.5 } }, "Paste a link to a recipe page and AI will extract the dish details."),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 16, lineHeight: 1.5 } }, "Paste a link to a recipe page and we'll pull in the dish details for you."),
         /*#__PURE__*/React.createElement("input", {
           autoFocus: true,
           value: scanUrl,
@@ -12983,7 +12983,7 @@ Only output the JSON. No markdown.`;
       scanModal === "loading" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "16px 0" } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 32, marginBottom: 16 } }, "🔍"),
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 8 } }, "Identifying dish…"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "AI is analysing, this takes a few seconds.")
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "Taking a look… this usually takes a few seconds.")
       ),
       scanModal === "review" && scanResult && /*#__PURE__*/React.createElement(React.Fragment, null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 4 } }, "Dish found!"),
@@ -13072,7 +13072,7 @@ Only output the JSON. No markdown.`;
     /*#__PURE__*/React.createElement("div", { onClick: function(e){ e.stopPropagation(); }, style: { background: C.card, borderRadius: 20, padding: 24, width: "100%", maxWidth: 360 } },
       receiptModal === "choose" && /*#__PURE__*/React.createElement(React.Fragment, null,
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.white, marginBottom: 6 } }, "Scan grocery receipt"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.5 } }, "Photo, gallery image, or PDF receipt — AI will match items to your pantry."),
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim, marginBottom: 20, lineHeight: 1.5 } }, "Take a photo, pick from your gallery, or use a PDF receipt — we'll match items to your pantry."),
         /*#__PURE__*/React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 8 } },
           /*#__PURE__*/React.createElement("button", {
             onClick: function(){ haptic("light"); document.getElementById("receipt-camera-input").click(); },
@@ -13098,7 +13098,7 @@ Only output the JSON. No markdown.`;
       receiptModal === "loading" && /*#__PURE__*/React.createElement("div", { style: { textAlign: "center", padding: "16px 0" } },
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 32, marginBottom: 16 } }, "🧾"),
         /*#__PURE__*/React.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 8 } }, "Reading receipt…"),
-        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "AI is scanning, this takes a few seconds.")
+        /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, color: C.dim } }, "Scanning your receipt… just a moment.")
       ),
       receiptModal === "review" && /*#__PURE__*/React.createElement(React.Fragment, null,
         receiptEditRow
@@ -13550,8 +13550,8 @@ Only output the JSON. No markdown.`;
     onClick: e => e.stopPropagation(),
     style: {background:C.card,borderRadius:12,padding:16,width:"100%",maxWidth:480,maxHeight:"80vh",overflowY:"auto"}
   },
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:2}}, "Set AI Slots"),
-    /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim,marginBottom:12}}, "Toggle cells = AI-invented. Blank = from your dish inventory."),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:14,fontWeight:700,color:C.white,marginBottom:2}}, "Set AI Days"),
+    /*#__PURE__*/React.createElement("div", {style:{fontSize:12,color:C.dim,marginBottom:12}}, "Tapped = AI suggests a dish. Empty = picked from your own dishes."),
     (function() {
       var DAY_NAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
       var todayIdx=new Date().getDay();
