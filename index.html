@@ -3338,6 +3338,7 @@ const SK_SYNC = {
   aiEnabled:       "pantryos-aienabled",
   activeAllergens: "pantryos-allergens",
   dishNameFont:    "pantryos-dishnamefont",
+  apiCost:         "pantryos-apicost",
 };
 // Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
@@ -3347,7 +3348,6 @@ const SK_LOCAL = {
   screensaverOn:    "pantryos-screensaver-on",
   screensaverMins:  "pantryos-screensaver-mins",
   modelName:        "pantryos-model",
-  apiCost:          "pantryos-apicost",
   satGenPromptWeek: "pantryos-satgenpromptweek",
   lastBackup:       "pantryos-lastbackup",
   pantryCheckWeek:  "pantryos-pantrycheck",
@@ -8130,6 +8130,10 @@ function App() {
       if (!res.ok) throw new Error("Gemini " + res.status + ": " + res.statusText);
       var data = await res.json();
       var text = ((data.candidates || [])[0]?.content?.parts || []).map(function(p){ return p.text || ""; }).join("").trim();
+      // $0.10/M input, $0.40/M output (Gemini 2.0 Flash rates)
+      var gInTok = (data.usageMetadata && data.usageMetadata.promptTokenCount) || 0;
+      var gOutTok = (data.usageMetadata && data.usageMetadata.candidatesTokenCount) || 0;
+      setApiCost(function(prev) { return Math.round((prev + (gInTok * 0.10 + gOutTok * 0.40) / 1000000) * 1000000) / 1000000; });
       return { text: text, json: repairAndParse(text) };
     }
   }
@@ -8352,6 +8356,9 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     if (!res.ok) throw new Error("Gemini " + res.status);
     var data = await res.json();
     var text = ((data.candidates || [])[0]?.content?.parts || []).map(function(p){ return p.text || ""; }).join("").trim();
+    var gvInTok = (data.usageMetadata && data.usageMetadata.promptTokenCount) || 0;
+    var gvOutTok = (data.usageMetadata && data.usageMetadata.candidatesTokenCount) || 0;
+    setApiCost(function(prev) { return Math.round((prev + (gvInTok * 0.10 + gvOutTok * 0.40) / 1000000) * 1000000) / 1000000; });
     return repairAndParse(text);
   }
 
@@ -8368,6 +8375,9 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
     if (!res.ok) { var e = await res.json().catch(function(){return {};}); throw new Error("API " + res.status + ": " + ((e.error && e.error.message) || res.statusText)); }
     var d = await res.json();
     var text = ((d.content || [])[0] || {}).text || "";
+    var cvInTok = (d.usage && d.usage.input_tokens) || 0;
+    var cvOutTok = (d.usage && d.usage.output_tokens) || 0;
+    setApiCost(function(prev) { return Math.round((prev + (cvInTok * 0.8 + cvOutTok * 4) / 1000000) * 1000000) / 1000000; });
     return repairAndParse(text);
   }
 
@@ -9905,7 +9915,7 @@ Only output the JSON. No markdown.`;
       color: C.dim,
       marginTop: 2
     }
-  }, "Haiku 4.5  ·  $0.80/M in  ·  $4.00/M out")), /*#__PURE__*/React.createElement("button", {
+  }, (geminiKey && !apiKey) ? "Gemini 2.0 Flash  ·  $0.10/M in  ·  $0.40/M out" : "Haiku 4.5  ·  $0.80/M in  ·  $4.00/M out")), /*#__PURE__*/React.createElement("button", {
     onClick: () => { haptic("light"); setApiCost(0); },
     style: {
       background: "transparent",
@@ -9929,6 +9939,18 @@ Only output the JSON. No markdown.`;
     est: "~$0.003 each"
   }, {
     l: "AI Swap / Surprise Me",
+    est: "~$0.001 each"
+  }, {
+    l: "Dish scan (photo/URL)",
+    est: "~$0.004 each"
+  }, {
+    l: "Receipt scan",
+    est: "~$0.002 each"
+  }, {
+    l: "Nutrition lookup",
+    est: "~$0.001 each"
+  }, {
+    l: "Pantry suggestions",
     est: "~$0.001 each"
   }].map((row, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
