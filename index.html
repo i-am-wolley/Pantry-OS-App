@@ -3316,6 +3316,7 @@ const SK_SYNC = {
   geminiKey:       "pantryos-geminikey",
   aiEnabled:       "pantryos-aienabled",
   activeAllergens: "pantryos-allergens",
+  dishNameFont:    "pantryos-dishnamefont",
 };
 // Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
@@ -4095,7 +4096,7 @@ var CUISINE_PRESETS = {
     ]
   },
   "french_continental": {
-    label: "French / Continental", emoji: "🥐",
+    label: "Continental", emoji: "🥐",
     desc: "Quiche · Crêpes · Boeuf Bourguignon",
     items: ["All Spice", "All-Purpose Flour", "Almond Flour", "Almonds", "Anchovies", "Apple Cider Vinegar", "Apples", "Apricots", "Asparagus", "Bacon", "Baking Powder", "Baking Soda", "Bay Leaves", "Beetroot", "Biscuits", "Black Pepper", "Broccoli", "Brown Bread", "Butter", "Capers", "Carrots", "Celery", "Cheddar", "Cheese", "Cherries", "Chicken Breast", "Chives", "Cinnamon", "Cocoa Powder", "Coffee", "Cookies", "Crackers", "Creme Fraiche", "Croissant", "Dark Chocolate", "Dijon Mustard", "Dill", "Dried Cranberry", "Eggs", "Fish Fillet", "Fresh Cream", "Frozen Berries", "Frozen Chicken", "Frozen Fish", "Frozen Peas", "Frozen Peas & Corn", "Garlic", "Gouda", "Grapes", "Gruyere", "Hazelnuts", "Herbal Tea", "Honey", "Hot Chocolate", "Ice Cream", "Kale", "Kiwi", "Lemons", "Lentils", "Lettuce", "Mayonnaise", "Milk", "Mixed Spice", "Mushrooms", "Mustard Sauce", "Mutton", "Nutmeg", "Oats", "Olive Oil", "Onions", "Oranges", "Panko Breadcrumbs", "Parmesan", "Parsley", "Peach", "Pear", "Peas", "Peppercorn", "Pink Peppercorn", "Plum", "Potatoes", "Prunes", "Pumpkin", "Raisins", "Rocket", "Rosemary", "Saffron", "Sage", "Salmon", "Salt", "Self-Raising Flour", "Shallots", "Skimmed Milk", "Sparkling Water", "Strawberries", "Sugar", "Sunflower Oil", "Thyme", "Tomatoes", "Truffle Olive Oil", "Turkey", "Vanilla Extract", "Vinegar", "Walnuts", "White Bread", "White Pepper Powder", "White Wine", "Whole Wheat Bread", "Worcestershire", "Yeast", "Yogurt", "Zucchini", "Aubergine", "Black Olives", "Capsicum", "Dates", "Leeks", "Paprika", "Pasta"],
     dishes: [
@@ -4311,6 +4312,56 @@ var CUISINE_PRESETS = {
       {name:"Coconut Fish Stew",mealCats:["Dinner"],ingredients:["Fish Fillet","Coconut Milk","Tomatoes","Onions","Garlic","Coriander","Limes","Capsicum"]},
       {name:"Chorizo Rice Bowl",mealCats:["Dinner"],ingredients:["Chorizo","White Rice","Capsicum","Onions","Tomatoes","Cumin Powder","Coriander","Sour Cream"]},
       {name:"Yuca Fries",mealCats:["Dinner","Snacks"],ingredients:["Yuca","Garlic","Olive Oil","Coriander","Limes","Sour Cream"]}
+    ]
+  },
+  "african": {
+    label: "African", emoji: "🌍",
+    desc: "Jollof Rice · Tagine · Peri-Peri",
+    items: ["Avocado","Bananas","Bay Leaves","Black-Eyed Peas","Butter","Capsicum","Cardamom","Carrots","Chicken Breast","Chickpeas","Chilli Flakes","Cinnamon","Coconut Milk","Coriander","Corn Flour","Cucumber","Cumin Powder","Cumin Seeds","Dates","Dried Apricots","Eggs","Fish Fillet","Garlic","Ginger","Green Chilli","Honey","Kidney Beans","Lemons","Lentils","Limes","Mint","Mutton","Nutmeg","Olive Oil","Onions","Paprika","Peanut Butter","Peanuts","Plantain","Potatoes","Prawns","Pumpkin","Raisins","Salmon","Salt","Sesame Seeds","Smoked Paprika","Spinach","Spring Onion","Sugar","Sweet Potato","Tomato Paste","Tomatoes","Turmeric Powder","Vinegar","White Bread","White Rice","Yam","Yogurt","Mustard Sauce","Sunflower Oil","All-Purpose Flour","Milk","Dried Cranberry"],
+    dishes: [
+      {name:"Shakshuka",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Capsicum","Onions","Garlic","Cumin Seeds","Paprika","Olive Oil"]},
+      {name:"Ful Medames",mealCats:["Breakfast"],ingredients:["Lentils","Garlic","Lemons","Cumin Powder","Olive Oil","Coriander","Tomatoes"]},
+      {name:"Mandazi",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Coconut Milk","Sugar","Cardamom","Eggs","Butter"]},
+      {name:"Ugali and Eggs",mealCats:["Breakfast"],ingredients:["Corn Flour","Eggs","Butter","Tomatoes","Onions","Coriander"]},
+      {name:"Coconut Rice Porridge",mealCats:["Breakfast"],ingredients:["White Rice","Coconut Milk","Sugar","Cardamom","Raisins"]},
+      {name:"Harissa Baked Eggs",mealCats:["Breakfast"],ingredients:["Eggs","Tomatoes","Paprika","Garlic","Onions","Olive Oil","Coriander"]},
+      {name:"Moroccan Msemen",mealCats:["Breakfast"],ingredients:["All-Purpose Flour","Butter","Honey","Eggs","Semolina","Salt"]},
+      {name:"Avocado Egg Toast African",mealCats:["Breakfast"],ingredients:["White Bread","Avocado","Eggs","Lemons","Chilli Flakes","Coriander"]},
+      {name:"Akara Fritters",mealCats:["Breakfast","Snacks"],ingredients:["Black-Eyed Peas","Onions","Garlic","Green Chilli","Eggs","Sunflower Oil"]},
+      {name:"Peanut Porridge",mealCats:["Breakfast"],ingredients:["Corn Flour","Peanut Butter","Milk","Honey","Banana"]},
+      {name:"Jollof Rice",mealCats:["Lunch"],ingredients:["White Rice","Chicken Breast","Tomatoes","Capsicum","Onions","Tomato Paste","Garlic","Ginger","Bay Leaves","Paprika"]},
+      {name:"Moroccan Chicken Tagine",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Onions","Dried Apricots","Chickpeas","Cinnamon","Cumin Powder","Ginger","Garlic","Olive Oil","Lemon"]},
+      {name:"Harira Soup",mealCats:["Lunch"],ingredients:["Lentils","Chickpeas","Tomatoes","Onions","Coriander","Ginger","Lemons","Turmeric Powder","Cumin Seeds"]},
+      {name:"Peri-Peri Chicken",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Garlic","Lemons","Green Chilli","Paprika","Smoked Paprika","Olive Oil","Vinegar"]},
+      {name:"Chakalaka",mealCats:["Lunch","Snacks"],ingredients:["Carrots","Onions","Capsicum","Tomatoes","Kidney Beans","Cumin Powder","Turmeric Powder","Garlic","Ginger"]},
+      {name:"Koshari",mealCats:["Lunch","Dinner"],ingredients:["White Rice","Lentils","Onions","Garlic","Tomato Paste","Cumin Seeds","Vinegar","Chilli Flakes"]},
+      {name:"Mafé Peanut Stew",mealCats:["Lunch","Dinner"],ingredients:["Chicken Breast","Peanut Butter","Tomatoes","Onions","Sweet Potato","Garlic","Ginger","Tomato Paste"]},
+      {name:"Moroccan Spiced Chickpeas",mealCats:["Lunch"],ingredients:["Chickpeas","Onions","Garlic","Cumin Seeds","Paprika","Spinach","Tomatoes","Olive Oil","Lemons"]},
+      {name:"East African Bean Stew",mealCats:["Lunch"],ingredients:["Kidney Beans","Tomatoes","Onions","Garlic","Spinach","Coriander","Turmeric Powder","Coconut Milk"]},
+      {name:"Cape Malay Fish Curry",mealCats:["Lunch","Dinner"],ingredients:["Fish Fillet","Onions","Garlic","Cumin Seeds","Turmeric Powder","Coconut Milk","Tomatoes","Ginger","Coriander"]},
+      {name:"Suya Skewers",mealCats:["Snacks","Dinner"],ingredients:["Chicken Breast","Peanuts","Garlic","Ginger","Cumin Powder","Smoked Paprika","Chilli Flakes","Sunflower Oil"]},
+      {name:"Kelewele",mealCats:["Snacks"],ingredients:["Plantain","Ginger","Green Chilli","Nutmeg","Sunflower Oil","Salt"]},
+      {name:"African Samosas",mealCats:["Snacks"],ingredients:["All-Purpose Flour","Potatoes","Onions","Cumin Seeds","Green Chilli","Coriander","Butter"]},
+      {name:"Spiced Roasted Peanuts",mealCats:["Snacks"],ingredients:["Peanuts","Chilli Flakes","Cumin Powder","Salt","Sunflower Oil"]},
+      {name:"Fattoush Salad",mealCats:["Snacks","Lunch"],ingredients:["White Bread","Tomatoes","Cucumber","Mint","Lemons","Olive Oil","Garlic","Spring Onion"]},
+      {name:"Mango Avocado Salad",mealCats:["Snacks","Lunch"],ingredients:["Avocado","Mango","Limes","Coriander","Green Chilli","Sesame Seeds","Olive Oil"]},
+      {name:"Baked Sweet Potato Groundnut",mealCats:["Snacks"],ingredients:["Sweet Potato","Peanut Butter","Honey","Chilli Flakes","Garlic","Coriander"]},
+      {name:"North African Yogurt Dip",mealCats:["Snacks"],ingredients:["Yogurt","Cucumber","Garlic","Mint","Lemons","Olive Oil","Cumin Powder"]},
+      {name:"Stuffed Dates",mealCats:["Snacks"],ingredients:["Dates","Peanut Butter","Sesame Seeds","Honey","Cardamom"]},
+      {name:"Plantain Chips",mealCats:["Snacks"],ingredients:["Plantain","Sunflower Oil","Salt","Paprika","Chilli Flakes"]},
+      {name:"Chicken Yassa",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Lemons","Mustard Sauce","Garlic","Olive Oil","Green Chilli","Coriander"]},
+      {name:"Lamb Tagine",mealCats:["Dinner"],ingredients:["Mutton","Chickpeas","Onions","Cinnamon","Cumin Powder","Dried Apricots","Raisins","Garlic","Ginger","Olive Oil"]},
+      {name:"Bobotie Style Bake",mealCats:["Dinner"],ingredients:["Mutton","Eggs","Milk","Onions","Cumin Powder","Turmeric Powder","Dried Apricots","Raisins","Garlic"]},
+      {name:"African Pepper Soup",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Garlic","Ginger","Coriander","Green Chilli","Bay Leaves","Spring Onion"]},
+      {name:"Jollof Rice and Chicken",mealCats:["Dinner"],ingredients:["White Rice","Chicken Breast","Tomato Paste","Tomatoes","Capsicum","Onions","Garlic","Bay Leaves","Paprika","Butter"]},
+      {name:"Chermoula Salmon",mealCats:["Dinner"],ingredients:["Salmon","Garlic","Cumin Powder","Coriander","Lemons","Olive Oil","Smoked Paprika","Chilli Flakes"]},
+      {name:"Peri-Peri Prawns",mealCats:["Dinner"],ingredients:["Prawns","Garlic","Lemons","Green Chilli","Paprika","Butter","Coriander","Olive Oil"]},
+      {name:"Doro Wat Chicken",mealCats:["Dinner"],ingredients:["Chicken Breast","Onions","Garlic","Ginger","Paprika","Chilli Flakes","Butter","Eggs","Tomato Paste"]},
+      {name:"Coconut Fish Curry African",mealCats:["Dinner"],ingredients:["Fish Fillet","Coconut Milk","Tomatoes","Garlic","Ginger","Turmeric Powder","Lemons","Coriander","Onions"]},
+      {name:"Beef and Groundnut Stew",mealCats:["Dinner"],ingredients:["Mutton","Peanut Butter","Tomatoes","Onions","Sweet Potato","Garlic","Ginger","Tomato Paste","Coriander"]},
+      {name:"Sadza with Beef Stew",mealCats:["Dinner"],ingredients:["Corn Flour","Mutton","Tomatoes","Onions","Garlic","Carrots","Paprika","Bay Leaves"]},
+      {name:"Thieboudienne Style",mealCats:["Dinner"],ingredients:["White Rice","Fish Fillet","Tomatoes","Onions","Capsicum","Garlic","Tomato Paste","Coriander","Limes"]},
+      {name:"Yam and Spinach Curry",mealCats:["Dinner"],ingredients:["Yam","Spinach","Onions","Garlic","Tomatoes","Coconut Milk","Cumin Seeds","Turmeric Powder","Coriander"]}
     ]
   },
   "japanese": {
@@ -5357,7 +5408,82 @@ const STATIC_RECIPES = {
 
   "Vietnamese Egg Crepe": `## Ingredients\n- Eggs (3)\n- Rice Flour (½ cup)\n- Coconut Milk (100ml)\n- Onions (½, diced)\n- Mushrooms (150g)\n- Soy Sauce (2 tbsp)\n- Sesame Oil (1 tbsp)\n## Steps\n1. Whisk eggs, rice flour and coconut milk into thin batter.\n2. Stir-fry onions and mushrooms with soy sauce 3 min.\n3. Pour thin batter into oiled pan, swirl to coat.\n4. Cook 2 min until set and edges lift.\n5. Fill with mushroom mixture, fold and serve with sesame oil.\n## Time\nPrep: 8 min · Cook: 15 min`,
 
-  "Vietnamese Noodle Soup": `## Ingredients\n- Noodles (300g)\n- Chicken Breast (300g)\n- Onions (1)\n- Ginger (3cm)\n- Soy Sauce (3 tbsp)\n- Coriander (handful)\n- Spring Onions (4)\n- Limes (1)\n## Steps\n1. Char onion and ginger in dry pan 3 min.\n2. Simmer with 1.5L water and chicken 20 min.\n3. Remove chicken, shred.\n4. Season broth with soy sauce.\n5. Cook noodles in broth, serve with chicken, coriander, spring onions and lime.\n## Time\nPrep: 5 min · Cook: 25 min`
+  "Vietnamese Noodle Soup": `## Ingredients\n- Noodles (300g)\n- Chicken Breast (300g)\n- Onions (1)\n- Ginger (3cm)\n- Soy Sauce (3 tbsp)\n- Coriander (handful)\n- Spring Onions (4)\n- Limes (1)\n## Steps\n1. Char onion and ginger in dry pan 3 min.\n2. Simmer with 1.5L water and chicken 20 min.\n3. Remove chicken, shred.\n4. Season broth with soy sauce.\n5. Cook noodles in broth, serve with chicken, coriander, spring onions and lime.\n## Time\nPrep: 5 min · Cook: 25 min`,
+
+  // ── African ──
+  "Shakshuka": `## Ingredients\n- Eggs (4)\n- Tomatoes (3, diced)\n- Capsicum (1, diced)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Cumin Seeds (1 tsp)\n- Paprika (1 tsp)\n- Olive Oil (2 tbsp)\n- Coriander (handful)\n## Steps\n1. Sauté onions and capsicum in olive oil on medium heat 5 min.\n2. Add garlic, cumin and paprika, cook 1 min.\n3. Add tomatoes and simmer 10 min until thick sauce forms.\n4. Create wells in sauce, crack in eggs.\n5. Cover and cook 5–7 min until whites are set but yolks soft.\n6. Top with coriander and serve with bread.\n## Time\nPrep: 8 min · Cook: 20 min\n## Allergens\nEggs`,
+
+  "Ful Medames": `## Ingredients\n- Lentils (400g, cooked)\n- Garlic (4 cloves)\n- Lemons (1)\n- Cumin Powder (2 tsp)\n- Olive Oil (3 tbsp)\n- Coriander (handful)\n- Tomatoes (1, diced)\n## Steps\n1. Warm cooked lentils in a pan with a splash of water.\n2. Mash roughly half the lentils with a fork.\n3. Stir in crushed garlic, lemon juice, cumin and olive oil.\n4. Season well and warm through 5 min.\n5. Top with diced tomato, coriander and an extra drizzle of olive oil.\n6. Serve with flatbread or toast.\n## Time\nPrep: 5 min · Cook: 10 min`,
+
+  "Mandazi": `## Ingredients\n- All-Purpose Flour (2 cups)\n- Coconut Milk (150ml)\n- Sugar (3 tbsp)\n- Cardamom (1 tsp, ground)\n- Eggs (1)\n- Butter (2 tbsp, melted)\n- Sunflower Oil (for frying)\n## Steps\n1. Mix flour, sugar and cardamom.\n2. Whisk egg with coconut milk and butter.\n3. Combine wet and dry into a soft dough, knead 3 min.\n4. Rest 15 min, then roll to 1cm thick.\n5. Cut into triangles or rounds.\n6. Deep-fry at 170°C for 3–4 min per side until golden.\n7. Drain and dust with sugar.\n## Time\nPrep: 20 min · Cook: 20 min\n## Allergens\nGluten · Eggs`,
+
+  "Ugali and Eggs": `## Ingredients\n- Corn Flour (2 cups)\n- Eggs (3)\n- Tomatoes (2, diced)\n- Onions (1, diced)\n- Butter (2 tbsp)\n- Coriander (handful)\n## Steps\n1. Bring 3 cups water to boil, add salt.\n2. Add corn flour gradually, stirring constantly.\n3. Cook on low 10 min, stirring until thick and pulling away from sides.\n4. Turn out ugali onto a plate.\n5. Fry onions and tomatoes in butter 4 min.\n6. Scramble in eggs, season and top with coriander.\n7. Serve alongside ugali.\n## Time\nPrep: 5 min · Cook: 18 min\n## Allergens\nEggs`,
+
+  "Coconut Rice Porridge": `## Ingredients\n- White Rice (1 cup)\n- Coconut Milk (400ml)\n- Sugar (3 tbsp)\n- Cardamom (½ tsp)\n- Raisins (2 tbsp)\n## Steps\n1. Rinse rice and place in pot with 300ml water.\n2. Bring to boil, cook 10 min.\n3. Add coconut milk, sugar and cardamom.\n4. Simmer on low 15 min, stirring, until creamy porridge.\n5. Stir in raisins.\n6. Serve warm.\n## Time\nPrep: 3 min · Cook: 28 min`,
+
+  "Harissa Baked Eggs": `## Ingredients\n- Eggs (4)\n- Tomatoes (4, diced)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Smoked Paprika (1½ tsp)\n- Cumin Seeds (1 tsp)\n- Olive Oil (3 tbsp)\n- Coriander (handful)\n## Steps\n1. Preheat oven to 180°C.\n2. Sauté onions and garlic in ovenproof pan 5 min.\n3. Add paprika, cumin and tomatoes, simmer 10 min.\n4. Make wells in sauce, crack in eggs.\n5. Bake 8–10 min until whites set.\n6. Top with coriander.\n## Time\nPrep: 8 min · Cook: 22 min\n## Allergens\nEggs`,
+
+  "Akara Fritters": `## Ingredients\n- Black-Eyed Peas (400g, soaked overnight)\n- Onions (½)\n- Garlic (2 cloves)\n- Green Chilli (1)\n- Eggs (1)\n- Sunflower Oil (for frying)\n## Steps\n1. Drain soaked black-eyed peas, rub off skins.\n2. Blend with onion, garlic and chilli into smooth paste.\n3. Add egg, salt and a splash of water.\n4. Beat vigorously 2 min to aerate batter.\n5. Deep-fry spoonfuls at 175°C for 3–4 min until golden.\n6. Drain and serve hot with tomato sauce.\n## Time\nPrep: 15 min · Cook: 20 min (+ overnight soak)\n## Allergens\nEggs`,
+
+  "Peanut Porridge": `## Ingredients\n- Corn Flour (1 cup)\n- Peanut Butter (3 tbsp)\n- Milk (300ml)\n- Honey (2 tbsp)\n- Bananas (1, sliced)\n## Steps\n1. Mix corn flour with 200ml cold water to a paste.\n2. Bring milk and 300ml water to simmer.\n3. Stir in corn flour paste, cook on low 8 min.\n4. Stir in peanut butter and honey.\n5. Cook 3 more min, adding milk to reach desired thickness.\n6. Serve topped with banana.\n## Time\nPrep: 3 min · Cook: 12 min\n## Allergens\nPeanuts · Dairy`,
+
+  "Jollof Rice": `## Ingredients\n- White Rice (1½ cups)\n- Chicken Breast (400g)\n- Tomatoes (3, blended)\n- Capsicum (1, blended)\n- Onions (1, diced)\n- Tomato Paste (2 tbsp)\n- Garlic (3 cloves)\n- Ginger (2cm)\n- Bay Leaves (2)\n- Paprika (1 tsp)\n- Sunflower Oil (3 tbsp)\n## Steps\n1. Blend tomatoes and capsicum together.\n2. Fry onions in oil 5 min until golden.\n3. Add garlic, ginger and tomato paste, cook 3 min.\n4. Pour in blended tomatoes, cook 15 min until oil rises.\n5. Brown chicken separately, add to sauce.\n6. Add washed rice and 400ml chicken stock/water.\n7. Cover tightly, cook on low 25 min.\n8. Fluff and serve.\n## Time\nPrep: 12 min · Cook: 50 min`,
+
+  "Moroccan Chicken Tagine": `## Ingredients\n- Chicken Breast (500g)\n- Onions (2, sliced)\n- Chickpeas (200g)\n- Dried Apricots (80g)\n- Cinnamon (1 stick)\n- Cumin Powder (2 tsp)\n- Ginger (2cm, grated)\n- Garlic (3 cloves)\n- Olive Oil (3 tbsp)\n- Lemons (1, zested and juiced)\n## Steps\n1. Brown chicken in olive oil 3 min per side.\n2. Sauté onions until soft.\n3. Add garlic, ginger, cumin and cinnamon.\n4. Return chicken, add chickpeas, apricots and 300ml water.\n5. Simmer covered 30 min until chicken is tender.\n6. Stir in lemon juice and zest.\n7. Serve with couscous or rice.\n## Time\nPrep: 10 min · Cook: 40 min`,
+
+  "Harira Soup": `## Ingredients\n- Lentils (150g)\n- Chickpeas (200g, cooked)\n- Tomatoes (3, diced)\n- Onions (1, diced)\n- Coriander (large handful)\n- Ginger (2cm, grated)\n- Lemons (1)\n- Turmeric Powder (1 tsp)\n- Cumin Seeds (1 tsp)\n- Olive Oil (2 tbsp)\n## Steps\n1. Sauté onions and ginger in oil 5 min.\n2. Add turmeric and cumin, stir 1 min.\n3. Add tomatoes and cook 5 min.\n4. Add lentils, chickpeas and 1.2L water.\n5. Simmer 25 min until lentils are soft.\n6. Stir in coriander and lemon juice.\n7. Serve hot with bread.\n## Time\nPrep: 10 min · Cook: 35 min`,
+
+  "Peri-Peri Chicken": `## Ingredients\n- Chicken Breast (500g)\n- Garlic (5 cloves)\n- Lemons (1)\n- Green Chilli (2–3)\n- Smoked Paprika (2 tsp)\n- Paprika (1 tsp)\n- Olive Oil (4 tbsp)\n- Vinegar (1 tbsp)\n- Coriander (handful)\n## Steps\n1. Blend garlic, chilli, lemon juice, both paprikas, oil and vinegar into marinade.\n2. Coat chicken deeply, marinate at least 30 min.\n3. Grill or bake at 200°C for 25–30 min, basting.\n4. Rest 5 min before serving with coriander.\n## Time\nPrep: 35 min · Cook: 30 min`,
+
+  "Chakalaka": `## Ingredients\n- Carrots (2, grated)\n- Onions (1, diced)\n- Capsicum (1, diced)\n- Tomatoes (2, diced)\n- Kidney Beans (200g, cooked)\n- Cumin Powder (1 tsp)\n- Turmeric Powder (½ tsp)\n- Garlic (2 cloves)\n- Ginger (1cm)\n- Sunflower Oil (2 tbsp)\n## Steps\n1. Heat oil, fry onions and capsicum 4 min.\n2. Add garlic, ginger, cumin and turmeric, stir 1 min.\n3. Add carrots, cook 5 min.\n4. Stir in tomatoes and kidney beans.\n5. Simmer 10 min until thick.\n6. Season and serve as relish with bread or rice.\n## Time\nPrep: 10 min · Cook: 22 min`,
+
+  "Koshari": `## Ingredients\n- White Rice (¾ cup)\n- Lentils (½ cup)\n- Onions (2, sliced thin)\n- Garlic (4 cloves)\n- Tomato Paste (2 tbsp)\n- Tomatoes (2, diced)\n- Cumin Seeds (1 tsp)\n- Vinegar (1 tbsp)\n- Chilli Flakes (½ tsp)\n- Sunflower Oil (3 tbsp)\n## Steps\n1. Cook lentils 20 min, drain.\n2. Cook rice.\n3. Deep-fry onion rings until crispy golden, set aside.\n4. Sauté garlic and cumin in oil, add tomatoes, paste and vinegar.\n5. Simmer sauce 10 min, season with chilli flakes.\n6. Layer rice, lentils and sauce in bowls.\n7. Top with crispy onions.\n## Time\nPrep: 10 min · Cook: 40 min`,
+
+  "Mafé Peanut Stew": `## Ingredients\n- Chicken Breast (500g)\n- Peanut Butter (4 tbsp)\n- Tomatoes (2, diced)\n- Onions (1, diced)\n- Sweet Potato (1, cubed)\n- Garlic (3 cloves)\n- Ginger (2cm)\n- Tomato Paste (1 tbsp)\n## Steps\n1. Brown chicken pieces in oil, set aside.\n2. Sauté onions, garlic and ginger 4 min.\n3. Add tomato paste and tomatoes, cook 5 min.\n4. Stir in peanut butter and 400ml water until smooth.\n5. Add chicken and sweet potato.\n6. Simmer 25 min until thick.\n7. Serve with rice or ugali.\n## Time\nPrep: 10 min · Cook: 38 min\n## Allergens\nPeanuts`,
+
+  "Moroccan Spiced Chickpeas": `## Ingredients\n- Chickpeas (400g, cooked)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Cumin Seeds (1 tsp)\n- Smoked Paprika (1 tsp)\n- Spinach (150g)\n- Tomatoes (2, diced)\n- Olive Oil (3 tbsp)\n- Lemons (1)\n## Steps\n1. Fry onions in oil 5 min.\n2. Add garlic, cumin and paprika, stir 1 min.\n3. Add tomatoes, cook 5 min.\n4. Add chickpeas and 100ml water, simmer 10 min.\n5. Wilt in spinach.\n6. Squeeze lemon and season.\n## Time\nPrep: 8 min · Cook: 22 min`,
+
+  "East African Bean Stew": `## Ingredients\n- Kidney Beans (400g, cooked)\n- Tomatoes (3, diced)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Spinach (200g)\n- Coriander (handful)\n- Turmeric Powder (1 tsp)\n- Coconut Milk (200ml)\n## Steps\n1. Fry onions and garlic until golden.\n2. Add turmeric and stir 1 min.\n3. Add tomatoes, cook 5 min.\n4. Add kidney beans and coconut milk, simmer 15 min.\n5. Wilt in spinach.\n6. Top with coriander and serve with rice or bread.\n## Time\nPrep: 8 min · Cook: 25 min`,
+
+  "Cape Malay Fish Curry": `## Ingredients\n- Fish Fillet (500g, cubed)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Ginger (2cm)\n- Cumin Seeds (1 tsp)\n- Turmeric Powder (1 tsp)\n- Coconut Milk (300ml)\n- Tomatoes (2, diced)\n- Coriander (handful)\n## Steps\n1. Fry onions 5 min, add garlic and ginger.\n2. Add cumin and turmeric, stir 1 min.\n3. Add tomatoes, cook 5 min.\n4. Pour in coconut milk, bring to simmer.\n5. Add fish, cook gently 8 min.\n6. Top with coriander and serve with rice.\n## Time\nPrep: 10 min · Cook: 22 min\n## Allergens\nFish`,
+
+  "Suya Skewers": `## Ingredients\n- Chicken Breast (500g, strips)\n- Peanuts (80g, ground fine)\n- Garlic (3 cloves, grated)\n- Ginger (2cm, grated)\n- Cumin Powder (1 tsp)\n- Smoked Paprika (1 tsp)\n- Chilli Flakes (½ tsp)\n- Sunflower Oil (2 tbsp)\n## Steps\n1. Mix ground peanuts, garlic, ginger, cumin, paprika and chilli into paste.\n2. Coat chicken strips in paste, marinate 30 min.\n3. Thread onto skewers, brush with oil.\n4. Grill on high heat 3–4 min per side.\n5. Serve with sliced onions and tomatoes.\n## Time\nPrep: 35 min · Cook: 12 min\n## Allergens\nPeanuts`,
+
+  "Kelewele": `## Ingredients\n- Plantain (2, ripe)\n- Ginger (2cm, grated)\n- Green Chilli (1, minced)\n- Nutmeg (pinch)\n- Salt (1 tsp)\n- Sunflower Oil (for frying)\n## Steps\n1. Peel plantain and cut into 2cm chunks.\n2. Mix ginger, chilli, nutmeg and salt into a rub.\n3. Toss plantain in the spice mix, rest 10 min.\n4. Deep-fry at 175°C for 4–5 min until caramelised and golden.\n5. Drain on paper towel and serve immediately.\n## Time\nPrep: 12 min · Cook: 10 min`,
+
+  "African Samosas": `## Ingredients\n- All-Purpose Flour (2 cups)\n- Potatoes (3, boiled and mashed)\n- Onions (1, diced fine)\n- Cumin Seeds (1 tsp)\n- Green Chilli (1, minced)\n- Coriander (handful)\n- Butter (2 tbsp)\n- Sunflower Oil (for frying)\n## Steps\n1. Mix flour and salt, rub in butter, add water to form firm dough.\n2. Fry onion, cumin and chilli 3 min, mix with potato and coriander.\n3. Roll dough thin, cut into strips.\n4. Fold into cone shapes, fill and seal.\n5. Deep-fry at 175°C for 4 min until golden.\n## Time\nPrep: 30 min · Cook: 15 min\n## Allergens\nGluten`,
+
+  "Fattoush Salad": `## Ingredients\n- White Bread (2 slices, torn)\n- Tomatoes (2, diced)\n- Cucumber (1, diced)\n- Mint (handful)\n- Lemons (1)\n- Olive Oil (3 tbsp)\n- Garlic (1 clove, crushed)\n- Spring Onion (2, sliced)\n## Steps\n1. Bake or fry torn bread pieces until crispy.\n2. Combine tomatoes, cucumber, mint and spring onion.\n3. Whisk lemon juice, olive oil and garlic into dressing.\n4. Toss salad with dressing.\n5. Top with crispy bread just before serving.\n## Time\nPrep: 8 min · Cook: 5 min\n## Allergens\nGluten`,
+
+  "Mango Avocado Salad": `## Ingredients\n- Avocado (2, diced)\n- Mango (1, diced)\n- Limes (1)\n- Coriander (handful)\n- Green Chilli (1, minced)\n- Sesame Seeds (1 tbsp)\n- Olive Oil (2 tbsp)\n## Steps\n1. Dice avocado and mango into 2cm cubes.\n2. Toss gently with lime juice and olive oil.\n3. Add chilli and coriander.\n4. Scatter sesame seeds.\n5. Serve immediately.\n## Time\nPrep: 8 min · Cook: 0 min`,
+
+  "North African Yogurt Dip": `## Ingredients\n- Yogurt (250g)\n- Cucumber (½, grated)\n- Garlic (2 cloves, crushed)\n- Mint (handful)\n- Lemons (½)\n- Olive Oil (2 tbsp)\n- Cumin Powder (½ tsp)\n## Steps\n1. Squeeze grated cucumber and discard liquid.\n2. Mix cucumber into yogurt.\n3. Stir in garlic, lemon juice and cumin.\n4. Top with mint and olive oil.\n5. Serve with bread or vegetables.\n## Time\nPrep: 8 min · Cook: 0 min\n## Allergens\nDairy`,
+
+  "Chicken Yassa": `## Ingredients\n- Chicken Breast (500g)\n- Onions (3, sliced)\n- Lemons (2)\n- Mustard Sauce (2 tbsp)\n- Garlic (4 cloves)\n- Olive Oil (3 tbsp)\n- Green Chilli (1)\n- Coriander (handful)\n## Steps\n1. Marinate chicken in lemon juice, garlic, mustard and chilli overnight or 2 h.\n2. Grill or fry chicken 4 min per side, set aside.\n3. In same pan, fry onions very slowly 20 min until caramelised.\n4. Add marinade liquid, simmer 10 min.\n5. Return chicken, cook 10 more min.\n6. Top with coriander and serve with rice.\n## Time\nPrep: 2 h · Cook: 45 min`,
+
+  "Lamb Tagine": `## Ingredients\n- Mutton (600g, chunks)\n- Chickpeas (200g, cooked)\n- Onions (2, diced)\n- Cinnamon (1 tsp, ground)\n- Cumin Powder (2 tsp)\n- Dried Apricots (80g)\n- Raisins (2 tbsp)\n- Garlic (3 cloves)\n- Ginger (2cm)\n- Olive Oil (3 tbsp)\n## Steps\n1. Brown mutton in batches in oil.\n2. Sauté onions, garlic and ginger 5 min.\n3. Add cinnamon and cumin, stir 1 min.\n4. Return mutton, add chickpeas, apricots, raisins and 400ml water.\n5. Cover and simmer 50 min until tender.\n6. Serve with couscous or rice.\n## Time\nPrep: 12 min · Cook: 60 min`,
+
+  "Bobotie Style Bake": `## Ingredients\n- Mutton (500g, minced)\n- Eggs (3)\n- Milk (200ml)\n- Onions (1, diced)\n- Cumin Powder (2 tsp)\n- Turmeric Powder (1 tsp)\n- Dried Apricots (60g, chopped)\n- Raisins (2 tbsp)\n- Garlic (3 cloves)\n## Steps\n1. Preheat oven to 180°C.\n2. Fry onions and garlic until soft.\n3. Add mince, cumin and turmeric, cook until browned.\n4. Stir in apricots and raisins.\n5. Spread in baking dish.\n6. Whisk eggs and milk, pour over.\n7. Bake 30 min until golden custard sets.\n## Time\nPrep: 15 min · Cook: 40 min\n## Allergens\nEggs · Dairy`,
+
+  "African Pepper Soup": `## Ingredients\n- Chicken Breast (500g, pieces)\n- Onions (1, diced)\n- Garlic (4 cloves)\n- Ginger (3cm)\n- Coriander (large handful)\n- Green Chilli (2)\n- Bay Leaves (2)\n- Spring Onion (4, sliced)\n## Steps\n1. Combine chicken, onions, garlic, ginger, chilli and bay leaves in pot.\n2. Cover with 1.2L water, bring to boil.\n3. Simmer 30 min until chicken is cooked.\n4. Season generously with salt.\n5. Serve hot in bowls, topped with spring onion and coriander.\n## Time\nPrep: 8 min · Cook: 35 min`,
+
+  "Jollof Rice and Chicken": `## Ingredients\n- White Rice (2 cups)\n- Chicken Breast (500g)\n- Tomato Paste (3 tbsp)\n- Tomatoes (3, blended)\n- Capsicum (1, blended)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Bay Leaves (2)\n- Paprika (1½ tsp)\n- Butter (2 tbsp)\n## Steps\n1. Brown chicken in oil 4 min per side, set aside.\n2. Fry onions until golden.\n3. Add garlic, tomato paste, paprika and bay leaves.\n4. Pour in blended tomatoes and capsicum, cook 15 min.\n5. Add chicken and washed rice with 500ml water.\n6. Cover tightly, cook on low 25 min.\n7. Stir in butter and serve.\n## Time\nPrep: 12 min · Cook: 55 min`,
+
+  "Chermoula Salmon": `## Ingredients\n- Salmon (500g)\n- Garlic (4 cloves)\n- Cumin Powder (2 tsp)\n- Coriander (large handful)\n- Lemons (1)\n- Olive Oil (4 tbsp)\n- Smoked Paprika (1 tsp)\n- Chilli Flakes (½ tsp)\n## Steps\n1. Blend garlic, cumin, coriander, lemon juice, oil, paprika and chilli into chermoula paste.\n2. Score salmon and rub paste all over.\n3. Marinate 20 min.\n4. Grill or bake at 200°C for 12–15 min.\n5. Serve with extra lemon and salad.\n## Time\nPrep: 25 min · Cook: 15 min\n## Allergens\nFish`,
+
+  "Peri-Peri Prawns": `## Ingredients\n- Prawns (400g, shelled)\n- Garlic (5 cloves)\n- Lemons (1)\n- Green Chilli (2)\n- Smoked Paprika (1 tsp)\n- Butter (3 tbsp)\n- Coriander (handful)\n- Olive Oil (2 tbsp)\n## Steps\n1. Blend garlic, chilli, lemon juice and paprika into paste.\n2. Melt butter with olive oil in pan.\n3. Fry paste 2 min until fragrant.\n4. Add prawns, cook 2–3 min per side until pink.\n5. Toss with coriander and serve immediately with bread.\n## Time\nPrep: 8 min · Cook: 10 min\n## Allergens\nShellfish · Dairy`,
+
+  "Doro Wat Chicken": `## Ingredients\n- Chicken Breast (500g, pieces)\n- Onions (2, fine diced)\n- Garlic (4 cloves)\n- Ginger (2cm)\n- Smoked Paprika (3 tbsp)\n- Chilli Flakes (1 tsp)\n- Butter (3 tbsp)\n- Eggs (4, hard boiled)\n- Tomato Paste (1 tbsp)\n## Steps\n1. Slow-fry onions in butter 20 min until deeply caramelised.\n2. Add garlic, ginger, paprika and chilli.\n3. Stir in tomato paste, cook 3 min.\n4. Add chicken and 200ml water.\n5. Simmer 25 min until very tender.\n6. Score boiled eggs, nestle into stew, cook 5 more min.\n7. Serve with rice or flatbread.\n## Time\nPrep: 10 min · Cook: 55 min\n## Allergens\nEggs · Dairy`,
+
+  "Coconut Fish Curry African": `## Ingredients\n- Fish Fillet (500g, chunks)\n- Coconut Milk (400ml)\n- Tomatoes (2, diced)\n- Garlic (4 cloves)\n- Ginger (2cm)\n- Turmeric Powder (1 tsp)\n- Lemons (1)\n- Coriander (handful)\n- Onions (1, diced)\n## Steps\n1. Fry onions until soft.\n2. Add garlic, ginger and turmeric, stir 1 min.\n3. Add tomatoes, cook 5 min.\n4. Pour in coconut milk, bring to gentle simmer.\n5. Add fish, cook 8 min until just cooked.\n6. Finish with lemon juice and coriander.\n## Time\nPrep: 10 min · Cook: 22 min\n## Allergens\nFish`,
+
+  "Beef and Groundnut Stew": `## Ingredients\n- Mutton (500g, cubed)\n- Peanut Butter (5 tbsp)\n- Tomatoes (2, diced)\n- Onions (1, diced)\n- Sweet Potato (1, cubed)\n- Garlic (3 cloves)\n- Ginger (2cm)\n- Tomato Paste (2 tbsp)\n- Coriander (handful)\n## Steps\n1. Brown mutton in oil 5 min.\n2. Add onions, garlic and ginger, cook 4 min.\n3. Add tomato paste and tomatoes.\n4. Stir in peanut butter with 500ml water until smooth.\n5. Add sweet potato, simmer 35 min until tender.\n6. Top with coriander and serve with rice or ugali.\n## Time\nPrep: 10 min · Cook: 48 min\n## Allergens\nPeanuts`,
+
+  "Sadza with Beef Stew": `## Ingredients\n- Corn Flour (2 cups)\n- Mutton (400g, cubed)\n- Tomatoes (2, diced)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Carrots (2, sliced)\n- Smoked Paprika (1 tsp)\n- Bay Leaves (2)\n## Steps\n1. Brown mutton in oil.\n2. Add onions, garlic, carrots, paprika and bay leaves.\n3. Add tomatoes and 500ml water, simmer 40 min until tender.\n4. Boil 4 cups salted water, gradually pour in corn flour.\n5. Stir firmly 10 min on low until very thick and smooth.\n6. Turn out onto plate, serve with stew.\n## Time\nPrep: 10 min · Cook: 55 min`,
+
+  "Thieboudienne Style": `## Ingredients\n- White Rice (2 cups)\n- Fish Fillet (500g)\n- Tomatoes (3, diced)\n- Onions (1, diced)\n- Capsicum (1, diced)\n- Garlic (4 cloves)\n- Tomato Paste (2 tbsp)\n- Coriander (handful)\n- Limes (1)\n## Steps\n1. Stuff fish with garlic and coriander.\n2. Brown fish 4 min per side, set aside.\n3. Fry onions and capsicum until soft.\n4. Add tomato paste and tomatoes, cook 10 min.\n5. Add rice and 700ml water, place fish on top.\n6. Cover and cook 25 min on low.\n7. Squeeze lime and serve.\n## Time\nPrep: 15 min · Cook: 45 min\n## Allergens\nFish`,
+
+  "Yam and Spinach Curry": `## Ingredients\n- Yam (600g, peeled and cubed)\n- Spinach (200g)\n- Onions (1, diced)\n- Garlic (3 cloves)\n- Tomatoes (2, diced)\n- Coconut Milk (300ml)\n- Cumin Seeds (1 tsp)\n- Turmeric Powder (1 tsp)\n- Coriander (handful)\n## Steps\n1. Fry onions and garlic until golden.\n2. Add cumin seeds and turmeric, stir 1 min.\n3. Add tomatoes, cook 5 min.\n4. Add yam and coconut milk.\n5. Cover and simmer 20 min until yam is tender.\n6. Wilt in spinach.\n7. Top with coriander and serve with rice.\n## Time\nPrep: 12 min · Cook: 30 min`
 };
 
 const ANTHROPIC_API_KEY = "";
@@ -5814,7 +5940,8 @@ function DishTile({
   inCurrentMenu,
   onToggleLock,
   missingIngredients,
-  colorMode
+  colorMode,
+  dishNameFont
 }) {
   const cats = Array.isArray(dish.mealCats) ? dish.mealCats : [dish.mealCat || "Dinner"];
   const count = dish.suggestedCount || 0;
@@ -5858,10 +5985,9 @@ function DishTile({
     }
   },
     /*#__PURE__*/React.createElement("div", {
-      style:{fontSize:Math.max(10,size*0.09),fontWeight:400,textAlign:"center",
-        color: C.white,
-        padding:"0 4px",lineHeight:1.2,wordBreak:"break-word",
-        pointerEvents:"none",fontFamily:"Georgia,'Times New Roman',serif",fontStyle:"italic"}
+      style: dishNameFont === "bold"
+        ? {fontSize:Math.max(10,size*0.09),fontWeight:700,textAlign:"center",color:C.white,padding:"0 4px",lineHeight:1.2,wordBreak:"break-word",pointerEvents:"none",fontFamily:C.font,fontStyle:"normal",letterSpacing:-0.2}
+        : {fontSize:Math.max(10,size*0.09),fontWeight:400,textAlign:"center",color:C.white,padding:"0 4px",lineHeight:1.2,wordBreak:"break-word",pointerEvents:"none",fontFamily:"Georgia,'Times New Roman',serif",fontStyle:"italic"}
     }, dish.name),
     cats.length > 0 && /*#__PURE__*/React.createElement("div", {
       style:{fontSize:Math.max(9,size*0.07),color:isLight?C.dim:C.dim2,marginTop:2,textAlign:"center",
@@ -5948,7 +6074,7 @@ function DayCard({
   dayDate, isMichelinWeekendOverride,
   onRecipe, recipes, locked, onToggleLock, onSwap, swapLoading,
   onSaveDish, dishes, isConfirmed,
-  items, stock, aiDishIngredients, setStock, colorMode
+  items, stock, aiDishIngredients, setStock, colorMode, dishNameFont
 }) {
   if (!dayMenu) return null;
   const isLight = C.bg === "#f5f0ea" || C.bg === "#ebebeb" || C.bg === "#f0f0f0";
@@ -6055,7 +6181,9 @@ function DayCard({
               }, "AI")
             ),
             /*#__PURE__*/React.createElement("div", {
-              style: { fontSize: 19, fontWeight: 400, color: C.white, lineHeight: 1.35, fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic" }
+              style: dishNameFont === "bold"
+                ? { fontSize: 15, fontWeight: 700, color: C.white, lineHeight: 1.35, fontFamily: C.font, fontStyle: "normal", letterSpacing: -0.2 }
+                : { fontSize: 15, fontWeight: 400, color: C.white, lineHeight: 1.35, fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic" }
             }, dishName)
           ),
           // Inline actions: swap · save · recipe
@@ -6185,7 +6313,8 @@ function BackupPanel({
       border: `1px solid ${C.border2}`,
       borderRadius: 8,
       padding: "14px",
-      marginBottom: 12
+      marginBottom: 12,
+      display: "none"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -6338,7 +6467,7 @@ function DayCardCarousel({
   today, tomorrow, menu, nextMenu, mealCats, WEEKEND,
   lockedDays, swapLoading, confirmedDays, dishes, recipes,
   fetchRecipe, setSwapModal, setDishes, haptic, C,
-  items, stock, aiDishIngredients, setStock, colorMode
+  items, stock, aiDishIngredients, setStock, colorMode, dishNameFont
 }) {
   // ── Swipeable Day Card Carousel ──
   const [carouselIdx, setCarouselIdx] = useState(0);
@@ -6441,7 +6570,7 @@ function DayCardCarousel({
             dishes: dishes,
             onSaveDish: saveDishFn(today.name),
             items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock,
-            colorMode: colorMode
+            colorMode: colorMode, dishNameFont: dishNameFont
           })
         ),
         // TOMORROW card
@@ -6464,7 +6593,7 @@ function DayCardCarousel({
             dishes: dishes,
             onSaveDish: saveDishFn(tomorrow.name),
             items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock,
-            colorMode: colorMode
+            colorMode: colorMode, dishNameFont: dishNameFont
           })
         )
       )
@@ -6755,6 +6884,7 @@ function App() {
     if (window.__ssSyncGapBg) window.__ssSyncGapBg();
   }, [theme]);
   const [colorMode, setColorMode] = useState("color"); // "color" | "mono"
+  const [dishNameFont, setDishNameFont] = useState("italic"); // "italic" | "bold"
   const [screensaverOn, setScreensaverOn] = useState(false);
   const [screensaverMins, setScreensaverMins] = useState(15);
   const [focusTick, setFocusTick] = useState(0);
@@ -6857,6 +6987,8 @@ function App() {
       if (sth) setTheme(JSON.parse(sth));
       const scm = storage.get(SK.colorMode);
       if (scm) setColorMode(JSON.parse(scm));
+      const sdnf = storage.get(SK.dishNameFont);
+      if (sdnf) setDishNameFont(JSON.parse(sdnf));
       const sso = storage.get(SK.screensaverOn);
       if (sso !== null) setScreensaverOn(JSON.parse(sso));
       const ssm = storage.get(SK.screensaverMins);
@@ -7139,6 +7271,9 @@ function App() {
   useEffect(() => {
     if (loaded && authReady) storage.set(SK.colorMode, JSON.stringify(colorMode));
   }, [colorMode, loaded, authReady]);
+  useEffect(() => {
+    if (loaded && authReady) storage.set(SK.dishNameFont, JSON.stringify(dishNameFont));
+  }, [dishNameFont, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.screensaverOn, JSON.stringify(screensaverOn));
     window.__ssEnabled = screensaverOn;
@@ -8125,7 +8260,7 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
           return updated;
         });
         // Fetch ingredients for the newly swapped-in AI dish
-        if(newDish && apiKey){
+        if(newDish && (apiKey || geminiKey)){
           var dishNameSet4=new Set(dishes.map(function(d){return d.name;}));
           if(!dishNameSet4.has(newDish) && !aiDishIngredients[newDish]){
             try{
@@ -8138,7 +8273,11 @@ Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else
                 system:"You are a culinary assistant. Output ONLY valid JSON with numeric IDs.",
                 prompt:swapIngPrompt,maxTokens:4000,stream:true})).json;
               if(swapIngResult && typeof swapIngResult==="object"){
-                setAiDishIngredients(function(prev){return Object.assign({},prev,swapIngResult);});
+                // Normalise key: store under the exact dish name regardless of what the AI returned
+                var normResult={};
+                var ids=swapIngResult[newDish] || swapIngResult[Object.keys(swapIngResult)[0]] || [];
+                normResult[newDish]=Array.isArray(ids)?ids.map(function(id){return Number(id)||id;}).filter(Boolean):[];
+                setAiDishIngredients(function(prev){return Object.assign({},prev,normResult);});
               }
             }catch(e2){ /* silent fail */ }
           }
@@ -9414,7 +9553,21 @@ Only output the JSON. No markdown.`;
   }, "Meal icons in soft category colors, or plain outlines")), /*#__PURE__*/React.createElement("div", {
     onClick: function(){ haptic("light"); setColorMode(function(m){ return m === "color" ? "mono" : "color"; }); },
     style: { width:44,height:26,borderRadius:13,background:colorMode==="color"?(colorMode==="mono"?C.dim:C.accent):"rgba(255,255,255,0.12)",position:"relative",transition:"background 0.18s",flexShrink:0,cursor:"pointer" }
-  }, /*#__PURE__*/React.createElement("div", { style: { position:"absolute",top:3,left:colorMode==="color"?21:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)" } }))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", { style: { position:"absolute",top:3,left:colorMode==="color"?21:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)" } }))),
+  /*#__PURE__*/React.createElement("div", {
+    style: { display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12,paddingTop:12,borderTop:"1px solid "+C.border }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 14, color: C.white, fontWeight: 600, marginBottom: 3 }
+  }, "Dish Name Style"), /*#__PURE__*/React.createElement("div", {
+    style: { fontSize: 13, color: C.dim, lineHeight: 1.5 }
+  }, dishNameFont === "italic"
+    ? React.createElement("span", { style: { fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic" } }, "Elegant italic")
+    : React.createElement("span", { style: { fontWeight: 700 } }, "Bold & modern")
+  )), /*#__PURE__*/React.createElement("div", {
+    onClick: function(){ haptic("light"); setDishNameFont(function(f){ return f === "italic" ? "bold" : "italic"; }); },
+    style: { width:44,height:26,borderRadius:13,background:dishNameFont==="bold"?(colorMode==="mono"?C.dim:C.accent):"rgba(255,255,255,0.12)",position:"relative",transition:"background 0.18s",flexShrink:0,cursor:"pointer" }
+  }, /*#__PURE__*/React.createElement("div", { style: { position:"absolute",top:3,left:dishNameFont==="bold"?21:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left 0.18s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)" } }))),
+  /*#__PURE__*/React.createElement("div", {
     style: { marginTop:12,paddingTop:12,borderTop:"1px solid "+C.border }
   }, /*#__PURE__*/React.createElement("div", {
     style: { display: "flex", alignItems: "center", justifyContent: "space-between" }
@@ -9831,12 +9984,13 @@ Only output the JSON. No markdown.`;
     swapLoading: swapLoading, confirmedDays: confirmedDays,
     dishes: dishes, recipes: recipes, fetchRecipe: fetchRecipe,
     setSwapModal: setSwapModal, setDishes: setDishes,
-    haptic: haptic, C: C, colorMode: colorMode,
+    haptic: haptic, C: C, colorMode: colorMode, dishNameFont: dishNameFont,
     items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock
   }), (function(){
-    // Build prep entries for a given day name from the active menu
-    function getPrepEntries(dayName) {
-      var activeMenu = nextMenu || menu;
+    // Build prep entries for a given day name from the correct menu.
+    // Today is always in the current menu; tomorrow may be in nextMenu if it's Sunday.
+    function getPrepEntries(dayName, useNextMenu) {
+      var activeMenu = (useNextMenu && nextMenu) ? nextMenu : menu;
       if (!activeMenu || !activeMenu.plan || !activeMenu.plan[dayName]) return [];
       var dayDishes = Object.values(activeMenu.plan[dayName]).filter(function(n){ return n && n !== "🍽 Dine Out"; });
       var seen = new Set();
@@ -9862,8 +10016,8 @@ Only output the JSON. No markdown.`;
       });
       return entries;
     }
-    var todayEntries = getPrepEntries(today.name);
-    var tomEntries = getPrepEntries(tomorrow.name);
+    var todayEntries = getPrepEntries(today.name, false);
+    var tomEntries = getPrepEntries(tomorrow.name, tomorrow.name === "Sunday");
     if (todayEntries.length === 0 && tomEntries.length === 0) return null;
     var cardStyle = { background: "rgba(184,136,42,0.08)", border: "1px solid rgba(184,136,42,0.22)", borderRadius: 12, padding: "12px 14px", marginBottom: 10, position: "relative" };
     function renderCard(entries, label, onDismiss) {
@@ -10364,7 +10518,7 @@ Only output the JSON. No markdown.`;
       }
     },
     items: items, stock: stock, aiDishIngredients: aiDishIngredients, setStock: setStock,
-    colorMode: colorMode
+    colorMode: colorMode, dishNameFont: dishNameFont
   }))))), !showSettings && tab === "pantry" && /*#__PURE__*/React.createElement("div", {
     style: {
       height: "100%",
@@ -10767,6 +10921,7 @@ Only output the JSON. No markdown.`;
       dish: d,
       size: sqSize,
       colorMode: colorMode,
+      dishNameFont: dishNameFont,
       inCurrentMenu: !!(menu && menu.plan && Object.values(menu.plan).some(function(dm) {
         try { return dm && typeof dm === "object" && Object.values(dm).includes(d.name); } catch(_) { return false; }
       })),
@@ -12562,7 +12717,7 @@ Only output the JSON. No markdown.`;
       /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim2, marginBottom: 20, lineHeight: 1.6 } }, "Select your cuisines — we'll load the right ingredients and dishes automatically."),
       /*#__PURE__*/React.createElement("div", {
         style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }
-      }, ['south_indian', 'north_indian', 'vegetarian', 'vegan', 'japanese', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'south_american', 'american'].map(function(key) {
+      }, ['south_indian', 'north_indian', 'vegetarian', 'vegan', 'japanese', 'east_asian', 'south_east_asian', 'west_asian', 'mediterranean', 'italian', 'french_continental', 'mexican', 'south_american', 'american', 'african'].map(function(key) {
         var preset = CUISINE_PRESETS[key];
         if(!preset) return null;
         var active = cuisines.includes(key);
@@ -13111,7 +13266,7 @@ Only output the JSON. No markdown.`;
   cuisineModal && (function(){
     // Pick mode: show cuisine grid to select which to add
     if(cuisineModal.mode === "pick"){
-      var unloaded = ['south_indian','north_indian','vegetarian','vegan','japanese','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','south_american','american'].filter(function(k){return !cuisines.includes(k);});
+      var unloaded = ['south_indian','north_indian','vegetarian','vegan','japanese','east_asian','south_east_asian','west_asian','mediterranean','italian','french_continental','mexican','south_american','american','african'].filter(function(k){return !cuisines.includes(k);});
       if(unloaded.length === 0){
         return /*#__PURE__*/React.createElement("div",{
           onClick:function(){setCuisineModal(null);},
