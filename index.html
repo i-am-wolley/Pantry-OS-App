@@ -702,7 +702,8 @@ function initScreensaver() {
   function buildMenu() {
     menuEl.innerHTML = "";
     menuEl.classList.remove("ss-in");
-    var plan = window.__pantryOSMenu || {};
+    var todayKey = DN[new Date().getDay()];
+    var plan = ((window.__pantryOSMenuPlan || {})[todayKey]) || {};
     var cats = Object.keys(plan);
     if (!cats.length) return;
     var p = PHASES[getPhase()];
@@ -730,11 +731,15 @@ function initScreensaver() {
   var DN = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   var MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var lastPhase = null;
-  var lastPhase = null;
+  var lastDayKey = null;
   function updateClock() {
     var n = new Date(), h = n.getHours(), m = n.getMinutes();
+    var dayKey = DN[n.getDay()];
     timeEl.textContent = (h<10?"0"+h:h)+":"+(m<10?"0"+m:m);
-    dateEl.textContent = DN[n.getDay()].toUpperCase() + "  ·  " + MN[n.getMonth()].toUpperCase() + " " + n.getDate();
+    dateEl.textContent = dayKey.toUpperCase() + "  ·  " + MN[n.getMonth()].toUpperCase() + " " + n.getDate();
+    // Rebuild menu when day changes while screensaver is visible
+    if (lastDayKey && dayKey !== lastDayKey) { buildMenu(); }
+    lastDayKey = dayKey;
     // Switch phase at the top of each hour
     if (m === 0) { var p = getPhase(); if (p !== lastPhase) { lastPhase = p; applyPhase(); } }
   }
@@ -7110,6 +7115,25 @@ function App() {
     } catch(e) {}
   }, [loaded, focusTick]);
 
+  // Pull from Firestore on foreground resume so partner's changes are visible immediately
+  useEffect(() => {
+    if (!loaded || !authReady || focusTick === 0) return;
+    if (!_householdCode || !_fsWriteEnabled) return;
+    (async function() {
+      try {
+        var changed = await _syncFromFirestore(_householdCode, _syncKeySet);
+        if (!changed) return;
+        try { var m = storage.get(SK.menu); if (m) setMenu(JSON.parse(m)); } catch(e) {}
+        try { var nm = storage.get(SK.nextMenu); setNextMenu(nm ? JSON.parse(nm) : null); } catch(e) {}
+        try { var cd = storage.get(SK.confirmedDays); if (cd) setConfirmedDays(JSON.parse(cd)); } catch(e) {}
+        try { var ld = storage.get(SK.lockedDays); if (ld) setLockedDays(JSON.parse(ld)); } catch(e) {}
+        try { var di = storage.get(SK.dishes); if (di) setDishes(JSON.parse(di)); } catch(e) {}
+        try { var st = storage.get(SK.stock); if (st) setStock(JSON.parse(st)); } catch(e) {}
+        showToast("Synced", "success");
+      } catch(e) {}
+    })();
+  }, [focusTick, loaded, authReady]);
+
   // Track user sign-in to suppress satGenPrompt briefly after login
   useEffect(() => {
     var uid = user ? user.uid : null;
@@ -7328,11 +7352,9 @@ function App() {
   useEffect(() => {
     if (loaded && authReady) storage.set(SK.dietary, JSON.stringify(dietary));
   }, [dietary, loaded, authReady]);
-  // Expose today's menu plan to screensaver via window
+  // Expose full week plan to screensaver — it picks today's day dynamically
   useEffect(() => {
-    if (!menu || !menu.plan) { window.__pantryOSMenu = {}; return; }
-    var todayName = (function(){ var d=new Date(); return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()]; })();
-    window.__pantryOSMenu = menu.plan[todayName] || {};
+    window.__pantryOSMenuPlan = (menu && menu.plan) ? menu.plan : {};
   }, [menu]);
   useEffect(() => {
     if (loaded) storage.set(SK.macros, JSON.stringify(macros));
