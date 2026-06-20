@@ -7108,8 +7108,6 @@ function App() {
       var storedNextMenu = JSON.parse(snm);
       if (!storedNextMenu) return;
       if (storedNextMenu.weekKey !== getWeekKey()) return; // not this week's plan — leave alone
-      // Confirm Saturday from old menu before clearing — it's the last unconfirmed day
-      confirmDay("Saturday", true);
       // Promote nextMenu → menu
       setMenu(storedNextMenu);
       storage.set(SK.menu, JSON.stringify(storedNextMenu));
@@ -8023,7 +8021,8 @@ function App() {
       // Stamp lastAutoGen so the "missed Saturday" popup doesn't fire on Sunday
       // for menus generated manually (not just by the auto-scheduler)
       setLastAutoGen(newMenu.weekKey);
-      // Do NOT clear confirmedDays — current week's confirmed state must stay intact
+      // Confirm Saturday now — generation is the natural signal that the day is done
+      confirmDay("Saturday", true);
     } else {
       setMenu(newMenu);
       setNextMenu(null); // clear any leftover next-week plan
@@ -8774,26 +8773,6 @@ Only output the JSON. No markdown.`;
           if (snm) storedNextMenu = JSON.parse(snm);
         } catch(e) {}
         if (storedNextMenu) {
-          // Confirm Saturday from old menu — closure is stale so read directly from storage
-          try {
-            var oldMenuRaw = storage.get(SK.menu);
-            var oldDishesRaw = storage.get(SK.dishes);
-            var oldCDRaw = storage.get(SK.confirmedDays);
-            var oldMenu = oldMenuRaw ? JSON.parse(oldMenuRaw) : null;
-            var oldDishes = oldDishesRaw ? JSON.parse(oldDishesRaw) : [];
-            var oldCD = oldCDRaw ? JSON.parse(oldCDRaw) : {};
-            if (oldMenu && oldMenu.plan && oldMenu.plan.Saturday && !oldCD.Saturday) {
-              var satPlan = oldMenu.plan.Saturday;
-              var bumpedDishes = oldDishes.map(function(d) {
-                if (Object.values(satPlan).includes(d.name)) {
-                  return Object.assign({}, d, {suggestedCount: (d.suggestedCount||0)+1});
-                }
-                return d;
-              });
-              setDishes(bumpedDishes);
-              storage.set(SK.dishes, JSON.stringify(bumpedDishes));
-            }
-          } catch(e) {}
           // Promote next week's plan to current
           setMenu(storedNextMenu);
           storage.set(SK.menu, JSON.stringify(storedNextMenu));
