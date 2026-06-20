@@ -5783,13 +5783,20 @@ function TouchInput({
   placeholder,
   style: extraStyle = {}
 }) {
-  return /*#__PURE__*/React.createElement("div", { style: { position: "relative" } },
+  var { margin, marginTop, marginBottom, marginLeft, marginRight, ...inputStyle } = extraStyle;
+  var containerMargin = {};
+  if (margin !== undefined) containerMargin.margin = margin;
+  if (marginTop !== undefined) containerMargin.marginTop = marginTop;
+  if (marginBottom !== undefined) containerMargin.marginBottom = marginBottom;
+  if (marginLeft !== undefined) containerMargin.marginLeft = marginLeft;
+  if (marginRight !== undefined) containerMargin.marginRight = marginRight;
+  return /*#__PURE__*/React.createElement("div", { style: Object.assign({ position: "relative" }, containerMargin) },
     /*#__PURE__*/React.createElement("input", {
       type: "text",
       value: value,
       onChange: e => onChange(e.target.value),
       placeholder: placeholder,
-      style: { ...mkInp(C), ...extraStyle, ...(value ? { paddingRight: 30 } : {}) }
+      style: { ...mkInp(C), ...inputStyle, ...(value ? { paddingRight: 30 } : {}) }
     }),
     value ? /*#__PURE__*/React.createElement("button", {
       onPointerDown: function(e){ e.preventDefault(); onChange(""); },
@@ -9895,7 +9902,7 @@ Only output the JSON. No markdown.`;
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: { fontSize: 10, textTransform: "uppercase", color: colorMode === "mono" ? C.dim : C.accent, fontWeight: 800, letterSpacing: 1.5, marginBottom: 12 }
-  }, "API Usage"), /*#__PURE__*/React.createElement("div", {
+  }, "AI Usage"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       justifyContent: "space-between",
@@ -10031,7 +10038,9 @@ Only output the JSON. No markdown.`;
   }, (function(){
     var h = new Date().getHours();
     var greeting = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-    var firstName = user && user.displayName ? user.displayName : null;
+    var rawName = user && user.displayName ? user.displayName.trim() : null;
+    var nameParts = rawName ? rawName.split(/\s+/) : [];
+    var firstName = nameParts.length > 1 ? nameParts.slice(0, -1).join(" ") : (nameParts[0] || null);
     return /*#__PURE__*/React.createElement("div", { style: { marginBottom: 22 } },
       /*#__PURE__*/React.createElement("div", {
         style: { fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic", fontWeight: 400, fontSize: 26, color: C.white, lineHeight: 1.2, marginBottom: 3 }
