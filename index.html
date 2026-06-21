@@ -3339,6 +3339,7 @@ const SK_SYNC = {
   activeAllergens: "pantryos-allergens",
   dishNameFont:    "pantryos-dishnamefont",
   apiCost:         "pantryos-apicost",
+  greetingName:    "pantryos-greetingname",
 };
 // Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
@@ -6914,6 +6915,7 @@ function App() {
   }, [theme]);
   const [colorMode, setColorMode] = useState("color"); // "color" | "mono"
   const [dishNameFont, setDishNameFont] = useState("italic"); // "italic" | "bold"
+  const [greetingName, setGreetingName] = useState("");
   const [screensaverOn, setScreensaverOn] = useState(false);
   const [screensaverMins, setScreensaverMins] = useState(15);
   const [focusTick, setFocusTick] = useState(0);
@@ -7047,6 +7049,8 @@ function App() {
       if (sob) setOnboarded(JSON.parse(sob));else setOnboarded(false);
       const scd = storage.get(SK.confirmedDays);
       if (scd) setConfirmedDays(JSON.parse(scd));
+      const sgn = storage.get(SK.greetingName);
+      if (sgn !== null) setGreetingName(JSON.parse(sgn));
     } catch (e) {
       console.warn("Storage load error", e);
     }
@@ -7320,6 +7324,9 @@ function App() {
   useEffect(() => {
     if (loaded && authReady) storage.set(SK.dishNameFont, JSON.stringify(dishNameFont));
   }, [dishNameFont, loaded, authReady]);
+  useEffect(() => {
+    if (loaded && authReady) storage.set(SK.greetingName, JSON.stringify(greetingName));
+  }, [greetingName, loaded, authReady]);
   useEffect(() => {
     if (loaded) storage.set(SK.screensaverOn, JSON.stringify(screensaverOn));
     window.__ssEnabled = screensaverOn;
@@ -9348,7 +9355,13 @@ Only output the JSON. No markdown.`;
         : /*#__PURE__*/React.createElement("button", {
             onClick: function(){ haptic("light"); signIn(); },
             style: Object.assign({}, pill(false), { padding: "8px 14px", fontSize: 13, width: "100%", textAlign: "center" })
-          }, "Sign in with Google")
+          }, "Sign in with Google"),
+    user && /*#__PURE__*/React.createElement("div", { style: { marginTop: 14, paddingTop: 12, borderTop: "1px solid " + C.border } },
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: C.white, marginBottom: 4 } }, "Greeting name"),
+      /*#__PURE__*/React.createElement("div", { style: { fontSize: 12, color: C.dim, marginBottom: 8 } }, "How you appear in the home screen greeting. Leave blank to use your first name."),
+      /*#__PURE__*/React.createElement("input", { type: "text", value: greetingName, onChange: function(e){ setGreetingName(e.target.value); }, placeholder: (function(){ var rn=user&&user.displayName?user.displayName.trim():null; var np=rn?rn.split(/\s+/):[];  return np.length>1?np.slice(0,-1).join(" "):(np[0]||"Your name"); })(), maxLength: 30, style: Object.assign({}, mkInp(C), { fontSize: 14 }) }),
+      greetingName.trim() && /*#__PURE__*/React.createElement("div", { style: { fontSize: 11, color: C.dim, marginTop: 5 } }, "Greeting shows: “" + (greetingName.trim()) + "”")
+    )
   ), /*#__PURE__*/React.createElement("div", {
     style: { background: C.card, border: "1px solid " + C.border, borderRadius: 12, padding: "14px", marginBottom: 12 }
   },
@@ -10020,10 +10033,11 @@ Only output the JSON. No markdown.`;
     var rawName = user && user.displayName ? user.displayName.trim() : null;
     var nameParts = rawName ? rawName.split(/\s+/) : [];
     var firstName = nameParts.length > 1 ? nameParts.slice(0, -1).join(" ") : (nameParts[0] || null);
+    var displayGreetingName = greetingName.trim() || firstName;
     return /*#__PURE__*/React.createElement("div", { style: { marginBottom: 22 } },
       /*#__PURE__*/React.createElement("div", {
         style: { fontFamily: "Georgia,'Times New Roman',serif", fontStyle: "italic", fontWeight: 400, fontSize: 26, color: C.white, lineHeight: 1.2, marginBottom: 3 }
-      }, firstName ? greeting + ", " + firstName : greeting),
+      }, displayGreetingName ? greeting + ", " + displayGreetingName : greeting),
     );
   })(), showCookNow && /*#__PURE__*/React.createElement("div", {
     style: { display: "flex", justifyContent: "flex-end", marginBottom: 10 }
