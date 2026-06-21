@@ -3339,7 +3339,6 @@ const SK_SYNC = {
   activeAllergens: "pantryos-allergens",
   dishNameFont:    "pantryos-dishnamefont",
   apiCost:         "pantryos-apicost",
-  greetingName:    "pantryos-greetingname",
 };
 // Keys that stay device-local forever (hardware prefs, transient state)
 const SK_LOCAL = {
@@ -3353,6 +3352,7 @@ const SK_LOCAL = {
   lastBackup:       "pantryos-lastbackup",
   pantryCheckWeek:  "pantryos-pantrycheck",
   notifications:    "pantryos-notifications",
+  greetingName:     "pantryos-greetingname",
 };
 const SK = { ...SK_SYNC, ...SK_LOCAL };
 const _syncKeySet = new Set(Object.values(SK_SYNC));
@@ -7325,8 +7325,8 @@ function App() {
     if (loaded && authReady) storage.set(SK.dishNameFont, JSON.stringify(dishNameFont));
   }, [dishNameFont, loaded, authReady]);
   useEffect(() => {
-    if (loaded && authReady) storage.set(SK.greetingName, JSON.stringify(greetingName));
-  }, [greetingName, loaded, authReady]);
+    if (loaded) storage.set(SK.greetingName, JSON.stringify(greetingName));
+  }, [greetingName, loaded]);
   useEffect(() => {
     if (loaded) storage.set(SK.screensaverOn, JSON.stringify(screensaverOn));
     window.__ssEnabled = screensaverOn;
