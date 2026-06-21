@@ -8294,7 +8294,7 @@ ${isForceAI ? "IMPORTANT: Suggest something NEW and creative — NOT from my sav
 ${isForceAI ? "Do NOT suggest any of these: "+myDishes : "Prefer my saved dishes if suitable."}
 Rest of week already planned: ${weekContext}
 ${isWeekend ? "This is a weekend — suggest something Gourmet-worthy." : ""}${cookTimeStr}
-Use ONLY stocked pantry ingredients. Reply with ONLY the dish name. Nothing else.`;
+Use ONLY stocked pantry ingredients. Dish name must be 30 characters or fewer (including spaces). Reply with ONLY the dish name. Nothing else.`;
     try {
       const { text: _swapText } = await callAI({ prompt, maxTokens: 50 });
       const newDish = _swapText.replace(/['"]/g,"").replace(/\*\*/g,"").replace(/\*/g,"").trim();
