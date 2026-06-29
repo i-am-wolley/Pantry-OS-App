@@ -6813,6 +6813,8 @@ function App() {
   const loginGraceRef = React.useRef(false);
   const prevUserIdRef = React.useRef(null);
   const autoGenInFlightRef = React.useRef(false);
+  const closeTopModalRef = React.useRef(null);
+  const modalHistoryPushed = React.useRef(false);
 
   // Summary filter: "all" | "stocked" | "needed"
   const [summaryFilter, setSummaryFilter] = useState("all");
@@ -6954,6 +6956,68 @@ function App() {
   const [householdMembers, setHouseholdMembers] = useState([]);
   const [householdOwner, setHouseholdOwner] = useState(null);
   const [memberRefreshKey, setMemberRefreshKey] = useState(0);
+
+  // ── Back button (Android) / Escape (web) — close top modal ──────────────────
+  // Updated every render so the listener always has the current closer without re-registering.
+  closeTopModalRef.current = (
+    swapModal          ? function(){ setSwapModal(null); }           :
+    recipeModal        ? function(){ setRecipeModal(null); }         :
+    scanModal          ? function(){ setScanModal(null); }           :
+    receiptModal       ? function(){ setReceiptModal(null); }        :
+    editDishModal      ? function(){ setEditDishModal(null); }       :
+    addDishModal       ? function(){ setAddDishModal(false); }       :
+    editItemModal      ? function(){ setEditItemModal(null); }       :
+    addItemModal       ? function(){ setAddItemModal(false); }       :
+    cookNowModal       ? function(){ setCookNowModal(false); }       :
+    aiSlotPopup        ? function(){ setAiSlotPopup(false); }        :
+    addMealCatModal    ? function(){ setAddMealCatModal(false); }    :
+    menuGapModal       ? function(){ setMenuGapModal(null); }        :
+    aiGateModal        ? function(){ setAiGateModal(null); }         :
+    cuisineModal       ? function(){ setCuisineModal(null); }        :
+    apiHelpModal       ? function(){ setApiHelpModal(null); }        :
+    showApiKey         ? function(){ setShowApiKey(false); }         :
+    showGeminiKey      ? function(){ setShowGeminiKey(false); }      :
+    satGenPrompt       ? function(){ setSatGenPrompt(false); }       :
+    removeMemberConfirm? function(){ setRemoveMemberConfirm(null); } :
+    firstStockCheckModal?function(){ setFirstStockCheckModal(false);}:
+    deleteAccountModal ? function(){ setDeleteAccountModal(false); } :
+    resetModal         ? function(){ setResetModal(0); }             :
+    showSettings       ? function(){ setShowSettings(false); }       :
+    null
+  );
+  var _anyModalOpen = !!closeTopModalRef.current;
+
+  // Push a history sentinel when any modal opens so Android back fires popstate.
+  // Pop it (history.back) when modal closes normally via its own close button.
+  useEffect(function() {
+    if (_anyModalOpen && !modalHistoryPushed.current) {
+      history.pushState({ misoModal: true }, '');
+      modalHistoryPushed.current = true;
+    } else if (!_anyModalOpen && modalHistoryPushed.current) {
+      modalHistoryPushed.current = false;
+      history.back();
+    }
+  }, [_anyModalOpen]);
+
+  // Register listeners once — refs stay current so no re-registration needed.
+  useEffect(function() {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && closeTopModalRef.current) closeTopModalRef.current();
+    }
+    function handlePopState() {
+      // Android back button (or browser back) fired — close top modal if one is open.
+      if (modalHistoryPushed.current && closeTopModalRef.current) {
+        modalHistoryPushed.current = false;
+        closeTopModalRef.current();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('popstate', handlePopState);
+    return function() {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // ── Load from localStorage ──
   useEffect(() => {
