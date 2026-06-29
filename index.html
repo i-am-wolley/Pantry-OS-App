@@ -7678,8 +7678,10 @@ function App() {
       // MIXED: inventory for non-AI slots, AI for selected slots
 
       // ── Step A: Compute which dishes were in the PREVIOUS menu ──
+      // Always use the current week's menu — not nextMenu — so dishes from a prior
+      // nextMenu generation aren't locked out when the user regenerates on Saturday.
       var prevMenuNames=new Set();
-      var prevMenuSource=(nextMenu||menu);
+      var prevMenuSource=menu;
       if(prevMenuSource&&prevMenuSource.plan){
         Object.values(prevMenuSource.plan).forEach(function(dm){
           if(dm&&typeof dm==="object") Object.values(dm).forEach(function(v){if(v)prevMenuNames.add(v);});
