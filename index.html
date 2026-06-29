@@ -8858,12 +8858,22 @@ Only output the JSON. No markdown.`;
           storage.remove(SK.confirmedDays);
           // Keep nutrition — belongs to the promoted plan
         } else {
-          // No pre-generated plan — blank slate
-          setMenu(null);
-          storage.remove(SK.menu);
-          setLockedDays({});
-          storage.remove(SK.lockedDays);
-          setNutrition({}); // only clear nutrition when no plan carried over
+          // No nextMenu — but check if the current menu is already this week's
+          // (promotion may have fired before 00:30 via the loading or focusTick path).
+          // Only blank-slate if there is genuinely no current-week menu.
+          var existingMenu = null;
+          try { var em = storage.get(SK.menu); if (em) existingMenu = JSON.parse(em); } catch(e2) {}
+          var _nowSun = new Date(); _nowSun.setDate(_nowSun.getDate() - _nowSun.getDay());
+          var _thisWeekKey = _nowSun.getFullYear()+'-'+(_nowSun.getMonth()+1)+'-'+_nowSun.getDate();
+          if (!existingMenu || existingMenu.weekKey !== _thisWeekKey) {
+            // Genuinely no plan for this week — clear to blank slate
+            setMenu(null);
+            storage.remove(SK.menu);
+            setLockedDays({});
+            storage.remove(SK.lockedDays);
+            setNutrition({});
+          }
+          // else: already promoted before 00:30 — leave current menu untouched
         }
       }, msUntil);
     }
